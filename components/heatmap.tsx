@@ -77,7 +77,7 @@ export function Heatmap({
       </div>
 
       <div className="scroll-x">
-        <div className="min-w-max">
+        <div className="min-w-max mx-auto w-max">
           {/* Axe des heures */}
           <div
             className="grid gap-[2px] mb-[2px]"
