@@ -546,3 +546,24 @@ begin
   end if;
   return v_row;
 end $$;
+
+-- ── Codes QR : lecture réservée aux administrateurs ─────────────────────────
+--  Le privilège SELECT sur la colonne `machines.qr_code` est retiré au client
+--  (cf. 0004). Seule cette fonction, qui vérifie le rôle, les expose — pour la
+--  planche d'étiquettes à imprimer.
+create or replace function public.admin_machine_codes()
+returns table (
+  machine_id uuid, machine_name text, room_name text,
+  room_position int, machine_position int, qr_code text)
+language plpgsql stable security definer set search_path = public, pg_temp as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Réservé aux administrateurs.' using errcode = '42501';
+  end if;
+
+  return query
+    select m.id, m.name, r.name, r.position, m.position, m.qr_code
+      from public.machines m
+      join public.rooms r on r.id = m.room_id
+     order by r.position, m.position, m.name;
+end $$;

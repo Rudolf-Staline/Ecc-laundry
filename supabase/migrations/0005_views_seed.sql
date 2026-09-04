@@ -45,7 +45,9 @@ select
   m.cycle_minutes,
   m.capacity_kg,
   m.position,
-  m.qr_code,
+  -- `qr_code` n'a rien à faire ici : la vue est lisible par anon et
+  -- authenticated. Le diffuser rendrait le pointage contournable depuis
+  -- n'importe où — or il n'a de sens que devant la machine.
   r.name          as room_name,
   r.slot_minutes,
   cur.id          as current_booking_id,

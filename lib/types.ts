@@ -51,7 +51,6 @@ export type Machine = {
   model: string | null;
   cycle_minutes: number;
   position: number;
-  qr_code: string;
   note: string | null;
 };
 
@@ -93,7 +92,6 @@ export type MachineLive = {
   cycle_minutes: number;
   capacity_kg: number | null;
   position: number;
-  qr_code: string;
   room_name: string;
   slot_minutes: number;
   current_booking_id: string | null;
@@ -182,6 +180,16 @@ export type AdminOverview = {
   no_show_rate: number;
   open_reports: number;
   suspended: number;
+};
+
+/** Étiquette QR d'une machine — lisible des seuls administrateurs. */
+export type MachineCode = {
+  machine_id: string;
+  machine_name: string;
+  room_name: string;
+  room_position: number;
+  machine_position: number;
+  qr_code: string;
 };
 
 export type AffluenceCell = { dow: number; hour: number; bookings: number; intensity: number };

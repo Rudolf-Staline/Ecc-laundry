@@ -24,7 +24,15 @@ alter table public.admin_allowlist enable row level security;
 grant usage on schema public to anon, authenticated;
 
 -- Tableau public (« y a-t-il une machine libre ? »), sans donnée personnelle.
-grant select on public.rooms, public.machines, public.announcements to anon, authenticated;
+grant select on public.rooms, public.announcements to anon, authenticated;
+
+-- `machines` : tout est public sauf le code QR. Celui-ci est la preuve de
+-- présence devant la machine ; le lire par l'API permettrait de pointer depuis
+-- son lit. Il ne sort que par admin_machine_codes(), qui vérifie le rôle.
+revoke select on public.machines from anon, authenticated;
+grant select (id, room_id, name, kind, status, capacity_kg, brand, model,
+              cycle_minutes, position, note, created_at, updated_at)
+  on public.machines to anon, authenticated;
 grant select on public.settings to anon, authenticated;
 
 grant select on public.profiles, public.bookings, public.waitlist,
@@ -167,6 +175,7 @@ grant execute on function public.my_week_status(timestamptz)                    
 grant execute on function public.report_machine(uuid, text, text)                   to authenticated;
 grant execute on function public.affluence(uuid, int)                               to anon, authenticated;
 grant execute on function public.admin_overview()                                   to authenticated;
+grant execute on function public.admin_machine_codes()                              to authenticated;
 grant execute on function public.set_setting(text, text)                            to authenticated;
 grant execute on function public.is_admin()                                         to authenticated;
 grant execute on function public.week_bounds(timestamptz)                           to anon, authenticated;

@@ -124,7 +124,7 @@ function construireCalendrier(reservations: LigneReservation[]): string {
           ? "Pensez à pointer le QR code en arrivant, sinon le créneau est libéré."
           : "Créneau pointé.",
       )}`,
-      `STATUS:${r.status === "completed" ? "CONFIRMED" : "CONFIRMED"}`,
+      "STATUS:CONFIRMED",
       "TRANSP:OPAQUE",
       // Rappel dix minutes avant : le temps de descendre avec son panier.
       "BEGIN:VALARM",

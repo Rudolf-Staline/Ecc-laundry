@@ -244,6 +244,15 @@ select pg_temp.expect_fail(
 select pg_temp.expect_fail(
   $q$select public.promote_admin('rudolf.staline@centrale-casablanca.ma')$q$,
   'ni s''auto-nommer administrateur');
+select pg_temp.expect_fail(
+  $q$select qr_code from public.machines limit 1$q$,
+  'ni lire les codes QR — sinon on pointe sans venir');
+select pg_temp.expect_fail(
+  $q$select public.admin_machine_codes()$q$,
+  'ni les obtenir par la fonction d''administration');
+select pg_temp.expect_ok(
+  $q$select name, status from public.machines limit 1$q$,
+  'mais le reste du parc lui reste lisible');
 
 \echo ''
 \echo '━━━ 8. Annulation et file d''attente ━━━'
