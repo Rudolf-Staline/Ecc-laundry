@@ -1,0 +1,379 @@
+@import "tailwindcss";
+
+/* ══════════════════════════════════════════════════════════════════
+   TAMBOUR — Système visuel
+   Salle de contrôle · bleu Klein · chartreuse acide · trame technique
+   ══════════════════════════════════════════════════════════════════ */
+
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
+@theme {
+  --color-ink:        var(--c-ink);
+  --color-ink-2:      var(--c-ink-2);
+  --color-surface:    var(--c-surface);
+  --color-surface-hi: var(--c-surface-hi);
+  --color-line:       var(--c-line);
+  --color-line-hi:    var(--c-line-hi);
+  --color-chalk:      var(--c-chalk);
+  --color-mist:       var(--c-mist);
+  --color-dim:        var(--c-dim);
+
+  --color-klein:      var(--c-klein);
+  --color-klein-2:    var(--c-klein-2);
+  --color-acid:       var(--c-acid);
+  --color-ember:      var(--c-ember);
+  --color-coral:      var(--c-coral);
+  --color-violet:     var(--c-violet);
+
+  /* Encodage catégoriel (type de machine) — distinct des couleurs d'état,
+     et validé pour la vision des couleurs sur les deux surfaces. */
+  --color-acid-vif:   var(--c-acid-vif);
+  --color-on-bright:  var(--c-on-bright);
+
+  --color-cat-lavage:  var(--c-cat-lavage);
+  --color-cat-sechage: var(--c-cat-sechage);
+
+  /* Rampe séquentielle d'affluence : une seule teinte, du clair au dense.
+     Les paliers du mode sombre sont choisis pour leur surface, pas inversés. */
+  --color-aff-0: var(--c-aff-0);
+  --color-aff-1: var(--c-aff-1);
+  --color-aff-2: var(--c-aff-2);
+  --color-aff-3: var(--c-aff-3);
+  --color-aff-4: var(--c-aff-4);
+
+  --font-display: var(--f-display);
+  --font-body:    var(--f-body);
+  --font-mono:    var(--f-mono);
+
+  --radius-tambour: 2px;
+
+  --ease-drum:  cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-snap:  cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Jetons : nuit (défaut) ───────────────────────────────────── */
+:root {
+  --c-ink:        #08090b;
+  --c-ink-2:      #0e1014;
+  --c-surface:    #14171d;
+  --c-surface-hi: #1b1f27;
+  --c-line:       #232833;
+  --c-line-hi:    #343b4a;
+  --c-chalk:      #eef2f8;
+  --c-mist:       #8c97a8;
+  --c-dim:        #828d9e;
+
+  --c-klein:      #3a46ff;
+  --c-klein-2:    #6b74ff;
+  --c-acid:       #d6fb50;
+  --c-ember:      #ff9a3c;
+  --c-coral:      #ff5a4e;
+  --c-violet:     #a97bff;
+
+  --c-acid-vif:   #d6fb50;
+  --c-on-bright:  #0a0b0d;
+
+  --c-cat-lavage:  #6b74ff;
+  --c-cat-sechage: #c9751d;
+
+  --c-aff-0: #14171d;
+  --c-aff-1: #1c2340;
+  --c-aff-2: #26307a;
+  --c-aff-3: #3340c4;
+  --c-aff-4: #5a64ff;
+
+  --grid-line: rgba(255, 255, 255, 0.028);
+  --grain-opacity: 0.05;
+  --halo: radial-gradient(1200px 600px at 50% -10%, rgba(58, 70, 255, 0.16), transparent 70%);
+  --shadow-lift: 0 1px 0 rgba(255,255,255,.04) inset, 0 12px 40px -12px rgba(0,0,0,.8);
+
+  color-scheme: dark;
+}
+
+/* ── Jetons : jour ────────────────────────────────────────────── */
+[data-theme="light"] {
+  --c-ink:        #f2f0ea;
+  --c-ink-2:      #eae7df;
+  --c-surface:    #ffffff;
+  --c-surface-hi: #f7f5f0;
+  --c-line:       #ddd8cc;
+  --c-line-hi:    #c3bcab;
+  --c-chalk:      #14161a;
+  --c-mist:       #5c6472;
+  --c-dim:        #5f6675;
+
+  --c-klein:      #2b35d8;
+  --c-klein-2:    #4954ff;
+  --c-acid:       #5a6b00;
+  --c-ember:      #a85800;
+  --c-coral:      #d63a2c;
+  --c-violet:     #7146d4;
+
+  --c-acid-vif:   #c3e600;
+  --c-on-bright:  #0a0b0d;
+
+  --c-cat-lavage:  #2b35d8;
+  --c-cat-sechage: #a8590c;
+
+  --c-aff-0: #ffffff;
+  --c-aff-1: #e2e5fb;
+  --c-aff-2: #b9c0f5;
+  --c-aff-3: #7b86ea;
+  --c-aff-4: #2b35d8;
+
+  --grid-line: rgba(0, 0, 0, 0.035);
+  --grain-opacity: 0.03;
+  --halo: radial-gradient(1200px 600px at 50% -10%, rgba(43, 53, 216, 0.10), transparent 70%);
+  --shadow-lift: 0 1px 0 rgba(255,255,255,.9) inset, 0 12px 32px -16px rgba(20,22,26,.28);
+
+  color-scheme: light;
+}
+
+/* ── Base ─────────────────────────────────────────────────────── */
+* { border-color: var(--c-line); }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scrollbar-color: var(--c-line-hi) transparent;
+}
+
+body {
+  background-color: var(--c-ink);
+  color: var(--c-chalk);
+  font-family: var(--f-body), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv01";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* Trame de plan technique + halo, sur toute la page */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 120% 90% at 50% 0%, #000 40%, transparent 100%);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: var(--halo);
+}
+
+/* Grain argentique */
+.grain::before {
+  content: "";
+  position: fixed;
+  inset: -50%;
+  z-index: 60;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 6s steps(6) infinite;
+}
+
+@keyframes grain-shift {
+  0%   { transform: translate(0, 0); }
+  16%  { transform: translate(-2%, 1%); }
+  33%  { transform: translate(1%, -2%); }
+  50%  { transform: translate(-1%, 2%); }
+  66%  { transform: translate(2%, 1%); }
+  83%  { transform: translate(-2%, -1%); }
+  100% { transform: translate(0, 0); }
+}
+
+::selection { background: var(--c-klein); color: #fff; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--c-line-hi);
+  border-radius: 99px;
+  border: 3px solid var(--c-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-acid);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ══ Typographie ══════════════════════════════════════════════ */
+@utility font-stretch-tight { font-stretch: 88%; }
+
+.display {
+  font-family: var(--f-display), ui-sans-serif, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.94;
+  font-variation-settings: "wdth" 92, "opsz" 40;
+}
+
+.eyebrow {
+  font-family: var(--f-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--c-dim);
+  font-weight: 500;
+}
+
+.tabular { font-variant-numeric: tabular-nums; font-family: var(--f-mono), ui-monospace, monospace; }
+
+/* ══ Composants ═══════════════════════════════════════════════ */
+
+/* Panneau : la surface de base, avec liseré supérieur */
+@utility panel {
+  position: relative;
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 3px;
+  box-shadow: var(--shadow-lift);
+}
+
+/* Coins d'équerre — signature « plan technique » */
+.corners::before,
+.corners::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-color: var(--c-line-hi);
+  pointer-events: none;
+}
+.corners::before { top: -1px; left: -1px; border-top: 1px solid; border-left: 1px solid; }
+.corners::after  { bottom: -1px; right: -1px; border-bottom: 1px solid; border-right: 1px solid; }
+
+/* Étiquette de statut */
+@utility chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.5rem;
+  font-family: var(--f-mono), monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+/* ── Le tambour qui tourne ───────────────────────────────────── */
+.drum-spin { animation: drum 3.2s linear infinite; transform-origin: center; }
+.drum-spin-slow { animation: drum 9s linear infinite; transform-origin: center; }
+@keyframes drum { to { transform: rotate(360deg); } }
+
+/* Oscillation d'essorage : accélère puis relâche */
+.drum-cycle { animation: drum-cycle 4s var(--ease-drum) infinite; transform-origin: center; }
+@keyframes drum-cycle {
+  0%   { transform: rotate(0deg); }
+  55%  { transform: rotate(340deg); }
+  70%  { transform: rotate(330deg); }
+  100% { transform: rotate(720deg); }
+}
+
+/* ── Révélation en cascade au chargement ────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: reveal 0.7s var(--ease-snap) forwards;
+}
+@keyframes reveal {
+  to { opacity: 1; transform: none; }
+}
+
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: reveal 0.65s var(--ease-snap) forwards;
+}
+.reveal-stagger > *:nth-child(1)  { animation-delay: 0.02s; }
+.reveal-stagger > *:nth-child(2)  { animation-delay: 0.06s; }
+.reveal-stagger > *:nth-child(3)  { animation-delay: 0.10s; }
+.reveal-stagger > *:nth-child(4)  { animation-delay: 0.14s; }
+.reveal-stagger > *:nth-child(5)  { animation-delay: 0.18s; }
+.reveal-stagger > *:nth-child(6)  { animation-delay: 0.22s; }
+.reveal-stagger > *:nth-child(7)  { animation-delay: 0.26s; }
+.reveal-stagger > *:nth-child(8)  { animation-delay: 0.30s; }
+.reveal-stagger > *:nth-child(9)  { animation-delay: 0.34s; }
+.reveal-stagger > *:nth-child(n+10) { animation-delay: 0.38s; }
+
+/* ── Balayage lumineux (créneau libre au survol) ─────────────── */
+.sweep { position: relative; overflow: hidden; }
+.sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-102%);
+  background: linear-gradient(100deg, transparent, color-mix(in oklab, var(--c-acid) 22%, transparent), transparent);
+  transition: transform 0.55s var(--ease-snap);
+  pointer-events: none;
+}
+.sweep:hover::after { transform: translateX(102%); }
+
+/* ── Pulsation « en cours » ──────────────────────────────────── */
+.pulse-live { animation: pulse-live 2.2s ease-in-out infinite; }
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+/* ── Remplissage liquide (progression de cycle) ──────────────── */
+.liquid {
+  background:
+    linear-gradient(90deg,
+      color-mix(in oklab, var(--c-ember) 30%, transparent) 0%,
+      color-mix(in oklab, var(--c-ember) 12%, transparent) 100%);
+  position: relative;
+  overflow: hidden;
+}
+.liquid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--c-ember) 45%, transparent), transparent);
+  animation: liquid-slide 2.6s ease-in-out infinite;
+}
+@keyframes liquid-slide {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ── Barre de défilement horizontale discrète ───────────────── */
+.scroll-x {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+}
+
+/* ── Marquee bandeau ─────────────────────────────────────────── */
+.marquee { display: flex; width: max-content; animation: marquee 38s linear infinite; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+/* ── Accessibilité mouvement ────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal, .reveal-stagger > * { opacity: 1 !important; transform: none !important; }
+  .grain::before { animation: none; }
+}
+
+/* ── Impression ─────────────────────────────────────────────── */
+@media print {
+  body::before, body::after, .grain::before { display: none; }
+  .no-print { display: none !important; }
+}
