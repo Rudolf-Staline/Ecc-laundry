@@ -255,6 +255,30 @@ select pg_temp.expect_ok(
   'mais le reste du parc lui reste lisible');
 
 \echo ''
+\echo '━━━ 7 bis. Ce qu''un visiteur non connecté peut atteindre ━━━'
+reset role;
+set role anon;
+select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.expect_fail($q$select public.admin_machine_codes()$q$,
+  'anon ne peut pas appeler la fonction des codes QR');
+select pg_temp.expect_fail($q$select public.admin_overview()$q$,
+  'ni le tableau de bord d''administration');
+select pg_temp.expect_fail($q$select public.set_setting('max_bookings_per_week','99')$q$,
+  'ni toucher aux réglages');
+select pg_temp.expect_fail(
+  $q$select public.book_slot((select id from m where n = 0), now() + interval '3 hours', 1)$q$,
+  'ni réserver');
+select pg_temp.expect_fail($q$select qr_code from public.machines limit 1$q$,
+  'ni lire un code QR');
+select pg_temp.expect_ok($q$select name, live_status from public.v_machine_live limit 1$q$,
+  'mais le tableau public du parc reste lisible');
+select pg_temp.expect_ok($q$select name from public.rooms limit 1$q$,
+  'et les buanderies aussi — la politique évalue is_admin() sans erreur');
+reset role;
+set role authenticated;
+select set_config('request.jwt.claim.sub','22222222-2222-2222-2222-222222222222', false);
+
+\echo ''
 \echo '━━━ 8. Annulation et file d''attente ━━━'
 select set_config('request.jwt.claim.sub','22222222-2222-2222-2222-222222222222', false);
 select pg_temp.expect_ok(format(

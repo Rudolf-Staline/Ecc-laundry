@@ -133,7 +133,8 @@ begin
   return v_out;
 end $$;
 
-grant execute on function public.my_stats() to authenticated;
+revoke execute on function public.my_stats() from public, anon;
+grant  execute on function public.my_stats() to authenticated;
 
 -- ════════════════════════════════════════════════════════════════════════════
 --  Données initiales
