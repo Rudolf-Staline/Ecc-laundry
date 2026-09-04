@@ -8,13 +8,13 @@ import { AnneauQuota } from "@/components/anneau-quota";
 import { Tambour } from "@/components/marque";
 import {
   buildSlots, dayKey, daySpan, estCreneauNuit, fmtDay, fmtRelative, fmtTime,
-  isoDayOfWeek, JOURS_COURTS, nuitReservable, startOfDay, type Slot,
+  isoDayOfWeek, JOURS_COURTS, startOfDay, type Slot,
 } from "@/lib/time";
 import type {
   BoardRow, Machine, Profile, Room, WaitlistEntry, WeekStatus,
 } from "@/lib/types";
 
-type Etat = "libre" | "mien" | "pris" | "passe" | "indispo" | "horizon" | "nuit-close";
+type Etat = "libre" | "mien" | "pris" | "passe" | "indispo" | "horizon";
 
 export function Planning({
   profil,
@@ -146,12 +146,9 @@ export function Planning({
       if (ligne) return { etat: ligne.is_mine ? "mien" : "pris", ligne };
 
       if (debut.getTime() > limiteHorizon) return { etat: "horizon" };
-      if (!nuitReservable(debut, new Date(maintenant), nuitDebut, nuitFin)) {
-        return { etat: "nuit-close" };
-      }
       return { etat: "libre" };
     },
-    [index, maintenant, limiteHorizon, nuitDebut, nuitFin],
+    [index, maintenant, limiteHorizon],
   );
 
   /** Un créneau de 2 h exige que l'heure suivante soit libre elle aussi. */
@@ -269,7 +266,7 @@ export function Planning({
           <p className="text-sm text-mist">
             <span className="text-chalk">Quota atteint pour cette semaine.</span>{" "}
             Les créneaux de {nuitDebut} h à {nuitFin} h restent ouverts : ils ne se décomptent
-            pas du quota. Ils se réservent la veille, avant minuit.
+            pas du quota. Ils peuvent être réservés à tout moment.
           </p>
         </div>
       )}
@@ -472,8 +469,8 @@ export function Planning({
           <IconeNuit />
           <span>
             Les créneaux de {nuitDebut} h à {nuitFin} h ne se décomptent pas du quota
-            hebdomadaire — mais ils se réservent <span className="text-mist">la veille,
-            avant minuit</span>. Ceux de cette nuit sont donc déjà fermés.
+            hebdomadaire.
+
           </span>
         </p>
       </div>
@@ -593,17 +590,6 @@ function Cellule({
         title={`Ce créneau s'ouvrira ${fmtRelative(new Date(creneau.start.getTime() - 24 * 3_600_000))}`}
       >
         <span className="text-[10px] font-mono text-dim">pas encore</span>
-      </div>
-    );
-  }
-
-  if (etat === "nuit-close") {
-    return (
-      <div
-        className={`${base} ${fondNuit} opacity-55`}
-        title="Un créneau de nuit se réserve la veille, avant minuit."
-      >
-        <span className="text-[10px] font-mono text-dim">trop tard</span>
       </div>
     );
   }

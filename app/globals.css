@@ -53,24 +53,24 @@
 
 /* ── Jetons : nuit (défaut) ───────────────────────────────────── */
 :root {
-  --c-ink:        #08090b;
-  --c-ink-2:      #0e1014;
-  --c-surface:    #14171d;
-  --c-surface-hi: #1b1f27;
-  --c-line:       #232833;
-  --c-line-hi:    #343b4a;
-  --c-chalk:      #eef2f8;
-  --c-mist:       #8c97a8;
-  --c-dim:        #828d9e;
+  --c-ink:        #1e1e2f;
+  --c-ink-2:      #2a2a3f;
+  --c-surface:    #2d2d44;
+  --c-surface-hi: #3b3b55;
+  --c-line:       #4c4c6d;
+  --c-line-hi:    #63638c;
+  --c-chalk:      #fdfbf7;
+  --c-mist:       #b8b8cc;
+  --c-dim:        #9999b3;
 
-  --c-klein:      #3a46ff;
-  --c-klein-2:    #6b74ff;
-  --c-acid:       #d6fb50;
+  --c-klein:      #4facfe;
+  --c-klein-2:    #00f2fe;
+  --c-acid:       #ffb347;
   --c-ember:      #ff9a3c;
   --c-coral:      #ff5a4e;
   --c-violet:     #a97bff;
 
-  --c-acid-vif:   #d6fb50;
+  --c-acid-vif:   #ffcc33;
   --c-on-bright:  #0a0b0d;
 
   --c-cat-lavage:  #6b74ff;
@@ -92,24 +92,24 @@
 
 /* ── Jetons : jour ────────────────────────────────────────────── */
 [data-theme="light"] {
-  --c-ink:        #f2f0ea;
-  --c-ink-2:      #eae7df;
+  --c-ink:        #f9f9f9;
+  --c-ink-2:      #f0f0f0;
   --c-surface:    #ffffff;
-  --c-surface-hi: #f7f5f0;
-  --c-line:       #ddd8cc;
-  --c-line-hi:    #c3bcab;
-  --c-chalk:      #14161a;
-  --c-mist:       #5c6472;
-  --c-dim:        #5f6675;
+  --c-surface-hi: #fafafa;
+  --c-line:       #e0e0e0;
+  --c-line-hi:    #cccccc;
+  --c-chalk:      #333333;
+  --c-mist:       #666666;
+  --c-dim:        #888888;
 
-  --c-klein:      #2b35d8;
-  --c-klein-2:    #4954ff;
-  --c-acid:       #5a6b00;
+  --c-klein:      #3282b8;
+  --c-klein-2:    #0f4c75;
+  --c-acid:       #fca311;
   --c-ember:      #a85800;
   --c-coral:      #d63a2c;
   --c-violet:     #7146d4;
 
-  --c-acid-vif:   #c3e600;
+  --c-acid-vif:   #ffb703;
   --c-on-bright:  #0a0b0d;
 
   --c-cat-lavage:  #2b35d8;

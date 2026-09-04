@@ -174,7 +174,7 @@ select pg_temp.expect_eq(
   public.nuit_reservable(
     ('2026-06-10 02:00'::timestamp at time zone 'Africa/Casablanca'),
     ('2026-06-10 01:00'::timestamp at time zone 'Africa/Casablanca')),
-  false, 'réservé à 1 h du matin pour 2 h : refusé, minuit est passé');
+  true, 'réservé à 1 h du matin pour 2 h : maintenant autorisé');
 select pg_temp.expect_eq(
   public.nuit_reservable(
     ('2026-06-10 02:00'::timestamp at time zone 'Africa/Casablanca'),
