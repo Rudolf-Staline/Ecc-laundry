@@ -1,0 +1,17 @@
+{
+  "name": "Tambour — Buanderie Centrale Casablanca",
+  "short_name": "Tambour",
+  "description": "Réservez une machine de la buanderie, suivez les cycles en direct.",
+  "start_url": "/tableau",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#08090b",
+  "theme_color": "#08090b",
+  "lang": "fr",
+  "categories": ["utilities", "productivity"],
+  "icons": [
+    { "src": "/icone.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icone-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
