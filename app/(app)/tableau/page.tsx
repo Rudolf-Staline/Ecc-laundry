@@ -162,6 +162,10 @@ export default async function PageTableau() {
                   <p className="text-sm text-chalk font-medium truncate">{r.machine_name}</p>
                   <p className="text-xs text-mist mt-0.5">
                     {fmtDay(r.starts_at)} · {fmtTime(r.starts_at)} → {fmtTime(r.ends_at)}
+                    {r.duration_minutes > 60 && (
+                      <span className="text-dim"> · {r.duration_minutes / 60} h</span>
+                    )}
+                    {r.is_night && <span className="text-klein-2"> · nuit, hors quota</span>}
                   </p>
                 </div>
                 <span className="text-[11px] font-mono text-dim tabular">

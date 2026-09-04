@@ -47,9 +47,10 @@ export default async function Accueil() {
               </h1>
 
               <p className="text-mist text-base sm:text-lg leading-relaxed mt-7 max-w-lg">
-                Le planning de la buanderie, en direct. Vous réservez votre créneau,
-                vous pointez sur la machine, vous récupérez votre linge à l&apos;heure.
-                <span className="text-chalk"> Quatre créneaux par semaine</span>, pour
+                Le planning de la buanderie, en direct. Vous choisissez votre créneau —
+                une heure ou deux — vous pointez sur la machine, vous récupérez votre
+                linge à l&apos;heure.
+                <span className="text-chalk"> Quatre réservations par semaine</span>, pour
                 que tout le monde en ait.
               </p>
 
@@ -119,7 +120,9 @@ export default async function Accueil() {
                   "RÉSERVER EN 2 CLICS",
                   "POINTAGE PAR QR CODE",
                   "FILE D'ATTENTE AUTOMATIQUE",
-                  "4 CRÉNEAUX / SEMAINE",
+                  "4 RÉSERVATIONS / SEMAINE",
+                  "CRÉNEAUX D'1 H OU 2 H",
+                  "LA NUIT HORS QUOTA",
                   "SUIVI DES CYCLES EN DIRECT",
                   "SIGNALEMENT DE PANNE",
                   "EXPORT AGENDA",
@@ -235,16 +238,18 @@ export default async function Accueil() {
               </p>
               <p className="text-mist leading-relaxed mt-4">
                 Annuler à l&apos;avance ne coûte rien et rend le créneau à quelqu&apos;un
-                d&apos;autre. Ne pas venir, en revanche, se paie.
+                d&apos;autre. Ne pas venir, en revanche, se paie. Et si vos quatre
+                réservations sont épuisées, la tranche de <span className="text-chalk">00 h
+                à 06 h</span> reste ouverte — à condition de la poser la veille.
               </p>
             </div>
 
             <dl className="grid grid-cols-2 gap-3">
               {[
                 { k: "4", v: "réservations par semaine" },
-                { k: "2", v: "créneaux à venir en même temps" },
-                { k: "15", v: "minutes pour pointer" },
-                { k: "14", v: "jours d'horizon" },
+                { k: "1–2 h", v: "au choix, par créneau" },
+                { k: "24 h", v: "d'horizon glissant" },
+                { k: "0–6 h", v: "la nuit, hors quota" },
               ].map((s) => (
                 <div key={s.v} className="panel corners p-5">
                   <dt className="display text-4xl text-klein tabular">{s.k}</dt>

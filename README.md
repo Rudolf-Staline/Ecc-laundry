@@ -4,9 +4,9 @@
 
 **La buanderie de l'École Centrale Casablanca.**
 
-Réserver une machine, pointer sur place, récupérer son linge à l'heure.
-Quatre créneaux par semaine et par étudiant — vérifiés par la base de données,
-pas par le navigateur.
+Réserver une machine pour une heure ou deux, pointer sur place, récupérer son
+linge à l'heure. Quatre réservations par semaine et par étudiant — vérifiées
+par la base de données, pas par le navigateur.
 
 </div>
 
@@ -17,7 +17,10 @@ pas par le navigateur.
 | | |
 |---|---|
 | **Accès centralien** | Seules les adresses `prenom.nom@centrale-casablanca.ma` créent un compte. Contrôle appliqué par un trigger sur `auth.users` : impossible à contourner depuis le client. Connexion par code à six chiffres, sans mot de passe. |
+| **Créneaux d'1 h ou 2 h** | L'étudiant choisit la longueur de son créneau ; une réservation compte pour une, quelle que soit sa durée. La grille est ouverte 24 h/24. |
 | **Quota de 4 par semaine** | Compté sur la semaine ISO en heure de Casablanca. Modifiable par l'admin depuis l'interface, sans redéploiement. Une annulation anticipée ne consomme rien ; une absence, si. |
+| **Horizon de 24 h glissantes** | Un créneau devient réservable 24 h avant son début. Personne ne bloque la semaine entière le lundi matin. |
+| **La nuit, hors quota** | Les créneaux de 00 h à 06 h ne se décomptent pas : c'est la soupape de ceux qui ont épuisé leurs quatre réservations. En contrepartie ils se réservent **la veille, avant minuit** — on ne rafle pas la nuit à 1 h du matin. |
 | **Planning en direct** | Grille machines × créneaux, mise à jour par Supabase Realtime. Un créneau pris disparaît de l'écran des autres dans la seconde. |
 | **Zéro double réservation** | Contrainte d'exclusion GiST sur `(machine, intervalle)`. Deux clics simultanés sur le même créneau : un seul passe, garanti par le moteur, pas par une vérification applicative. |
 | **Pointage par QR** | Une étiquette par machine. L'appareil photo du téléphone suffit — aucune application à installer. Sans pointage dans le quart d'heure, le créneau repart au pot commun. |
@@ -132,9 +135,13 @@ select public.promote_admin('prenom.nom@centrale-casablanca.ma');
 
 ### 7. Renseigner le parc
 
-*Admin → Buanderies* pour créer les salles (horaires, durée des créneaux), puis
-*Admin → Machines*. Enfin *Imprimer les QR codes* : une étiquette par machine,
-à coller sur le hublot.
+*Admin → Buanderies* pour créer les salles (horaires, pas de la grille, créneau
+le plus long), puis *Admin → Machines*. Enfin *Imprimer les QR codes* : une
+étiquette par machine, à coller sur le hublot.
+
+Les buanderies sont ouvertes en continu par défaut (`00:00` → `24:00`), ce qui
+rend la tranche de nuit disponible. Vous pouvez les restreindre : la règle des
+horaires est alors appliquée comme les autres.
 
 Les migrations installent deux buanderies de démonstration avec six machines
 chacune — supprimez-les ou renommez-les.
@@ -152,9 +159,11 @@ npm run db:test    # rejoue les migrations + la suite de tests métier
 ```
 
 `npm run db:test` a besoin d'un PostgreSQL local (≥ 14) avec `btree_gist`. Il
-crée une base jetable, applique les cinq migrations et vérifie que le quota, le
-domaine e-mail, les horaires, l'anti-collision, la file d'attente et le
-cloisonnement des droits se comportent comme prévu.
+crée une base jetable, applique les cinq migrations et passe **43 vérifications** :
+domaine e-mail, longueur des créneaux, quota, horizon glissant, règle des
+créneaux de nuit, anti-collision, file d'attente, absences et cloisonnement des
+droits. Les créneaux visés sont calculés en décalage de `now()` : la suite rend
+le même verdict à 3 h du matin qu'à midi.
 
 ### Structure
 

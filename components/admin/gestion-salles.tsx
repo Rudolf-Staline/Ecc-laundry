@@ -12,12 +12,13 @@ type Brouillon = {
   id?: string;
   name: string; building: string; description: string;
   opens_at: string; closes_at: string; slot_minutes: string;
+  max_blocks: string;
   is_active: boolean; position: string;
 };
 
 const VIERGE: Brouillon = {
   name: "", building: "", description: "",
-  opens_at: "07:00", closes_at: "23:00", slot_minutes: "60",
+  opens_at: "00:00", closes_at: "24:00", slot_minutes: "60", max_blocks: "2",
   is_active: true, position: "1",
 };
 
@@ -54,6 +55,7 @@ export function GestionSalles({
       opens_at: b.opens_at,
       closes_at: b.closes_at,
       slot_minutes: Number(b.slot_minutes),
+      max_blocks: Number(b.max_blocks) || 1,
       is_active: b.is_active,
       position: Number(b.position) || 0,
     };
@@ -108,7 +110,11 @@ export function GestionSalles({
               </div>
               <p className="text-[11px] font-mono text-dim mt-1.5">
                 {s.building ? `${s.building} · ` : ""}
-                {s.opens_at.slice(0, 5)}–{s.closes_at.slice(0, 5)} · créneaux de {s.slot_minutes} min
+                {s.closes_at.startsWith("24") && s.opens_at.startsWith("00")
+                  ? "en continu"
+                  : `${s.opens_at.slice(0, 5)}–${s.closes_at.slice(0, 5)}`}
+                {` · créneaux de ${s.slot_minutes} min`}
+                {s.max_blocks > 1 && `, jusqu'à ${(s.slot_minutes * s.max_blocks) / 60} h`}
                 {` · ${compte(s.id)} machine${compte(s.id) > 1 ? "s" : ""}`}
               </p>
               {s.description && <p className="text-xs text-mist mt-1.5">{s.description}</p>}
@@ -119,7 +125,8 @@ export function GestionSalles({
               onClick={() => setEdition({
                 id: s.id, name: s.name, building: s.building ?? "", description: s.description ?? "",
                 opens_at: s.opens_at.slice(0, 5), closes_at: s.closes_at.slice(0, 5),
-                slot_minutes: s.slot_minutes.toString(), is_active: s.is_active,
+                slot_minutes: s.slot_minutes.toString(),
+                max_blocks: (s.max_blocks ?? 2).toString(), is_active: s.is_active,
                 position: s.position.toString(),
               })}
             >
@@ -182,17 +189,26 @@ export function GestionSalles({
                 name="fermeture" etiquette="Fermeture" type="time" value={edition.closes_at}
                 onChange={(e) => setEdition({ ...edition, closes_at: e.target.value })}
               />
-              <div className="sm:col-span-2">
-                <Selecteur
-                  etiquette="Durée d'un créneau"
-                  value={edition.slot_minutes}
-                  onChange={(e) => setEdition({ ...edition, slot_minutes: e.target.value })}
-                >
-                  {[30, 45, 60, 90, 120].map((v) => (
-                    <option key={v} value={v}>{v} minutes</option>
-                  ))}
-                </Selecteur>
-              </div>
+              <Selecteur
+                etiquette="Pas de la grille"
+                value={edition.slot_minutes}
+                onChange={(e) => setEdition({ ...edition, slot_minutes: e.target.value })}
+              >
+                {[30, 45, 60, 90, 120].map((v) => (
+                  <option key={v} value={v}>{v} minutes</option>
+                ))}
+              </Selecteur>
+              <Selecteur
+                etiquette="Créneau le plus long"
+                value={edition.max_blocks}
+                onChange={(e) => setEdition({ ...edition, max_blocks: e.target.value })}
+              >
+                {[1, 2, 3, 4].map((v) => (
+                  <option key={v} value={v}>
+                    {v} bloc{v > 1 ? "s" : ""} — {(Number(edition.slot_minutes) * v) / 60} h
+                  </option>
+                ))}
+              </Selecteur>
               <div className="sm:col-span-2">
                 <Champ
                   name="description" etiquette="Description" value={edition.description}

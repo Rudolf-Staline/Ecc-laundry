@@ -79,9 +79,16 @@ create table if not exists public.rooms (
   name          text        not null,
   building      text,
   description   text,
-  opens_at      time        not null default '07:00',
-  closes_at     time        not null default '23:00',
+  -- Ouverture en continu par défaut : les créneaux de nuit (00 h–06 h)
+  -- servent de soupape à ceux qui ont épuisé leur quota. '24:00' est une
+  -- heure valide en PostgreSQL et désigne minuit du lendemain.
+  opens_at      time        not null default '00:00',
+  closes_at     time        not null default '24:00',
+  -- Pas de la grille horaire. La durée réservée en est un multiple.
   slot_minutes  int         not null default 60 check (slot_minutes in (30, 45, 60, 90, 120)),
+  -- Nombre maximum de blocs consécutifs qu'un étudiant peut prendre d'un coup :
+  -- 2 blocs de 60 min = le créneau de deux heures.
+  max_blocks    int         not null default 2 check (max_blocks between 1 and 8),
   is_active     boolean     not null default true,
   position      int         not null default 0,
   created_at    timestamptz not null default now(),
@@ -89,6 +96,12 @@ create table if not exists public.rooms (
   constraint rooms_hours_valid check (closes_at > opens_at)
 );
 create unique index if not exists rooms_name_key on public.rooms (lower(name));
+
+-- Rattrapage pour une base créée avant l'introduction des créneaux de 2 h.
+alter table public.rooms add column if not exists max_blocks int not null default 2;
+do $$ begin
+  alter table public.rooms add constraint rooms_max_blocks_valid check (max_blocks between 1 and 8);
+exception when duplicate_object then null; end $$;
 
 -- ── Machines ────────────────────────────────────────────────────────────────
 create table if not exists public.machines (

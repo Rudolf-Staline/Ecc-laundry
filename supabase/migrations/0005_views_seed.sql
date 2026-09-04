@@ -22,7 +22,9 @@ select
   m.name        as machine_name,
   p.first_name  as owner_first_name,
   left(p.last_name, 1) || '.' as owner_last_initial,
-  (b.user_id = auth.uid()) as is_mine
+  (b.user_id = auth.uid()) as is_mine,
+  public.est_creneau_nuit(b.starts_at) as is_night,
+  (extract(epoch from (b.ends_at - b.starts_at)) / 60)::int as duration_minutes
 from public.bookings b
 join public.machines m on m.id = b.machine_id
 join public.profiles p on p.id = b.user_id
@@ -140,8 +142,12 @@ insert into public.settings (key, value, label, description, kind, min_value, ma
    'Nombre maximum de créneaux qu''un étudiant peut poser sur une semaine (lundi → dimanche).', 'number', 1, 21, 10),
   ('max_active_bookings',      to_jsonb('2'::text),   'Réservations à venir simultanées',
    'Empêche de bloquer toute la semaine d''un coup.', 'number', 1, 10, 20),
-  ('booking_horizon_days',     to_jsonb('14'::text),  'Horizon de réservation (jours)',
-   'À combien de jours à l''avance la grille s''ouvre.', 'number', 1, 60, 30),
+  ('booking_horizon_hours',    to_jsonb('24'::text),  'Horizon de réservation (heures)',
+   'Fenêtre glissante : un créneau devient réservable ce nombre d''heures avant son début.', 'number', 1, 720, 30),
+  ('night_start_hour',         to_jsonb('0'::text),   'Début de la tranche de nuit (heure)',
+   'Les créneaux de cette tranche ne se décomptent pas du quota, mais doivent être réservés la veille avant minuit.', 'number', 0, 23, 31),
+  ('night_end_hour',           to_jsonb('6'::text),   'Fin de la tranche de nuit (heure)',
+   'Heure à laquelle la tranche de nuit se termine (exclue).', 'number', 1, 24, 32),
   ('cancel_deadline_minutes',  to_jsonb('60'::text),  'Annulation gratuite (minutes avant)',
    'Passé ce délai, l''annulation libère la machine mais consomme le quota.', 'number', 0, 1440, 40),
   ('checkin_grace_minutes',    to_jsonb('15'::text),  'Tolérance de pointage (minutes)',
@@ -165,10 +171,10 @@ insert into public.settings (key, value, label, description, kind, min_value, ma
 on conflict (key) do nothing;
 
 -- ── Parc initial (entièrement modifiable depuis la console admin) ───────────
-insert into public.rooms (name, building, description, opens_at, closes_at, slot_minutes, position)
+insert into public.rooms (name, building, description, opens_at, closes_at, slot_minutes, max_blocks, position)
 values
-  ('Buanderie Résidence A', 'Résidence A', 'Rez-de-chaussée, aile est',  '07:00', '23:00', 60, 1),
-  ('Buanderie Résidence B', 'Résidence B', 'Sous-sol, à côté du foyer',  '07:00', '23:00', 60, 2)
+  ('Buanderie Résidence A', 'Résidence A', 'Rez-de-chaussée, aile est',  '00:00', '24:00', 60, 2, 1),
+  ('Buanderie Résidence B', 'Résidence B', 'Sous-sol, à côté du foyer',  '00:00', '24:00', 60, 2, 2)
 on conflict do nothing;
 
 do $$
@@ -192,6 +198,6 @@ end $$;
 
 insert into public.announcements (title, body, level)
 values ('Bienvenue sur Tambour',
-        'Réservez votre machine, pointez avec le QR code affiché dessus, et récupérez votre linge à l''heure. Quatre créneaux par semaine et par étudiant — annulez si vous ne venez pas, quelqu''un en profitera.',
+        'Réservez votre machine pour une heure ou deux, pointez avec le QR code affiché dessus, et récupérez votre linge à l''heure. Quatre réservations par semaine et par étudiant, ouvertes 24 h à l''avance. Les créneaux de 00 h à 06 h ne comptent pas dans le quota — mais ils se réservent la veille, avant minuit. Annulez si vous ne venez pas : quelqu''un en profitera.',
         'info')
 on conflict do nothing;

@@ -158,7 +158,7 @@ revoke execute on function public.touch_updated_at()                  from publi
 grant execute on function public.sweep_maintenance() to service_role;
 grant execute on function public.promote_admin(text) to service_role;
 
-grant execute on function public.book_slot(uuid, timestamptz)                       to authenticated;
+grant execute on function public.book_slot(uuid, timestamptz, int)                  to authenticated;
 grant execute on function public.cancel_booking(uuid)                               to authenticated;
 grant execute on function public.check_in(text)                                     to authenticated;
 grant execute on function public.join_waitlist(uuid, public.machine_kind, timestamptz) to authenticated;
@@ -168,9 +168,10 @@ grant execute on function public.report_machine(uuid, text, text)               
 grant execute on function public.affluence(uuid, int)                               to anon, authenticated;
 grant execute on function public.admin_overview()                                   to authenticated;
 grant execute on function public.set_setting(text, text)                            to authenticated;
-grant execute on function public.promote_admin(text)                                to authenticated;
 grant execute on function public.is_admin()                                         to authenticated;
 grant execute on function public.week_bounds(timestamptz)                           to anon, authenticated;
+grant execute on function public.est_creneau_nuit(timestamptz)                      to anon, authenticated;
+grant execute on function public.nuit_reservable(timestamptz, timestamptz)          to anon, authenticated;
 grant execute on function public.setting_int(text, int)                             to anon, authenticated;
 grant execute on function public.setting_text(text, text)                           to anon, authenticated;
 grant execute on function public.app_tz()                                           to anon, authenticated;

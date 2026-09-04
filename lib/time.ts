@@ -196,3 +196,34 @@ export function daySpan(from: Date, count: number, tz: string = TZ): Date[] {
     return zonedToUtc(p.year, p.month, p.day + i, 0, 0, tz);
   });
 }
+
+/* ── Tranche de nuit ─────────────────────────────────────────────────────── */
+
+/**
+ * Les créneaux de nuit ne se décomptent pas du quota, mais doivent être posés
+ * avant le minuit qui les ouvre. Ces deux fonctions reproduisent exactement
+ * `est_creneau_nuit` et `nuit_reservable` (0002_functions.sql) : la base reste
+ * l'autorité, l'interface se contente de ne pas proposer l'impossible.
+ */
+export function estCreneauNuit(
+  date: Date | string,
+  debut = 0,
+  fin = 6,
+  tz: string = TZ,
+): boolean {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const h = partsIn(d, tz).hour;
+  return h >= debut && h < fin;
+}
+
+export function nuitReservable(
+  debutCreneau: Date | string,
+  maintenant: Date = new Date(),
+  debut = 0,
+  fin = 6,
+  tz: string = TZ,
+): boolean {
+  const d = typeof debutCreneau === "string" ? new Date(debutCreneau) : debutCreneau;
+  if (!estCreneauNuit(d, debut, fin, tz)) return true;
+  return maintenant.getTime() < startOfDay(d, tz).getTime();
+}

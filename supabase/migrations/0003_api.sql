@@ -4,19 +4,27 @@
 -- ════════════════════════════════════════════════════════════════════════════
 
 -- ── Réserver ────────────────────────────────────────────────────────────────
-create or replace function public.book_slot(p_machine_id uuid, p_starts_at timestamptz)
+--  `p_blocs` est la longueur du créneau, exprimée en pas de grille :
+--  1 = une heure, 2 = deux heures (dans la limite de `rooms.max_blocks`).
+drop function if exists public.book_slot(uuid, timestamptz);
+
+create or replace function public.book_slot(
+  p_machine_id uuid,
+  p_starts_at  timestamptz,
+  p_blocs      int default 1)
 returns public.bookings
 language plpgsql security invoker set search_path = public, pg_temp as $$
 declare
   v_uid  uuid := auth.uid();
   v_slot int;
+  v_max  int;
   v_row  public.bookings;
 begin
   if v_uid is null then
     raise exception 'Connexion requise.' using errcode = 'TB007';
   end if;
 
-  select r.slot_minutes into v_slot
+  select r.slot_minutes, r.max_blocks into v_slot, v_max
     from public.machines m
     join public.rooms r on r.id = m.room_id
    where m.id = p_machine_id;
@@ -25,12 +33,23 @@ begin
     raise exception 'Machine introuvable.' using errcode = 'TB002';
   end if;
 
+  if p_blocs is null or p_blocs < 1 or p_blocs > v_max then
+    raise exception
+      'Longueur de créneau invalide : entre 1 et % bloc(s) de % min.', v_max, v_slot
+      using errcode = 'TB011';
+  end if;
+
   begin
     insert into public.bookings (machine_id, user_id, starts_at, ends_at)
-    values (p_machine_id, v_uid, p_starts_at, p_starts_at + make_interval(mins => v_slot))
+    values (p_machine_id, v_uid, p_starts_at,
+            p_starts_at + make_interval(mins => v_slot * p_blocs))
     returning * into v_row;
   exception when exclusion_violation then
-    raise exception 'Ce créneau vient d''être pris par quelqu''un d''autre.'
+    -- Sur un créneau de deux heures, le chevauchement peut porter sur la
+    -- seconde heure seulement : le message doit rester compréhensible.
+    raise exception
+      'Ce créneau vient d''être pris%.',
+      case when p_blocs > 1 then ' — en tout ou en partie' else '' end
       using errcode = '23P01';
   end;
 
@@ -209,16 +228,23 @@ end $$;
 
 -- ── Où en suis-je cette semaine ? ───────────────────────────────────────────
 create or replace function public.my_week_status(p_ref timestamptz default now())
-returns table (week_start timestamptz, week_end timestamptz, used int, quota int, remaining int)
+returns table (
+  week_start timestamptz, week_end timestamptz,
+  used int, quota int, remaining int, night_used int)
 language plpgsql stable security invoker set search_path = public, pg_temp as $$
 declare
   v_b     record;
   v_quota int := public.setting_int('max_bookings_per_week', 4);
   v_used  int;
+  v_nuit  int;
 begin
   select * into v_b from public.week_bounds(p_ref);
 
-  select count(*) into v_used
+  -- Une réservation compte pour une, qu'elle dure une heure ou deux.
+  select
+    count(*) filter (where not public.est_creneau_nuit(b.starts_at)),
+    count(*) filter (where     public.est_creneau_nuit(b.starts_at))
+  into v_used, v_nuit
     from public.bookings b
    where b.user_id = auth.uid()
      and b.status in ('booked', 'checked_in', 'completed', 'no_show', 'cancelled_late')
@@ -230,6 +256,7 @@ begin
   used       := v_used;
   quota      := v_quota;
   remaining  := greatest(0, v_quota - v_used);
+  night_used := v_nuit;
   return next;
 end $$;
 

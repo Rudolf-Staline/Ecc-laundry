@@ -12,6 +12,8 @@
 --    TB008  créneau non aligné sur la grille
 --    TB009  annulation trop tardive
 --    TB010  adresse e-mail non centralienne
+--    TB011  durée de créneau non autorisée
+--    TB012  créneau de nuit : il fallait le réserver avant minuit
 --    23P01  créneau déjà pris (contrainte d'exclusion native)
 -- ════════════════════════════════════════════════════════════════════════════
 
@@ -44,6 +46,30 @@ begin
   week_end   := (v_local + interval '7 days') at time zone v_tz;
   return next;
 end $$;
+
+-- ── Tranche de nuit ─────────────────────────────────────────────────────────
+--  Les créneaux commençant entre 00 h et 06 h (heure de Casablanca) sont hors
+--  quota : ils servent de soupape aux étudiants qui ont épuisé leurs quatre
+--  réservations. En contrepartie, ils doivent être posés la veille (cf.
+--  enforce_booking_rules) — on ne se réveille pas à 1 h pour en attraper un.
+create or replace function public.est_creneau_nuit(p_ts timestamptz)
+returns boolean language sql stable security definer set search_path = public, pg_temp as $$
+  select extract(hour from (p_ts at time zone public.app_tz()))::int
+           >= public.setting_int('night_start_hour', 0)
+     and extract(hour from (p_ts at time zone public.app_tz()))::int
+           <  public.setting_int('night_end_hour', 6);
+$$;
+
+-- Un créneau de nuit doit être posé avant le minuit qui l'ouvre. La décision
+-- est isolée ici, avec l'instant en paramètre : elle devient vérifiable sans
+-- dépendre de l'heure qu'il est quand les tests tournent.
+create or replace function public.nuit_reservable(
+  p_starts_at timestamptz, p_now timestamptz default now())
+returns boolean language sql stable security definer set search_path = public, pg_temp as $$
+  select not public.est_creneau_nuit(p_starts_at)
+      or p_now < ((((p_starts_at at time zone public.app_tz())::date)::timestamp)
+                    at time zone public.app_tz());
+$$;
 
 -- ── Le demandeur est-il administrateur ? (utilisé par les politiques RLS) ───
 create or replace function public.is_admin()
@@ -132,12 +158,18 @@ declare
   v_profile     public.profiles%rowtype;
   v_max_week    int  := public.setting_int('max_bookings_per_week', 4);
   v_max_active  int  := public.setting_int('max_active_bookings', 2);
-  v_horizon     int  := public.setting_int('booking_horizon_days', 14);
+  v_horizon_h   int  := public.setting_int('booking_horizon_hours', 24);
+  v_nuit_debut  int  := public.setting_int('night_start_hour', 0);
+  v_nuit_fin    int  := public.setting_int('night_end_hour', 6);
   v_local_start timestamp;
   v_day         date;
   v_open        timestamp;
   v_close       timestamp;
+  v_ouvert_24   boolean;
+  v_duree_min   int;
+  v_blocs       int;
   v_offset_min  numeric;
+  v_est_nuit    boolean;
   v_used        int;
   v_active      int;
   v_bounds      record;
@@ -169,32 +201,67 @@ begin
     raise exception 'Buanderie fermée.' using errcode = 'TB002';
   end if;
 
-  -- Durée imposée par la buanderie : un créneau, pas plus, pas moins.
-  if new.ends_at <> new.starts_at + make_interval(mins => v_room.slot_minutes) then
-    new.ends_at := new.starts_at + make_interval(mins => v_room.slot_minutes);
+  -- ── Durée : un ou plusieurs blocs de la grille ────────────────────────────
+  --  L'étudiant choisit la longueur de son créneau (1 h ou 2 h par défaut) ;
+  --  la durée doit tomber juste sur un multiple du pas.
+  v_duree_min := (extract(epoch from (new.ends_at - new.starts_at)) / 60)::int;
+
+  if v_duree_min % v_room.slot_minutes <> 0 then
+    raise exception
+      'Durée de % min : elle doit être un multiple de % min.', v_duree_min, v_room.slot_minutes
+      using errcode = 'TB011';
+  end if;
+
+  v_blocs := v_duree_min / v_room.slot_minutes;
+  if v_blocs < 1 or v_blocs > v_room.max_blocks then
+    raise exception
+      'Un créneau va de % à % minutes ; % demandées.',
+      v_room.slot_minutes, v_room.slot_minutes * v_room.max_blocks, v_duree_min
+      using errcode = 'TB011';
   end if;
 
   if new.starts_at < now() - interval '2 minutes' then
     raise exception 'Ce créneau est déjà passé.' using errcode = 'TB004';
   end if;
 
-  if new.starts_at > now() + make_interval(days => v_horizon) then
-    raise exception 'Les réservations ouvrent % jours à l''avance.', v_horizon
+  -- ── Horizon glissant ──────────────────────────────────────────────────────
+  if new.starts_at > now() + make_interval(hours => v_horizon_h) then
+    raise exception
+      'Les réservations s''ouvrent % h à l''avance : ce créneau n''est pas encore disponible.',
+      v_horizon_h
       using errcode = 'TB005';
   end if;
 
-  -- Horaires et alignement, calculés en heure locale de Casablanca.
   v_local_start := new.starts_at at time zone v_tz;
   v_day         := v_local_start::date;
-  v_open        := v_day + v_room.opens_at;
-  v_close       := v_day + v_room.closes_at;
+  v_est_nuit    := extract(hour from v_local_start)::int >= v_nuit_debut
+               and extract(hour from v_local_start)::int <  v_nuit_fin;
 
-  if v_local_start < v_open
-     or (v_local_start + make_interval(mins => v_room.slot_minutes)) > v_close then
+  -- ── Créneaux de nuit : à poser la veille ─────────────────────────────────
+  --  Sans cette règle, la tranche de nuit serait raflée dans la nuit même par
+  --  les insomniaques, au lieu de dépanner ceux qui ont planifié.
+  if v_est_nuit and not public.nuit_reservable(new.starts_at, now()) then
     raise exception
-      'La buanderie « % » est ouverte de % à %.',
-      v_room.name, to_char(v_room.opens_at, 'HH24:MI'), to_char(v_room.closes_at, 'HH24:MI')
-      using errcode = 'TB003';
+      'Un créneau de nuit (%h–%h) se réserve la veille, avant minuit.',
+      v_nuit_debut, v_nuit_fin
+      using errcode = 'TB012';
+  end if;
+
+  -- ── Horaires d'ouverture ─────────────────────────────────────────────────
+  --  Une buanderie ouverte en continu n'a pas de fenêtre à vérifier — et son
+  --  dernier créneau de la journée a le droit de franchir minuit.
+  v_ouvert_24 := (v_room.closes_at - v_room.opens_at) >= interval '24 hours';
+  v_open      := v_day + v_room.opens_at;
+
+  if not v_ouvert_24 then
+    v_close := v_day + v_room.closes_at;
+    if v_local_start < v_open
+       or (v_local_start + make_interval(mins => v_duree_min)) > v_close then
+      raise exception
+        'La buanderie « % » est ouverte de % à %.',
+        v_room.name, to_char(v_room.opens_at, 'HH24:MI'), to_char(v_room.closes_at, 'HH24:MI')
+        using errcode = 'TB003';
+    end if;
   end if;
 
   v_offset_min := extract(epoch from (v_local_start - v_open)) / 60;
@@ -204,26 +271,38 @@ begin
   end if;
 
   -- ── Quota hebdomadaire ────────────────────────────────────────────────────
-  -- Les annulations ne consomment rien : libérer un créneau doit rester
-  -- toujours préférable à le laisser mourir. Une absence, en revanche, compte.
-  select * into v_bounds from public.week_bounds(new.starts_at);
+  --  Une réservation compte pour une, qu'elle dure une heure ou deux.
+  --  Les créneaux de nuit en sont exemptés, des deux côtés : ils ne se
+  --  décomptent pas, et ils restent réservables quota épuisé.
+  --  Les annulations ne consomment rien : libérer un créneau doit rester
+  --  toujours préférable à le laisser mourir. Une absence, en revanche, compte.
+  if not v_est_nuit then
+    select * into v_bounds from public.week_bounds(new.starts_at);
 
-  select count(*) into v_used
-  from public.bookings b
-  where b.user_id = new.user_id
-    and b.id <> new.id
-    and b.status in ('booked', 'checked_in', 'completed', 'no_show', 'cancelled_late')
-    and b.starts_at >= v_bounds.week_start
-    and b.starts_at <  v_bounds.week_end;
+    select count(*) into v_used
+    from public.bookings b
+    where b.user_id = new.user_id
+      and b.id <> new.id
+      and b.status in ('booked', 'checked_in', 'completed', 'no_show', 'cancelled_late')
+      and b.starts_at >= v_bounds.week_start
+      and b.starts_at <  v_bounds.week_end
+      and not public.est_creneau_nuit(b.starts_at);
 
-  if v_used >= v_max_week then
-    raise exception
-      'Quota atteint : % réservations pour la semaine du %.',
-      v_max_week, to_char(v_bounds.week_start at time zone v_tz, 'DD/MM')
-      using errcode = 'TB001';
+    if v_used >= v_max_week then
+      raise exception
+        'Quota atteint : % réservations pour la semaine du %.%',
+        v_max_week,
+        to_char(v_bounds.week_start at time zone v_tz, 'DD/MM'),
+        case when v_nuit_fin > v_nuit_debut
+             then format(' Les créneaux de %sh à %sh restent ouverts.', v_nuit_debut, v_nuit_fin)
+             else '' end
+        using errcode = 'TB001';
+    end if;
   end if;
 
   -- ── Réservations à venir simultanées ─────────────────────────────────────
+  --  Cette limite-ci s'applique aussi la nuit : la soupape ne doit pas
+  --  permettre de bloquer six machines d'un coup.
   select count(*) into v_active
   from public.bookings b
   where b.user_id = new.user_id

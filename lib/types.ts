@@ -34,6 +34,8 @@ export type Room = {
   opens_at: string;
   closes_at: string;
   slot_minutes: number;
+  /** Nombre maximum de blocs consécutifs : 2 = créneaux d'une ou deux heures. */
+  max_blocks: number;
   is_active: boolean;
   position: number;
 };
@@ -78,6 +80,8 @@ export type BoardRow = {
   owner_first_name: string;
   owner_last_initial: string;
   is_mine: boolean;
+  is_night: boolean;
+  duration_minutes: number;
 };
 
 export type MachineLive = {
@@ -108,6 +112,8 @@ export type WeekStatus = {
   used: number;
   quota: number;
   remaining: number;
+  /** Créneaux de nuit posés cette semaine — hors quota. */
+  night_used: number;
 };
 
 export type Setting = {
