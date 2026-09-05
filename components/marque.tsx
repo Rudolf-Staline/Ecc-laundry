@@ -1,6 +1,6 @@
 /**
- * Le tambour : hublot, perforations, croisillon d'entraînement.
- * Sert de logo, d'indicateur de cycle et d'attente de chargement.
+ * Le tambour reste le symbole fonctionnel de la laverie : hublot, perforations
+ * et croisillon d'entraînement. Il sert aussi d'indicateur de cycle.
  */
 export function Tambour({
   size = 40,
@@ -19,7 +19,6 @@ export function Tambour({
     : spinning ? "drum-spin"
     : "";
 
-  // Trois couronnes de perforations, décalées pour éviter l'alignement radial.
   const trous: Array<{ x: number; y: number; r: number }> = [];
   const couronnes = [
     { rayon: 25, nombre: 12, taille: 2.6, phase: 0 },
@@ -43,7 +42,6 @@ export function Tambour({
       aria-hidden="true"
       role="presentation"
     >
-      {/* Hublot */}
       <circle cx="40" cy="40" r="37" stroke="currentColor" strokeWidth={strokeWidth} opacity="0.35" />
       <circle cx="40" cy="40" r="32" stroke="currentColor" strokeWidth={strokeWidth} opacity="0.65" />
 
@@ -51,7 +49,6 @@ export function Tambour({
         {trous.map((t, i) => (
           <circle key={i} cx={t.x} cy={t.y} r={t.r} fill="currentColor" opacity={0.5} />
         ))}
-        {/* Croisillon d'entraînement */}
         {[0, 120, 240].map((deg) => (
           <line
             key={deg}
@@ -69,12 +66,26 @@ export function Tambour({
   );
 }
 
+export function LogoECC({ compact = false, className = "" }: { compact?: boolean; className?: string }) {
+  return (
+    <img
+      src="/ecc-logo.svg"
+      alt="École Centrale Casablanca"
+      width={compact ? 132 : 178}
+      height={compact ? 31 : 42}
+      className={`h-auto object-contain ${className}`}
+    />
+  );
+}
+
 export function Logotype({ compact = false }: { compact?: boolean }) {
   return (
     <span className="inline-flex items-center gap-2.5 select-none">
-      <Tambour size={compact ? 22 : 28} spinning="slow" className="text-klein shrink-0" />
-      <span className="display text-chalk leading-none" style={{ fontSize: compact ? 17 : 21 }}>
-        TAMBOUR
+      <span className="brand-drum grid place-items-center shrink-0">
+        <Tambour size={compact ? 20 : 25} spinning="slow" className="text-klein" />
+      </span>
+      <span className="display text-chalk leading-none tracking-[-0.035em]" style={{ fontSize: compact ? 18 : 22 }}>
+        Laundry
       </span>
     </span>
   );
