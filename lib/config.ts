@@ -1,5 +1,5 @@
 /**
- * Tambour doit rester lisible même avant d'être branché : sans clés Supabase,
+ * Laundry doit rester lisible même avant d'être branché : sans clés Supabase,
  * les pages affichent la marche à suivre au lieu de planter.
  */
 export const supabaseConfigure = Boolean(
@@ -36,5 +36,5 @@ export const urlSite = premiereUrlValide(
   "http://localhost:3000",
 );
 
-export const NOM_APP = "Tambour";
+export const NOM_APP = "Laundry";
 export const NOM_ECOLE = "École Centrale Casablanca";
