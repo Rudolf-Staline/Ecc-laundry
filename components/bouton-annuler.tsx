@@ -48,7 +48,7 @@ export function BoutonAnnuler({
     <button
       onClick={annuler}
       disabled={enCours}
-      className={`text-[11px] font-mono uppercase tracking-[0.1em] px-3 py-1.5 border rounded-[3px]
+      className={`text-[11px] font-medium px-3 py-1.5 border rounded-[8px]
         transition-all disabled:opacity-50 ${
           arme
             ? "border-coral bg-coral text-white"

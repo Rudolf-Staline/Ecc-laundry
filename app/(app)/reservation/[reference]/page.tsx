@@ -80,7 +80,7 @@ export default async function PageReservation({
     <div className="max-w-3xl space-y-6">
       <Link
         href="/historique"
-        className="inline-flex items-center gap-2 text-[11px] font-mono uppercase
+        className="inline-flex items-center gap-2 text-[11px] font-medium
           tracking-[0.12em] text-dim hover:text-chalk transition-colors"
       >
         ← Historique

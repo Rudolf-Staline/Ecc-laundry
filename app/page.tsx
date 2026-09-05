@@ -24,7 +24,7 @@ export default async function Accueil() {
             <Link
               href="/connexion"
               className="inline-flex items-center border border-klein bg-klein text-white
-                rounded-[3px] px-4 py-2 text-[11px] font-mono uppercase tracking-[0.14em]
+                rounded-[8px] px-4 py-2 text-[11px] font-medium
                 hover:bg-klein-2 transition-colors"
             >
               Entrer
@@ -57,9 +57,9 @@ export default async function Accueil() {
               <div className="flex flex-wrap items-center gap-3 mt-9">
                 <Link
                   href="/connexion"
-                  className="group inline-flex items-center gap-2.5 bg-acid-vif text-on-bright border border-acid-vif
-                    rounded-[3px] px-6 py-3.5 text-[13px] font-mono uppercase tracking-[0.12em]
-                    font-semibold hover:brightness-110 transition-all active:scale-[0.98]"
+                  className="group inline-flex items-center gap-2.5 bg-encre text-ink
+                    rounded-[8px] px-6 py-3 text-[14px] font-semibold
+                    hover:opacity-88 transition-opacity active:scale-[0.99]"
                 >
                   Réserver une machine
                   <span className="transition-transform group-hover:translate-x-1">→</span>
@@ -67,7 +67,7 @@ export default async function Accueil() {
                 <Link
                   href="#parc"
                   className="inline-flex items-center gap-2 border border-line-hi text-mist
-                    rounded-[3px] px-5 py-3.5 text-[13px] font-mono uppercase tracking-[0.12em]
+                    rounded-[8px] px-5 py-3.5 text-[13px] font-medium
                     hover:text-chalk hover:border-mist transition-colors"
                 >
                   Voir le parc

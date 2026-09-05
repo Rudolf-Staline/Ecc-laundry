@@ -102,7 +102,7 @@ export function Preferences({ profil, urlBase }: { profil: Profile; urlBase: str
         </p>
 
         <div className="mt-4 flex gap-2">
-          <code className="flex-1 min-w-0 bg-ink-2 border border-line rounded-[3px] px-3 py-2.5
+          <code className="flex-1 min-w-0 bg-ink-2 border border-line rounded-[8px] px-3 py-2.5
             text-[11px] font-mono text-mist truncate" title={lienAgenda}>
             {lienAgenda}
           </code>

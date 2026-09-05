@@ -303,7 +303,7 @@ export function Planning({
                 role="tab"
                 aria-selected={b.id === buanderieId}
                 onClick={() => setBuanderieId(b.id)}
-                className={`px-3.5 py-2 text-[11px] font-mono uppercase tracking-[0.12em] border rounded-[3px]
+                className={`px-3.5 py-2 text-[11px] font-medium border rounded-[8px]
                   transition-colors ${
                     b.id === buanderieId
                       ? "border-klein bg-klein/12 text-chalk"
@@ -321,7 +321,7 @@ export function Planning({
           <fieldset className="flex items-center gap-2">
             <legend className="sr-only">Durée du créneau</legend>
             <span className="eyebrow">Durée</span>
-            <div className="flex border border-line rounded-[3px] overflow-hidden">
+            <div className="flex border border-line rounded-[8px] overflow-hidden">
               {dureesPossibles.map((d) => (
                 <button
                   key={d}
@@ -357,7 +357,7 @@ export function Planning({
                 role="tab"
                 aria-selected={actif}
                 onClick={() => { setJourActif(k); grille.current?.scrollTo({ left: 0 }); }}
-                className={`shrink-0 w-[76px] py-2.5 border rounded-[3px] transition-all text-center
+                className={`shrink-0 w-[76px] py-2.5 border rounded-[8px] transition-all text-center
                   ${actif ? "border-klein bg-klein/12" : "border-line hover:border-line-hi bg-surface/40"}`}
               >
                 <span className={`block text-[10px] font-mono tracking-[0.1em]

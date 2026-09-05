@@ -77,7 +77,7 @@ export function GestionAnnonces({ annonces }: { annonces: Announcement[] }) {
               id="corps" rows={3} maxLength={2000} value={corps}
               onChange={(e) => setCorps(e.target.value)}
               placeholder="Les buanderies seront fermées de 8 h à 12 h. Les créneaux concernés ont été annulés."
-              className="w-full bg-ink-2 border border-line rounded-[3px] px-3.5 py-3 text-sm text-chalk
+              className="w-full bg-ink-2 border border-line rounded-[8px] px-3.5 py-3 text-sm text-chalk
                 placeholder:text-dim outline-none focus:border-klein transition-colors resize-none"
             />
           </div>

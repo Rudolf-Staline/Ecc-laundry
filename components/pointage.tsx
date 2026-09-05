@@ -152,10 +152,10 @@ export function Pointage({ aPointer }: { aPointer: BoardRow[] }) {
           <p className="eyebrow mb-3">Scanner</p>
           {scanne ? (
             <div className="space-y-3">
-              <div className="relative rounded-[3px] overflow-hidden border border-klein/40 bg-ink-2">
+              <div className="relative rounded-[8px] overflow-hidden border border-klein/40 bg-ink-2">
                 <video ref={video} playsInline muted className="w-full aspect-video object-cover" />
                 <div className="absolute inset-0 grid place-items-center pointer-events-none">
-                  <div className="w-40 h-40 border-2 border-acid/70 rounded-[3px]" />
+                  <div className="w-40 h-40 border-2 border-acid/70 rounded-[8px]" />
                 </div>
               </div>
               <Bouton

@@ -70,7 +70,7 @@ export function TableauParc({
                 key={k}
                 onClick={() => setFiltre(k)}
                 aria-pressed={filtre === k}
-                className={`px-3 py-1.5 text-[11px] font-mono uppercase tracking-[0.1em] border rounded-[3px]
+                className={`px-3 py-1.5 text-[11px] font-medium border rounded-[8px]
                   transition-colors ${
                     filtre === k
                       ? "border-klein bg-klein/12 text-chalk"
@@ -197,7 +197,7 @@ function CarteMachine({
       <button
         onClick={onSignaler}
         disabled={signalee}
-        className="mt-3 text-[10px] font-mono uppercase tracking-[0.1em] text-dim
+        className="mt-3 text-[10px] font-medium text-dim
           hover:text-coral transition-colors disabled:opacity-50 disabled:hover:text-dim"
       >
         {signalee ? "✓ déjà signalée" : "Signaler un problème"}
@@ -269,7 +269,7 @@ function DialogueSignalement({
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Ce que vous avez constaté, et à quel moment."
-              className="w-full bg-ink-2 border border-line rounded-[3px] px-3.5 py-3 text-sm
+              className="w-full bg-ink-2 border border-line rounded-[8px] px-3.5 py-3 text-sm
                 text-chalk placeholder:text-dim outline-none focus:border-klein transition-colors resize-none"
             />
           </div>

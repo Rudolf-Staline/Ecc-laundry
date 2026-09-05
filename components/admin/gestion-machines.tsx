@@ -184,7 +184,7 @@ export function GestionMachines({
                     aria-label={`Statut de ${m.name}`}
                     value={m.status}
                     onChange={(e) => changerStatut(m, e.target.value as MachineStatus)}
-                    className="bg-ink-2 border border-line rounded-[3px] px-2 py-1.5 text-[11px]
+                    className="bg-ink-2 border border-line rounded-[8px] px-2 py-1.5 text-[11px]
                       font-mono text-mist outline-none focus:border-klein"
                   >
                     <option value="operational">en service</option>

@@ -33,6 +33,7 @@
   --color-coral-fond: var(--c-coral-fond);
   --color-klein-fond: var(--c-klein-fond);
   --color-ember-fond: var(--c-ember-fond);
+  --color-violet-fond: var(--c-violet-fond);
 
   --color-acid-vif:   var(--c-acid-vif);
   --color-on-bright:  var(--c-on-bright);
@@ -83,6 +84,7 @@
   --c-coral-fond:  #fdece7;
   --c-klein-fond:  #eaeafb;
   --c-ember-fond:  #fbeee4;
+  --c-violet-fond: #f1eafd;
 
   --c-acid-vif:   #8a5a00;
   --c-on-bright:  #ffffff;
@@ -129,6 +131,7 @@
   --c-coral-fond:  rgba(239, 115, 100, 0.14);
   --c-klein-fond:  rgba(139, 139, 240, 0.16);
   --c-ember-fond:  rgba(224, 138, 92, 0.14);
+  --c-violet-fond: rgba(167, 139, 250, 0.16);
 
   --c-acid-vif:   #e0a94a;
   --c-on-bright:  #0d0f12;

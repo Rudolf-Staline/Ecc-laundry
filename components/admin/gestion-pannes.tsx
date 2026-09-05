@@ -50,7 +50,7 @@ export function GestionPannes({ signalements }: { signalements: LignePanne[] }) 
             key={f}
             onClick={() => setFiltre(f)}
             aria-pressed={filtre === f}
-            className={`px-3.5 py-2 text-[11px] font-mono uppercase tracking-[0.12em] border rounded-[3px]
+            className={`px-3.5 py-2 text-[11px] font-medium border rounded-[8px]
               transition-colors ${
                 filtre === f ? "border-klein bg-klein/12 text-chalk" : "border-line text-dim hover:text-mist"
               }`}

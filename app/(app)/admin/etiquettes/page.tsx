@@ -74,7 +74,7 @@ export default async function PageEtiquettes() {
           {etiquettes.map((m) => (
             <article
               key={m.machine_id}
-              className="bg-white text-black rounded-[3px] p-5 flex flex-col items-center
+              className="bg-white text-black rounded-[8px] p-5 flex flex-col items-center
                 text-center break-inside-avoid border border-line"
             >
               <div className="flex items-center gap-2 self-start">
