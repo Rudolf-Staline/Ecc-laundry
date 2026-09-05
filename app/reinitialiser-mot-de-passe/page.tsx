@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LogoECC, Logotype, Tambour } from "@/components/marque";
+import { Logotype, Tambour } from "@/components/marque";
 import { BasculeTheme } from "@/components/theme-bascule";
 import { FormulaireNouveauMotDePasse } from "@/components/formulaire-nouveau-mot-de-passe";
 import { supabaseConfigure } from "@/lib/config";
@@ -18,10 +18,7 @@ export default function PageReinitialiserMotDePasse() {
       <header className="relative z-20">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-8 h-20 flex items-center justify-between gap-5">
           <Logotype />
-          <div className="flex items-center gap-4">
-            <LogoECC compact className="hidden sm:block w-[136px] dark:brightness-[1.7] dark:saturate-0" />
-            <BasculeTheme />
-          </div>
+          <BasculeTheme />
         </div>
       </header>
 
@@ -53,9 +50,6 @@ export default function PageReinitialiserMotDePasse() {
 
         <section className="flex items-center justify-center py-8 lg:py-12 lg:pl-10 xl:pl-16">
           <div className="w-full max-w-[450px] reveal">
-            <div className="lg:hidden mb-8">
-              <LogoECC className="w-[170px] dark:brightness-[1.7] dark:saturate-0" />
-            </div>
             <div className="mb-7">
               <p className="eyebrow text-klein">Accès étudiant</p>
               <h2 className="display text-3xl sm:text-4xl mt-2 text-chalk">Nouveau mot de passe.</h2>
