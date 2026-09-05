@@ -28,7 +28,6 @@ function partsIn(date: Date, tz: string = TZ): Parts {
   for (const p of fmt.formatToParts(date)) {
     if (p.type !== "literal") out[p.type] = Number(p.value);
   }
-  // Intl peut rendre « 24 » pour minuit selon l'environnement.
   if (out.hour === 24) out.hour = 0;
   return out as unknown as Parts;
 }
@@ -38,7 +37,6 @@ function offsetMs(date: Date, tz: string = TZ): number {
   return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - date.getTime();
 }
 
-/** Instant UTC correspondant à une date/heure murale de Casablanca. */
 export function zonedToUtc(
   year: number, month: number, day: number,
   hour = 0, minute = 0, tz: string = TZ,
@@ -51,21 +49,18 @@ export function zonedToUtc(
   return out;
 }
 
-/** Composantes locales de Casablanca pour un instant donné. */
 export function localParts(date: Date, tz: string = TZ): Parts {
   return partsIn(date, tz);
 }
 
-/** Lundi 00:00 (heure de Casablanca) de la semaine contenant `date`. */
 export function startOfWeek(date: Date, tz: string = TZ): Date {
   const p = partsIn(date, tz);
   const midday = new Date(Date.UTC(p.year, p.month - 1, p.day, 12));
-  const dow = (midday.getUTCDay() + 6) % 7; // 0 = lundi
+  const dow = (midday.getUTCDay() + 6) % 7;
   const monday = new Date(midday.getTime() - dow * 86_400_000);
   return zonedToUtc(monday.getUTCFullYear(), monday.getUTCMonth() + 1, monday.getUTCDate(), 0, 0, tz);
 }
 
-/** Minuit local du jour contenant `date`. */
 export function startOfDay(date: Date, tz: string = TZ): Date {
   const p = partsIn(date, tz);
   return zonedToUtc(p.year, p.month, p.day, 0, 0, tz);
@@ -76,7 +71,6 @@ export function addDays(date: Date, n: number): Date {
   return zonedToUtc(p.year, p.month, p.day + n, p.hour, p.minute);
 }
 
-/** Clé stable `AAAA-MM-JJ` en heure locale — sert d'identifiant de colonne. */
 export function dayKey(date: Date, tz: string = TZ): string {
   const p = partsIn(date, tz);
   return `${p.year}-${String(p.month).padStart(2, "0")}-${String(p.day).padStart(2, "0")}`;
@@ -85,7 +79,7 @@ export function dayKey(date: Date, tz: string = TZ): string {
 export function isoDayOfWeek(date: Date, tz: string = TZ): number {
   const p = partsIn(date, tz);
   const d = new Date(Date.UTC(p.year, p.month - 1, p.day, 12));
-  return ((d.getUTCDay() + 6) % 7) + 1; // 1 = lundi … 7 = dimanche
+  return ((d.getUTCDay() + 6) % 7) + 1;
 }
 
 export function isSameDay(a: Date, b: Date, tz: string = TZ): boolean {
@@ -117,7 +111,6 @@ export function fmtDateTime(date: Date | string, tz: string = TZ): string {
   return `${fmtDay(d, tz)} à ${fmtTime(d, tz)}`;
 }
 
-/** « dans 2 h 15 », « il y a 5 min », « maintenant ». */
 export function fmtRelative(target: Date | string, from: Date = new Date()): string {
   const d = typeof target === "string" ? new Date(target) : target;
   const diff = d.getTime() - from.getTime();
@@ -140,7 +133,6 @@ export function fmtRelative(target: Date | string, from: Date = new Date()): str
   return diff > 0 ? `dans ${quantity}` : `il y a ${quantity}`;
 }
 
-/** Compte à rebours « 42:07 » (mm:ss) ou « 1:12:30 » au-delà de l'heure. */
 export function fmtCountdown(ms: number): string {
   const total = Math.max(0, Math.floor(ms / 1000));
   const h = Math.floor(total / 3600);
@@ -155,17 +147,11 @@ export function fmtCountdown(ms: number): string {
 
 export type Slot = { start: Date; end: Date; label: string; key: string };
 
-/** `"07:00:00"` → minutes depuis minuit. */
 export function parseClock(value: string): number {
   const [h, m] = value.split(":").map(Number);
   return h * 60 + (m || 0);
 }
 
-/**
- * Créneaux d'une buanderie pour un jour donné, alignés sur l'heure
- * d'ouverture — exactement la grille que le trigger `enforce_booking_rules`
- * valide côté base.
- */
 export function buildSlots(
   day: Date,
   opensAt: string,
@@ -188,7 +174,6 @@ export function buildSlots(
   return slots;
 }
 
-/** Les `count` jours à partir de `from` (minuit local). */
 export function daySpan(from: Date, count: number, tz: string = TZ): Date[] {
   const base = startOfDay(from, tz);
   return Array.from({ length: count }, (_, i) => {
@@ -200,10 +185,10 @@ export function daySpan(from: Date, count: number, tz: string = TZ): Date[] {
 /* ── Tranche de nuit ─────────────────────────────────────────────────────── */
 
 /**
- * Les créneaux de nuit ne se décomptent pas du quota, mais doivent être posés
- * avant le minuit qui les ouvre. Ces deux fonctions reproduisent exactement
- * `est_creneau_nuit` et `nuit_reservable` (0002_functions.sql) : la base reste
- * l'autorité, l'interface se contente de ne pas proposer l'impossible.
+ * Les créneaux de nuit se décomptent du quota comme les autres. Ils doivent
+ * néanmoins être posés avant le minuit qui les ouvre. Ces deux fonctions
+ * reproduisent `est_creneau_nuit` et `nuit_reservable` côté base : la base
+ * reste l'autorité, l'interface se contente de ne pas proposer l'impossible.
  */
 export function estCreneauNuit(
   date: Date | string,
