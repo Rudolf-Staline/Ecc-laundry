@@ -15,7 +15,6 @@ export default async function Accueil() {
 
   return (
     <div className="relative z-10 min-h-dvh flex flex-col">
-      {/* ── Barre ───────────────────────────────────────────────────────── */}
       <header className="border-b border-line sticky top-0 z-40 bg-surface/85 backdrop-blur-md">
         <div className="mx-auto max-w-[1180px] px-5 sm:px-8 h-16 flex items-center justify-between">
           <Logotype />
@@ -34,7 +33,6 @@ export default async function Accueil() {
       </header>
 
       <main className="flex-1">
-        {/* ── Héro ──────────────────────────────────────────────────────── */}
         <section className="mx-auto max-w-[1180px] px-5 sm:px-8 pt-12 pb-10">
           <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-10 items-center">
             <div className="reveal-stagger">
@@ -74,7 +72,6 @@ export default async function Accueil() {
               </p>
             </div>
 
-            {/* Le tambour, en grand */}
             <div className="relative flex items-center justify-center lg:justify-end order-first lg:order-last">
               <div className="relative">
                 <div
@@ -87,9 +84,6 @@ export default async function Accueil() {
                   strokeWidth={1}
                   className="relative text-klein w-[min(54vw,330px)] h-auto"
                 />
-                {/* Compteur au centre du hublot. Un disque plein derrière le
-                    chiffre : sans lui, les perforations passent au travers du
-                    texte et le rendent illisible. */}
                 <div className="absolute inset-0 grid place-items-center pointer-events-none">
                   <div className="text-center rounded-full bg-ink/85 backdrop-blur-sm
                     w-[46%] aspect-square grid place-content-center px-2">
@@ -106,7 +100,6 @@ export default async function Accueil() {
           </div>
         </section>
 
-        {/* ── État du parc ──────────────────────────────────────────────── */}
         <section id="parc" className="mx-auto max-w-[1180px] px-5 sm:px-8 py-14">
           <div className="flex items-end justify-between gap-4 flex-wrap mb-8">
             <div>
@@ -152,15 +145,13 @@ export default async function Accueil() {
           )}
         </section>
 
-        {/* ── Fonctionnement ────────────────────────────────────────────── */}
-        {/* ── Les règles, en chiffres ───────────────────────────────────── */}
         <section className="mx-auto max-w-[1180px] px-5 sm:px-8 pb-20">
           <dl className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
             {[
               { k: "4", v: "réservations par semaine" },
               { k: "1–2 h", v: "au choix, par créneau" },
               { k: "24 h", v: "d'horizon glissant" },
-              { k: "0–6 h", v: "la nuit, hors quota" },
+              { k: "0–6 h", v: "créneaux de nuit, quota inclus" },
             ].map((r) => (
               <div key={r.v} className="panel p-5">
                 <dt className="display text-3xl text-klein tabular">{r.k}</dt>
@@ -169,7 +160,6 @@ export default async function Accueil() {
             ))}
           </dl>
         </section>
-
       </main>
 
       <footer className="border-t border-line/70">
@@ -184,7 +174,6 @@ export default async function Accueil() {
   );
 }
 
-/* ── Vignette machine ─────────────────────────────────────────────────────── */
 function CarteApercu({ m }: { m: Awaited<ReturnType<typeof lireParcPublic>>[number] }) {
   const libre = m.live_status === "free";
   const occupee = m.live_status === "busy";
@@ -217,7 +206,6 @@ function CarteApercu({ m }: { m: Awaited<ReturnType<typeof lireParcPublic>>[numb
   );
 }
 
-/* ── Message d'amorçage ──────────────────────────────────────────────────── */
 function ConfigManquante() {
   return (
     <div className="panel p-7 border-ember/30">
