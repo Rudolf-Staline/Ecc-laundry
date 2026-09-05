@@ -168,7 +168,7 @@ export function FormulaireConnexion({
         </div>
 
         <p className="text-[11px] text-dim mt-6 leading-relaxed border-t border-line pt-4">
-          Le lien contenu dans le même e-mail fonctionne aussi, si vous préférez cliquer.
+          Rien reçu ? Vérifiez vos courriers indésirables avant de redemander un code.
         </p>
       </form>
     );
