@@ -1,8 +1,8 @@
 {
-  "name": "tambour",
+  "name": "laundry",
   "version": "1.0.0",
   "private": true,
-  "description": "Tambour — la buanderie de l'École Centrale Casablanca",
+  "description": "Laundry — la buanderie de l'École Centrale Casablanca",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
