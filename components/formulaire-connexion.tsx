@@ -104,7 +104,7 @@ export function FormulaireConnexion({
 
   if (!configure) {
     return (
-      <div className="panel p-6 border-ember/30">
+      <div className="auth-panel p-6 sm:p-7 border-ember/30">
         <Etiquette ton="occupe" point>Configuration requise</Etiquette>
         <h2 className="display text-xl mt-4 text-chalk">Supabase n&apos;est pas branché</h2>
         <p className="text-sm text-mist mt-3 leading-relaxed">
@@ -117,19 +117,23 @@ export function FormulaireConnexion({
 
   if (etape === "code") {
     return (
-      <form onSubmit={verifierCode} className="panel p-7">
-        <div className="flex items-center gap-3 mb-6">
-          <Tambour size={30} spinning className="text-klein" />
+      <form onSubmit={verifierCode} className="auth-panel p-6 sm:p-8">
+        <div className="flex items-center gap-3.5 mb-6">
+          <span className="brand-drum grid place-items-center shrink-0">
+            <Tambour size={28} spinning className="text-klein" />
+          </span>
           <div>
             <p className="eyebrow">Étape 2 sur 2</p>
             <h2 className="display text-xl text-chalk mt-1">Bonjour {prenom}</h2>
           </div>
         </div>
 
-        <p className="text-sm text-mist leading-relaxed mb-6">
-          Un code à six chiffres part vers <span className="text-chalk break-all">{email}</span>.
-          Il expire dans dix minutes.
-        </p>
+        <div className="rounded-2xl bg-klein-fond/70 border border-klein/10 p-4 mb-6">
+          <p className="text-sm text-mist leading-relaxed">
+            Le code à six chiffres a été envoyé à <span className="text-chalk font-medium break-all">{email}</span>.
+            Il expire dans dix minutes.
+          </p>
+        </div>
 
         <Champ
           ref={champCode}
@@ -142,18 +146,18 @@ export function FormulaireConnexion({
           value={code}
           onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
           erreur={erreur ?? undefined}
-          className="text-center text-2xl tracking-[0.5em] font-mono py-4"
+          className="text-center text-2xl tracking-[0.48em] font-mono py-4"
         />
 
         <Bouton type="submit" variante="acide" taille="lg" enCours={enCours} className="w-full mt-5">
-          Entrer
+          Ouvrir Laundry
         </Bouton>
 
-        <div className="flex items-center justify-between mt-5 text-xs">
+        <div className="flex items-center justify-between gap-4 mt-5 text-xs">
           <button
             type="button"
             onClick={() => { setEtape("email"); setCode(""); setErreur(null); }}
-            className="text-dim hover:text-chalk transition-colors font-mono"
+            className="text-dim hover:text-chalk transition-colors"
           >
             ← Changer d&apos;adresse
           </button>
@@ -161,31 +165,29 @@ export function FormulaireConnexion({
             type="button"
             onClick={renvoyer}
             disabled={enCours || renvoye}
-            className="text-dim hover:text-chalk transition-colors font-mono disabled:opacity-50"
+            className="text-klein hover:text-klein-2 transition-colors disabled:opacity-50"
           >
             {renvoye ? "Code renvoyé ✓" : "Renvoyer le code"}
           </button>
         </div>
-
-        <p className="text-[11px] text-dim mt-6 leading-relaxed border-t border-line pt-4">
-          Rien reçu ? Vérifiez vos courriers indésirables avant de redemander un code.
-        </p>
       </form>
     );
   }
 
   return (
-    <form onSubmit={envoyerCode} className="panel p-7">
-      <p className="eyebrow">Étape 1 sur 2</p>
-      <h2 className="display text-2xl text-chalk mt-2 mb-1">Votre adresse centralienne</h2>
-      <p className="text-sm text-mist mb-6 leading-relaxed">
-        Celle de l&apos;École, en <span className="text-chalk">prenom.nom</span>.
-      </p>
+    <form onSubmit={envoyerCode} className="auth-panel p-6 sm:p-8">
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div>
+          <p className="eyebrow">Étape 1 sur 2</p>
+          <p className="text-sm text-mist mt-1">Connexion sans mot de passe</p>
+        </div>
+        <span className="auth-status-dot" aria-hidden />
+      </div>
 
       <Champ
         name="email"
         type="email"
-        etiquette="Adresse e-mail"
+        etiquette="Adresse e-mail Centrale"
         autoComplete="email"
         autoFocus
         spellCheck={false}
@@ -200,10 +202,12 @@ export function FormulaireConnexion({
         Recevoir mon code
       </Bouton>
 
-      <p className="text-[11px] text-dim mt-6 leading-relaxed border-t border-line pt-4">
-        Pas de mot de passe : votre boîte mail de l&apos;École fait office de preuve
-        d&apos;identité. Votre compte est créé au premier passage.
-      </p>
+      <div className="flex items-start gap-3 mt-6 pt-5 border-t border-line/80">
+        <span className="mt-1 w-2 h-2 rounded-full bg-menthe shrink-0" aria-hidden />
+        <p className="text-[11px] text-dim leading-relaxed">
+          Votre boîte mail Centrale sert de preuve d&apos;identité. Le compte est créé automatiquement au premier passage.
+        </p>
+      </div>
     </form>
   );
 }
