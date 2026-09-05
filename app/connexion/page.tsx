@@ -1,9 +1,9 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Logotype } from "@/components/marque";
+import { Logotype, Tambour } from "@/components/marque";
 import { BasculeTheme } from "@/components/theme-bascule";
 import { FormulaireConnexion } from "@/components/formulaire-connexion";
-import { supabaseConfigure, NOM_ECOLE } from "@/lib/config";
+import { supabaseConfigure } from "@/lib/config";
 
 export const metadata: Metadata = { title: "Connexion" };
 
@@ -26,35 +26,15 @@ export default async function PageConnexion({
       </header>
 
       <main className="flex-1 grid lg:grid-cols-2">
-        {/* Colonne de gauche : le propos */}
-        <div className="hidden lg:flex flex-col justify-center px-14 border-r border-line/70 relative overflow-hidden">
-          <div className="absolute -left-24 -bottom-24 w-[420px] h-[420px] rounded-full bg-klein/10 blur-[90px]" aria-hidden />
-          <div className="relative reveal-stagger">
-            <p className="eyebrow">{NOM_ECOLE}</p>
-            <h1 className="display text-[clamp(2.5rem,4.5vw,4rem)] mt-4 text-chalk">
-              La buanderie,
-              <br />
-              <span className="text-klein">sans la queue.</span>
-            </h1>
-            <p className="text-mist leading-relaxed mt-6 max-w-md">
-              Votre adresse de l&apos;École suffit. Pas de mot de passe à retenir :
-              nous envoyons un code à six chiffres, valable dix minutes.
-            </p>
-
-            <ul className="mt-10 space-y-3.5">
-              {[
-                "Le planning de la semaine, machine par machine",
-                "Un compte à rebours quand votre cycle tourne",
-                "La file d'attente qui vous rattrape sur une annulation",
-                "Vos créneaux exportés vers votre agenda",
-              ].map((t) => (
-                <li key={t} className="flex items-start gap-3 text-sm text-mist">
-                  <span className="point bg-acid mt-[7px] shrink-0" aria-hidden />
-                  {t}
-                </li>
-              ))}
-            </ul>
-          </div>
+        {/* Colonne de gauche : juste le repère visuel, rien à lire */}
+        <div className="hidden lg:flex items-center justify-center border-r border-line/70 relative overflow-hidden">
+          <div className="absolute inset-0 m-auto w-[420px] h-[420px] rounded-full bg-klein-fond" aria-hidden />
+          <Tambour
+            size={220}
+            spinning="slow"
+            strokeWidth={1}
+            className="relative text-klein w-[min(30vw,280px)] h-auto"
+          />
         </div>
 
         {/* Colonne de droite : le formulaire */}
