@@ -126,6 +126,21 @@ Le même contenu convient aux deux :
 > Le domaine `@centrale-casablanca.ma` est aussi imposé côté base : même si
 > quelqu'un appelle l'API directement, le trigger refuse la création du compte.
 
+**Indispensable avant toute mise en service réelle** — Authentication →
+**Settings** → *SMTP Settings* → activez *Enable Custom SMTP*.
+
+Sans ça, Supabase envoie les e-mails via son propre relais, plafonné à
+**quelques envois par heure** : correct pour tester seul, bloquant dès que
+plusieurs étudiants se connectent la même heure. `email rate limit exceeded`
+est le message qui en résulte. Et comme l'authentification est un code à
+chaque connexion plutôt qu'un mot de passe une fois pour toutes, ce n'est
+pas un pic ponctuel à l'inscription : c'est le régime permanent de l'appli.
+
+Un fournisseur externe suffit largement pour une résidence — [Resend](https://resend.com)
+a un palier gratuit confortable et se déclare en cinq champs (hôte, port,
+utilisateur, mot de passe, adresse d'expédition) ; Brevo, SendGrid et Postmark
+conviennent tout autant si l'École en utilise déjà un.
+
 ### 5. Déployer sur Vercel
 
 ```bash
