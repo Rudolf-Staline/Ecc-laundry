@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useState, useSyncExternalStore } from "react";
-import { LogoECC, Logotype, Tambour } from "@/components/marque";
+import { Logotype, Tambour } from "@/components/marque";
 import { BasculeTheme } from "@/components/theme-bascule";
 import { fmtDay, fmtTime } from "@/lib/time";
 import type { Profile } from "@/lib/types";
@@ -30,9 +30,6 @@ export function BarreLaterale({ profil }: { profil: Profile }) {
         <Link href="/tableau" aria-label="Tableau de bord" onClick={() => setOuvert(false)} className="inline-flex">
           <Logotype />
         </Link>
-        <div className="mt-5 pt-4 border-t border-line/70">
-          <LogoECC compact className="w-[134px] opacity-75 dark:brightness-[1.7] dark:saturate-0" />
-        </div>
       </div>
 
       <nav className="px-3 pb-4 flex flex-col gap-1 flex-1" aria-label="Principale">
