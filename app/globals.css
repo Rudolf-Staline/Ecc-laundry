@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 /* ══════════════════════════════════════════════════════════════════
-   TAMBOUR — Système visuel
-   Produit SaaS clair : page gris froid, cartes blanches posées dessus,
-   indigo de marque, états en pastilles pastel, chiffres tabulaires.
+   LAUNDRY — système visuel
+   Campus utility, eau + verre : bleu ECC, turquoise, surfaces calmes,
+   profondeur légère et mouvement discret.
    ══════════════════════════════════════════════════════════════════ */
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
@@ -25,14 +25,13 @@
   --color-ember:      var(--c-ember);
   --color-coral:      var(--c-coral);
   --color-violet:     var(--c-violet);
-
-  /* Fond des pastilles d'état — pastel, texte foncé par-dessus. */
   --color-menthe:     var(--c-menthe);
+
   --color-menthe-fond: var(--c-menthe-fond);
-  --color-acid-fond:  var(--c-acid-fond);
-  --color-coral-fond: var(--c-coral-fond);
-  --color-klein-fond: var(--c-klein-fond);
-  --color-ember-fond: var(--c-ember-fond);
+  --color-acid-fond:   var(--c-acid-fond);
+  --color-coral-fond:  var(--c-coral-fond);
+  --color-klein-fond:  var(--c-klein-fond);
+  --color-ember-fond:  var(--c-ember-fond);
   --color-violet-fond: var(--c-violet-fond);
 
   --color-acid-vif:   var(--c-acid-vif);
@@ -42,7 +41,6 @@
   --color-cat-lavage:  var(--c-cat-lavage);
   --color-cat-sechage: var(--c-cat-sechage);
 
-  /* Rampe séquentielle d'affluence : une seule teinte, du clair au dense. */
   --color-aff-0: var(--c-aff-0);
   --color-aff-1: var(--c-aff-1);
   --color-aff-2: var(--c-aff-2);
@@ -53,107 +51,103 @@
   --font-body:    var(--f-body);
   --font-mono:    var(--f-mono);
 
-  --radius-tambour: 12px;
-
-  --ease-drum:  cubic-bezier(0.2, 0.8, 0.2, 1);
-  --ease-snap:  cubic-bezier(0.16, 1, 0.3, 1);
+  --radius-tambour: 16px;
+  --ease-drum: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-snap: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── Jetons : jour (défaut) ───────────────────────────────────── */
 :root {
-  --c-ink:        #f2f3f5;
-  --c-ink-2:      #eaecef;
+  --c-ink:        #eef7f8;
+  --c-ink-2:      #e4f0f2;
   --c-surface:    #ffffff;
-  --c-surface-hi: #fafbfc;
-  --c-line:       #e6e8ec;
-  --c-line-hi:    #d5d8de;
-  --c-chalk:      #14161a;
-  --c-mist:       #4a4f57;
-  --c-dim:        #6b7280;
+  --c-surface-hi: #f7fbfb;
+  --c-line:       rgba(10, 48, 66, 0.10);
+  --c-line-hi:    rgba(10, 48, 66, 0.18);
+  --c-chalk:      #0a2735;
+  --c-mist:       #46626e;
+  --c-dim:        #718891;
 
-  --c-klein:      #5b5bd6;   /* indigo de marque */
-  --c-klein-2:    #4a4ad0;
-  --c-acid:       #8a5a00;   /* ambre — vos créneaux, attention */
-  --c-ember:      #a94f1d;   /* brûlé — maintenance, séchage */
-  --c-coral:      #b03a26;   /* corail — occupé, danger */
-  --c-violet:     #7c3aed;
-  --c-menthe:     #0f7a4f;   /* menthe — libre, terminé */
+  --c-klein:      #169ca7;
+  --c-klein-2:    #0b7f8b;
+  --c-acid:       #9a6a05;
+  --c-ember:      #b7652b;
+  --c-coral:      #c24f42;
+  --c-violet:     #7556c9;
+  --c-menthe:     #16785f;
 
-  --c-menthe-fond: #e7f6ee;
-  --c-acid-fond:   #fdf3e0;
-  --c-coral-fond:  #fdece7;
-  --c-klein-fond:  #eaeafb;
-  --c-ember-fond:  #fbeee4;
-  --c-violet-fond: #f1eafd;
+  --c-menthe-fond: #e4f6ef;
+  --c-acid-fond:   #fff5dc;
+  --c-coral-fond:  #feebe8;
+  --c-klein-fond:  #ddf4f4;
+  --c-ember-fond:  #f9eee5;
+  --c-violet-fond: #f0ebfb;
 
-  --c-acid-vif:   #8a5a00;
+  --c-acid-vif:   #9a6a05;
   --c-on-bright:  #ffffff;
-  --c-encre:      #111318;   /* l'action principale : une pastille noire */
+  --c-encre:      #0a3042;
 
-  --c-cat-lavage:  #5b5bd6;
-  --c-cat-sechage: #a94f1d;
+  --c-cat-lavage:  #169ca7;
+  --c-cat-sechage: #b7652b;
 
   --c-aff-0: #ffffff;
-  --c-aff-1: #e8e8fb;
-  --c-aff-2: #c3c3f2;
-  --c-aff-3: #8b8be4;
-  --c-aff-4: #4a4ad0;
+  --c-aff-1: #e6f5f5;
+  --c-aff-2: #bfe6e6;
+  --c-aff-3: #76c8ca;
+  --c-aff-4: #169ca7;
 
-  --ombre-carte: 0 1px 2px rgba(16, 24, 40, 0.04);
-  --ombre-levee: 0 4px 12px -2px rgba(16, 24, 40, 0.08), 0 2px 4px -2px rgba(16, 24, 40, 0.04);
-  --ombre-flottante: 0 12px 32px -8px rgba(16, 24, 40, 0.18);
+  --ombre-carte: 0 10px 30px -24px rgba(10, 48, 66, 0.45), 0 1px 2px rgba(10, 48, 66, 0.05);
+  --ombre-levee: 0 16px 38px -24px rgba(10, 48, 66, 0.50), 0 6px 16px -14px rgba(10, 48, 66, 0.24);
+  --ombre-flottante: 0 30px 70px -34px rgba(7, 39, 54, 0.50);
 
   color-scheme: light;
 }
 
-/* ── Jetons : nuit ────────────────────────────────────────────── */
 [data-theme="dark"] {
-  --c-ink:        #0d0f12;
-  --c-ink-2:      #14171b;
-  --c-surface:    #16191e;
-  --c-surface-hi: #1c2027;
-  --c-line:       rgba(255, 255, 255, 0.09);
-  --c-line-hi:    rgba(255, 255, 255, 0.17);
-  --c-chalk:      #f2f4f7;
-  --c-mist:       #c2c7cf;
-  --c-dim:        #8b929c;
+  --c-ink:        #071a24;
+  --c-ink-2:      #0b222d;
+  --c-surface:    #0d2632;
+  --c-surface-hi: #11303d;
+  --c-line:       rgba(215, 244, 245, 0.09);
+  --c-line-hi:    rgba(215, 244, 245, 0.17);
+  --c-chalk:      #eefbfb;
+  --c-mist:       #bad0d5;
+  --c-dim:        #7f9ca4;
 
-  --c-klein:      #8b8bf0;
-  --c-klein-2:    #a5a5f5;
-  --c-acid:       #e0a94a;
-  --c-ember:      #e08a5c;
-  --c-coral:      #ef7364;
-  --c-violet:     #a78bfa;
-  --c-menthe:     #4ec98d;
+  --c-klein:      #63d3d2;
+  --c-klein-2:    #83e4e2;
+  --c-acid:       #f0c66b;
+  --c-ember:      #e79b69;
+  --c-coral:      #ff8b80;
+  --c-violet:     #b6a1f3;
+  --c-menthe:     #70d7ad;
 
-  --c-menthe-fond: rgba(78, 201, 141, 0.14);
-  --c-acid-fond:   rgba(224, 169, 74, 0.14);
-  --c-coral-fond:  rgba(239, 115, 100, 0.14);
-  --c-klein-fond:  rgba(139, 139, 240, 0.16);
-  --c-ember-fond:  rgba(224, 138, 92, 0.14);
-  --c-violet-fond: rgba(167, 139, 250, 0.16);
+  --c-menthe-fond: rgba(112, 215, 173, 0.13);
+  --c-acid-fond:   rgba(240, 198, 107, 0.13);
+  --c-coral-fond:  rgba(255, 139, 128, 0.13);
+  --c-klein-fond:  rgba(99, 211, 210, 0.13);
+  --c-ember-fond:  rgba(231, 155, 105, 0.13);
+  --c-violet-fond: rgba(182, 161, 243, 0.14);
 
-  --c-acid-vif:   #e0a94a;
-  --c-on-bright:  #0d0f12;
-  --c-encre:      #f2f4f7;
+  --c-acid-vif:   #f0c66b;
+  --c-on-bright:  #071a24;
+  --c-encre:      #dff9f8;
 
-  --c-cat-lavage:  #8b8bf0;
-  --c-cat-sechage: #e08a5c;
+  --c-cat-lavage:  #63d3d2;
+  --c-cat-sechage: #e79b69;
 
-  --c-aff-0: #16191e;
-  --c-aff-1: #22263a;
-  --c-aff-2: #343a63;
-  --c-aff-3: #4f56a5;
-  --c-aff-4: #8b8bf0;
+  --c-aff-0: #0d2632;
+  --c-aff-1: #12323d;
+  --c-aff-2: #194653;
+  --c-aff-3: #277887;
+  --c-aff-4: #63d3d2;
 
-  --ombre-carte: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --ombre-levee: 0 4px 12px -2px rgba(0, 0, 0, 0.5);
-  --ombre-flottante: 0 12px 32px -8px rgba(0, 0, 0, 0.7);
+  --ombre-carte: 0 12px 34px -24px rgba(0, 0, 0, 0.86), 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+  --ombre-levee: 0 20px 50px -30px rgba(0, 0, 0, 0.95);
+  --ombre-flottante: 0 35px 85px -38px rgba(0, 0, 0, 0.95);
 
   color-scheme: dark;
 }
 
-/* ── Base ─────────────────────────────────────────────────────── */
 * { border-color: var(--c-line); }
 
 html {
@@ -162,7 +156,10 @@ html {
 }
 
 body {
-  background-color: var(--c-ink);
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 78% -10%, rgba(35, 185, 181, 0.11), transparent 34%),
+    linear-gradient(180deg, var(--c-ink), var(--c-ink));
   color: var(--c-chalk);
   font-family: var(--f-body), ui-sans-serif, system-ui, sans-serif;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
@@ -171,8 +168,7 @@ body {
   overflow-x: hidden;
 }
 
-::selection { background: rgba(91, 91, 214, 0.18); }
-
+::selection { background: rgba(22, 156, 167, 0.20); }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
@@ -185,69 +181,63 @@ body {
 
 :focus-visible {
   outline: 2px solid var(--c-klein);
-  outline-offset: 2px;
-  border-radius: 6px;
+  outline-offset: 3px;
+  border-radius: 8px;
 }
-
-/* ══ Typographie ══════════════════════════════════════════════ */
 
 .display {
   font-family: var(--f-body), ui-sans-serif, system-ui, sans-serif;
-  font-weight: 700;
-  letter-spacing: -0.028em;
-  line-height: 1.08;
+  font-weight: 720;
+  letter-spacing: -0.036em;
+  line-height: 1.05;
 }
 
 .eyebrow {
   font-size: 0.6875rem;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.105em;
   text-transform: uppercase;
   color: var(--c-dim);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .tabular { font-variant-numeric: tabular-nums; font-family: var(--f-mono), ui-monospace, monospace; }
 
-/* ══ Composants ═══════════════════════════════════════════════ */
-
-/* La carte blanche posée sur la page grise — l'unité de base. */
 @utility panel {
   position: relative;
-  background: var(--c-surface);
+  background: color-mix(in srgb, var(--c-surface) 92%, transparent);
   border: 1px solid var(--c-line);
   border-radius: var(--radius-tambour);
   box-shadow: var(--ombre-carte);
+  backdrop-filter: blur(12px);
+  transition: transform .2s var(--ease-snap), box-shadow .2s var(--ease-snap), border-color .2s ease;
 }
 
 @utility panel-deep {
   position: relative;
-  background: var(--c-surface);
+  background: color-mix(in srgb, var(--c-surface) 94%, transparent);
   border: 1px solid var(--c-line);
-  border-radius: var(--radius-tambour);
+  border-radius: calc(var(--radius-tambour) + 2px);
   box-shadow: var(--ombre-flottante);
+  backdrop-filter: blur(18px);
 }
 
-/* Héritée de l'identité précédente : plus d'ornement de cadre ici, mais la
-   classe reste posée sur beaucoup de cartes — on la laisse inerte plutôt que
-   d'aller la retirer une par une. */
+.panel:hover { border-color: var(--c-line-hi); box-shadow: var(--ombre-levee); }
 .corners::before,
 .corners::after { content: none; }
 
-/* Pastille d'état — fond pastel, point coloré, texte foncé. */
 @utility chip {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  padding: 0.1875rem 0.5rem;
+  padding: 0.25rem 0.58rem;
   font-size: 0.6875rem;
-  font-weight: 500;
+  font-weight: 600;
   border: 1px solid transparent;
   border-radius: 999px;
   white-space: nowrap;
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
-/* Le point qui précède le libellé dans une pastille. */
 @utility point {
   width: 0.375rem;
   height: 0.375rem;
@@ -256,7 +246,6 @@ body {
   flex: none;
 }
 
-/* Bouton principal : la pastille noire des références. */
 @utility bouton-encre {
   display: inline-flex;
   align-items: center;
@@ -265,27 +254,256 @@ body {
   background: var(--c-encre);
   color: var(--c-ink);
   border: 1px solid var(--c-encre);
-  border-radius: 8px;
-  padding: 0.5625rem 0.9375rem;
+  border-radius: 12px;
+  padding: 0.625rem 1rem;
   font-size: 0.8125rem;
-  font-weight: 600;
-  transition: opacity 0.15s;
+  font-weight: 650;
+  transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
 }
-@utility bouton-encre-hover { opacity: 0.88; }
+@utility bouton-encre-hover { opacity: 0.92; transform: translateY(-1px); }
 
-/* Machine hors service — hachures discrètes plutôt qu'un aplat mort. */
 .maintenance-stripes {
-  background-image: repeating-linear-gradient(
-    -45deg,
-    var(--c-line-hi) 0 1px,
-    transparent 1px 7px
-  );
+  background-image: repeating-linear-gradient(-45deg, var(--c-line-hi) 0 1px, transparent 1px 7px);
 }
 
-/* Créneau de nuit — teinte lavande, sans folklore. */
-.night-cell { background: var(--c-klein-fond); }
+.night-cell {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--c-klein-fond) 86%, transparent), transparent),
+    var(--c-surface);
+}
 
-/* ── Le tambour qui tourne ───────────────────────────────────── */
+/* ── Shell de l'application ─────────────────────────────────── */
+.app-shell { isolation: isolate; }
+.page-stage { position: relative; z-index: 1; }
+
+.app-ambient {
+  position: fixed;
+  pointer-events: none;
+  filter: blur(8px);
+  border-radius: 999px;
+  z-index: -1;
+}
+.app-ambient-a {
+  width: 34rem;
+  height: 34rem;
+  right: -12rem;
+  top: 7rem;
+  background: radial-gradient(circle, rgba(35, 185, 181, .12), transparent 68%);
+}
+.app-ambient-b {
+  width: 30rem;
+  height: 30rem;
+  left: 14rem;
+  bottom: -16rem;
+  background: radial-gradient(circle, rgba(89, 128, 194, .08), transparent 68%);
+}
+
+.glass-sidebar {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--c-surface) 92%, transparent), color-mix(in srgb, var(--c-surface) 82%, transparent));
+  backdrop-filter: blur(22px) saturate(135%);
+  box-shadow: 18px 0 60px -52px rgba(7, 39, 54, .65);
+}
+
+.mobile-bar,
+.app-topbar {
+  background: color-mix(in srgb, var(--c-surface) 72%, transparent);
+  backdrop-filter: blur(20px) saturate(140%);
+}
+
+.nav-link { position: relative; }
+.nav-link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 3px;
+  height: 0;
+  border-radius: 999px;
+  background: var(--c-klein);
+  transition: height .2s var(--ease-snap);
+}
+.nav-link-active::before { height: 46%; }
+.nav-icon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  transition: background .2s ease, transform .2s ease;
+}
+.nav-icon-active { background: color-mix(in srgb, var(--c-klein) 10%, transparent); }
+.nav-link:hover .nav-icon { transform: translateX(1px); }
+.profile-card:hover { background: color-mix(in srgb, var(--c-surface-hi) 88%, transparent); }
+.avatar-chip {
+  color: #fff;
+  background: linear-gradient(135deg, #0a3042, #169ca7 68%, #62d6d1);
+  box-shadow: 0 8px 20px -12px rgba(22, 156, 167, .9);
+}
+.brand-drum {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  color: var(--c-klein);
+  background: linear-gradient(145deg, var(--c-surface), var(--c-klein-fond));
+  border: 1px solid color-mix(in srgb, var(--c-klein) 16%, var(--c-line));
+  box-shadow: 0 10px 22px -17px rgba(22, 156, 167, .8);
+}
+
+.section-heading { position: relative; }
+.section-heading::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -12px;
+  width: 42px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--c-klein), transparent);
+  opacity: .65;
+}
+.empty-orb {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--c-klein) 22%, var(--c-line));
+  background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.9), transparent 21%), var(--c-klein-fond);
+  box-shadow: inset -10px -10px 20px rgba(22, 156, 167, .09);
+}
+
+/* ── Connexion ──────────────────────────────────────────────── */
+.auth-shell {
+  background:
+    radial-gradient(circle at 14% 16%, rgba(35, 185, 181, .16), transparent 28%),
+    radial-gradient(circle at 91% 78%, rgba(22, 156, 167, .09), transparent 26%),
+    linear-gradient(135deg, var(--c-ink) 0%, color-mix(in srgb, var(--c-ink) 86%, #d7f4f3) 100%);
+}
+
+.auth-visual {
+  position: relative;
+  min-height: min(760px, calc(100dvh - 7.5rem));
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 82% 16%, rgba(100, 222, 218, .23), transparent 27%),
+    radial-gradient(circle at 25% 82%, rgba(65, 144, 157, .28), transparent 31%),
+    linear-gradient(145deg, #092c3d 0%, #0a4051 52%, #0b5a63 100%);
+  box-shadow: 0 32px 90px -50px rgba(7, 39, 54, .85);
+}
+.auth-visual::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,.65), transparent 82%);
+}
+.auth-kicker {
+  color: rgba(255,255,255,.72);
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.auth-drum-orbit {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  display: grid;
+  place-items: center;
+}
+.auth-orbit-ring {
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 50%;
+  box-shadow: 0 0 0 32px rgba(255,255,255,.025), 0 0 0 64px rgba(255,255,255,.014);
+}
+.auth-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 12px;
+  border-radius: 999px;
+  color: rgba(255,255,255,.72);
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.055);
+  backdrop-filter: blur(10px);
+  font-size: 11px;
+  letter-spacing: .02em;
+}
+.auth-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, var(--c-line) 90%, transparent);
+  background: color-mix(in srgb, var(--c-surface) 87%, transparent);
+  box-shadow: var(--ombre-flottante);
+  backdrop-filter: blur(22px) saturate(125%);
+}
+.auth-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--c-klein) 42%, transparent), transparent);
+}
+.auth-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--c-menthe);
+  box-shadow: 0 0 0 6px var(--c-menthe-fond);
+}
+
+.soap-field { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.soap-bubble {
+  --size: 48px;
+  --left: 50%;
+  --delay: 0s;
+  --duration: 14s;
+  --drift: 34px;
+  position: absolute;
+  left: var(--left);
+  bottom: -14vh;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  border: 1px solid rgba(80, 208, 209, .22);
+  background:
+    radial-gradient(circle at 31% 27%, rgba(255,255,255,.78) 0 7%, transparent 8%),
+    radial-gradient(circle at 68% 74%, rgba(99,211,210,.16), transparent 46%),
+    rgba(255,255,255,.055);
+  box-shadow: inset -8px -10px 18px rgba(22,156,167,.06), 0 10px 32px -24px rgba(10,48,66,.45);
+  backdrop-filter: blur(1px);
+  opacity: 0;
+  animation: bubble-rise var(--duration) linear var(--delay) infinite;
+}
+.soap-bubble-1  { --size: 34px;  --left: 5%;  --delay: -2s;  --duration: 15s; --drift: 22px; }
+.soap-bubble-2  { --size: 72px;  --left: 13%; --delay: -9s;  --duration: 21s; --drift: -38px; }
+.soap-bubble-3  { --size: 24px;  --left: 22%; --delay: -5s;  --duration: 13s; --drift: 26px; }
+.soap-bubble-4  { --size: 52px;  --left: 31%; --delay: -12s; --duration: 18s; --drift: -24px; }
+.soap-bubble-5  { --size: 88px;  --left: 39%; --delay: -4s;  --duration: 24s; --drift: 42px; }
+.soap-bubble-6  { --size: 30px;  --left: 48%; --delay: -10s; --duration: 16s; --drift: -20px; }
+.soap-bubble-7  { --size: 60px;  --left: 56%; --delay: -1s;  --duration: 20s; --drift: 30px; }
+.soap-bubble-8  { --size: 22px;  --left: 64%; --delay: -8s;  --duration: 14s; --drift: -18px; }
+.soap-bubble-9  { --size: 96px;  --left: 70%; --delay: -15s; --duration: 26s; --drift: 48px; }
+.soap-bubble-10 { --size: 44px;  --left: 77%; --delay: -6s;  --duration: 17s; --drift: -34px; }
+.soap-bubble-11 { --size: 28px;  --left: 84%; --delay: -3s;  --duration: 15s; --drift: 20px; }
+.soap-bubble-12 { --size: 68px;  --left: 91%; --delay: -13s; --duration: 22s; --drift: -40px; }
+.soap-bubble-13 { --size: 20px;  --left: 96%; --delay: -7s;  --duration: 13s; --drift: -16px; }
+.soap-bubble-14 { --size: 40px;  --left: 2%;  --delay: -11s; --duration: 19s; --drift: 36px; }
+
+@keyframes bubble-rise {
+  0% { transform: translate3d(0, 0, 0) scale(.82); opacity: 0; }
+  10% { opacity: .72; }
+  62% { transform: translate3d(var(--drift), -64vh, 0) scale(1); opacity: .55; }
+  100% { transform: translate3d(calc(var(--drift) * -.45), -122vh, 0) scale(1.08); opacity: 0; }
+}
+
+/* ── Mouvement et états ─────────────────────────────────────── */
 .drum-spin { animation: drum 3.2s linear infinite; transform-origin: center; }
 .drum-spin-slow { animation: drum 9s linear infinite; transform-origin: center; }
 .drum-spin-slower { animation: drum 26s linear infinite; transform-origin: center; }
@@ -294,60 +512,45 @@ body {
 .drum-cycle { animation: drum-cycle 4s var(--ease-drum) infinite; transform-origin: center; }
 @keyframes drum-cycle {
   0%, 100% { transform: rotate(0deg); }
-  45%      { transform: rotate(190deg); }
-  55%      { transform: rotate(170deg); }
+  45% { transform: rotate(190deg); }
+  55% { transform: rotate(170deg); }
 }
 
-/* ── Révélation au chargement ────────────────────────────────── */
-.reveal { animation: reveal 0.4s var(--ease-snap) both; }
+.reveal { animation: reveal .46s var(--ease-snap) both; }
 @keyframes reveal {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: none; }
+  from { opacity: 0; transform: translateY(9px) scale(.995); }
+  to { opacity: 1; transform: none; }
 }
-.reveal-stagger > * { animation: reveal 0.4s var(--ease-snap) both; }
-.reveal-stagger > *:nth-child(1)  { animation-delay: 0.02s; }
-.reveal-stagger > *:nth-child(2)  { animation-delay: 0.05s; }
-.reveal-stagger > *:nth-child(3)  { animation-delay: 0.08s; }
-.reveal-stagger > *:nth-child(4)  { animation-delay: 0.11s; }
-.reveal-stagger > *:nth-child(5)  { animation-delay: 0.14s; }
-.reveal-stagger > *:nth-child(6)  { animation-delay: 0.17s; }
-.reveal-stagger > *:nth-child(7)  { animation-delay: 0.20s; }
-.reveal-stagger > *:nth-child(8)  { animation-delay: 0.23s; }
-.reveal-stagger > *:nth-child(9)  { animation-delay: 0.26s; }
-.reveal-stagger > *:nth-child(n+10) { animation-delay: 0.29s; }
+.reveal-stagger > * { animation: reveal .42s var(--ease-snap) both; }
+.reveal-stagger > *:nth-child(1) { animation-delay: .02s; }
+.reveal-stagger > *:nth-child(2) { animation-delay: .05s; }
+.reveal-stagger > *:nth-child(3) { animation-delay: .08s; }
+.reveal-stagger > *:nth-child(4) { animation-delay: .11s; }
+.reveal-stagger > *:nth-child(5) { animation-delay: .14s; }
+.reveal-stagger > *:nth-child(6) { animation-delay: .17s; }
+.reveal-stagger > *:nth-child(7) { animation-delay: .20s; }
+.reveal-stagger > *:nth-child(8) { animation-delay: .23s; }
+.reveal-stagger > *:nth-child(9) { animation-delay: .26s; }
+.reveal-stagger > *:nth-child(n+10) { animation-delay: .29s; }
 
-/* ── Pulsation « en cours » ──────────────────────────────────── */
 .pulse-live { animation: pulse-live 2.2s ease-in-out infinite; }
-@keyframes pulse-live {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.4; }
-}
+@keyframes pulse-live { 0%,100% { opacity: 1; } 50% { opacity: .42; } }
 
-/* ── Remplissage de progression ──────────────────────────────── */
-.liquid {
-  position: relative;
-  overflow: hidden;
-  background: var(--c-klein);
-}
+.liquid { position: relative; overflow: hidden; background: var(--c-klein); }
 .liquid::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.30), transparent);
   animation: liquid-slide 2.4s linear infinite;
 }
 @keyframes liquid-slide { to { transform: translateX(100%); } }
 
-/* ── Défilement horizontal ───────────────────────────────────── */
 .scroll-x { overflow-x: auto; scrollbar-width: thin; }
 .nice-scroll::-webkit-scrollbar { height: 8px; width: 8px; }
-
-/* ── Bandeau défilant ────────────────────────────────────────── */
 .marquee { display: flex; width: max-content; animation: marquee 38s linear infinite; }
 @keyframes marquee { to { transform: translateX(-50%); } }
 
-/* Neutralisées avec l'identité papier : les classes restent posées dans le
-   balisage, elles ne doivent simplement plus rien peindre. */
 .grain::before,
 .washi,
 .ticket-edge::before,
@@ -357,20 +560,20 @@ body {
 .souligne-main::after { content: none; }
 .display-italic { font-style: normal; color: inherit; }
 
-/* ── Accessibilité mouvement ────────────────────────────────── */
+@media (max-width: 1023px) {
+  .auth-shell { background: radial-gradient(circle at 50% 10%, rgba(35,185,181,.13), transparent 28%), var(--c-ink); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
+    transition-duration: .001ms !important;
     scroll-behavior: auto !important;
   }
 }
 
-/* ── Impression ─────────────────────────────────────────────── */
 @media print {
-  .marquee { display: none !important; }
+  .marquee, .soap-field, .app-ambient { display: none !important; }
   body { background: #fff; color: #000; }
 }
