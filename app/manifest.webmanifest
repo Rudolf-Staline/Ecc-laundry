@@ -1,13 +1,13 @@
 {
-  "name": "Tambour — Buanderie Centrale Casablanca",
-  "short_name": "Tambour",
-  "description": "Réservez une machine de la buanderie, suivez les cycles en direct.",
+  "name": "Laundry — Buanderie Centrale Casablanca",
+  "short_name": "Laundry",
+  "description": "Réservez une machine de la buanderie, suivez les cycles et consultez le calendrier des réservations.",
   "start_url": "/tableau",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#08090b",
-  "theme_color": "#08090b",
+  "background_color": "#eef7f8",
+  "theme_color": "#0a3042",
   "lang": "fr",
   "categories": ["utilities", "productivity"],
   "icons": [
