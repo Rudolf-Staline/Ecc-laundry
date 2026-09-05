@@ -330,8 +330,8 @@ export function Planning({
                   className={`px-4 py-2 text-[12px] font-mono tabular transition-colors
                     ${d > 1 ? "border-l border-line" : ""}
                     ${dureeEffective === d
-                      ? "bg-acid-vif text-on-bright font-semibold"
-                      : "text-dim hover:text-chalk hover:bg-surface-hi"}`}
+                      ? "bg-encre text-ink font-semibold"
+                      : "text-dim hover:text-chalk hover:bg-ink-2"}`}
                 >
                   {(d * buanderie.slot_minutes) / 60} h
                 </button>
@@ -499,25 +499,25 @@ export function Planning({
       <div className="space-y-3">
         <div className="flex flex-wrap gap-3 items-center text-[11px] text-dim">
           <span className="flex items-center gap-1.5">
-            <span className="w-3.5 h-3.5 border border-klein-2/25 bg-klein-2/12 rounded-[4px]" /> libre
+            <span className="w-3.5 h-3.5 border border-menthe/20 bg-menthe-fond rounded-[4px]" /> libre
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3.5 h-3.5 border border-acid bg-acid rounded-[4px]" /> votre choix
+            <span className="w-3.5 h-3.5 border border-klein bg-klein rounded-[4px]" /> votre choix
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3.5 h-3.5 border border-acid/50 bg-acid/25 rounded-[4px]" /> à vous
+            <span className="w-3.5 h-3.5 border border-acid/25 bg-acid-fond rounded-[4px]" /> à vous
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3.5 h-3.5 border border-coral/30 bg-coral/18 rounded-[4px]" /> occupé
+            <span className="w-3.5 h-3.5 border border-coral/25 bg-coral-fond rounded-[4px]" /> occupé
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3.5 h-3.5 border border-violet/25 night-cell rounded-[4px]" /> nuit
+            <span className="w-3.5 h-3.5 border border-klein/20 bg-klein-fond rounded-[4px]" /> nuit
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3.5 h-3.5 border border-ember/25 maintenance-stripes rounded-[4px]" /> hors service
+            <span className="w-3.5 h-3.5 border border-line maintenance-stripes rounded-[4px]" /> hors service
           </span>
-          <span className="ml-auto flex items-center gap-1.5 text-klein">
-            <span className="w-1.5 h-1.5 rounded-full bg-klein pulse-live" /> en direct
+          <span className="ml-auto flex items-center gap-1.5 text-menthe">
+            <span className="w-1.5 h-1.5 rounded-full bg-menthe pulse-live" /> en direct
           </span>
         </div>
 
@@ -583,11 +583,11 @@ export function Planning({
               <button
                 onClick={reserver}
                 disabled={enVol !== null}
-                className="px-5 py-2.5 rounded-[var(--radius-tambour)] bg-klein text-on-bright
-                  text-[13px] font-semibold hover:bg-klein-2 transition-colors
+                className="px-5 py-2.5 rounded-[8px] bg-encre text-ink
+                  text-[13px] font-semibold hover:opacity-88 transition-opacity
                   disabled:opacity-60 flex items-center gap-2"
               >
-                {enVol !== null ? <Tambour size={14} spinning className="text-on-bright" /> : null}
+                {enVol !== null ? <Tambour size={14} spinning className="text-ink" /> : null}
                 Confirmer
               </button>
             </div>
@@ -651,7 +651,7 @@ function Cellule({
   if (etat === "indispo") {
     return (
       <div
-        className={`${base} maintenance-stripes border-ember/25`}
+        className={`${base} maintenance-stripes border-line bg-ink-2/40`}
         title={`${machine.name} hors service`}
         aria-label={`${machine.name} hors service`}
       />
@@ -669,7 +669,7 @@ function Cellule({
         onClick={() => onAnnuler(ligne)}
         disabled={annulationEnCours === ligne.id}
         title={`Votre réservation ${fmtTime(ligne.starts_at)} → ${fmtTime(ligne.ends_at)}. Cliquer pour annuler.`}
-        className={`${base} bg-acid/25 border-acid/50 hover:bg-coral/25 hover:border-coral/50
+        className={`${base} bg-acid-fond border-acid/25 hover:bg-coral-fond hover:border-coral/30
           group disabled:opacity-50`}
       >
         {pointe ? (
@@ -699,7 +699,7 @@ function Cellule({
             ? "Vous êtes déjà en file d'attente sur ce créneau"
             : `Pris par ${ligne.owner_first_name}. Cliquer pour rejoindre la file d'attente.`
         }
-        className={`${base} bg-coral/18 border-coral/30 hover:bg-coral/28`}
+        className={`${base} bg-coral-fond border-coral/25 hover:border-coral/45`}
       >
         <span className={`text-[9px] font-semibold ${enFile ? "text-ember" : "text-coral"}`}>
           {enFile ? "file" : initiales}
@@ -739,12 +739,12 @@ function Cellule({
       }
       className={`${base}
         ${choisi
-          ? "bg-acid border-acid text-on-bright shadow-[0_6px_16px_-8px_rgba(161,98,7,0.9)]"
+          ? "bg-klein border-klein text-white shadow-[0_4px_12px_-4px_rgba(91,91,214,0.6)]"
           : apercu
-            ? "bg-acid/30 border-acid/50"
+            ? "bg-klein/25 border-klein/45"
             : nuit
-              ? "night-cell border-violet/25 hover:border-acid/60"
-              : "bg-klein-2/12 border-klein-2/25 hover:bg-acid/25 hover:border-acid/50"}
+              ? "bg-klein-fond border-klein/20 hover:border-klein hover:bg-klein/20"
+              : "bg-menthe-fond border-menthe/20 hover:border-klein hover:bg-klein/15"}
         ${indisponible ? "cursor-not-allowed opacity-40" : ""}`}
     >
       {occupe ? (

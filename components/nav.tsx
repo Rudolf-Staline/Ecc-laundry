@@ -34,9 +34,8 @@ export function BarreLaterale({ profil }: { profil: Profile }) {
         </Link>
       </div>
 
-      <Losange />
-
-      <nav className="px-3 py-4 flex flex-col gap-1 flex-1" aria-label="Principale">
+      <nav className="px-3 pb-4 flex flex-col gap-0.5 flex-1" aria-label="Principale">
+        <p className="eyebrow px-3.5 pb-2">Navigation</p>
         {liens.map((l) => {
           const Icone = l.icone;
           const ici = actif(l.href);
@@ -49,7 +48,7 @@ export function BarreLaterale({ profil }: { profil: Profile }) {
               className={`flex items-center gap-3 px-3.5 py-2.5 rounded-[var(--radius-tambour)]
                 text-[13.5px] transition-colors
                 ${ici
-                  ? "bg-klein text-on-bright font-semibold shadow-[0_10px_24px_-14px_rgba(26,92,74,0.8)]"
+                  ? "bg-klein-fond text-klein font-semibold"
                   : "text-mist hover:bg-ink-2 hover:text-chalk"}`}
             >
               <Icone actif={ici} />
@@ -61,28 +60,22 @@ export function BarreLaterale({ profil }: { profil: Profile }) {
         <Link
           href="/pointage"
           onClick={() => setOuvert(false)}
-          className="mt-2 flex items-center gap-3 px-3.5 py-2.5 rounded-[var(--radius-tambour)]
-            border border-acid/45 text-acid text-[13.5px] font-semibold
-            hover:bg-acid hover:text-on-bright transition-colors"
+          className="mt-3 flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-[8px]
+            bg-encre text-ink text-[13px] font-semibold hover:opacity-88 transition-opacity"
         >
           <QrIcone /> Pointer
         </Link>
       </nav>
 
-      {/* Le cachet de la maison — décor, tourne lentement. */}
-      <div className="hidden lg:grid place-items-center py-4 opacity-70" aria-hidden>
-        <Tampon />
-      </div>
-
       <div className="p-3 border-t border-line">
-        <div className="flex items-center gap-2.5 panel px-3 py-2.5">
+        <div className="flex items-center gap-2.5 rounded-[10px] px-2 py-2 hover:bg-ink-2 transition-colors">
           <Link
             href="/compte"
             title={profil.display_name}
             onClick={() => setOuvert(false)}
             className="flex items-center gap-2.5 min-w-0 flex-1 group"
           >
-            <span className="w-8 h-8 rounded-full bg-klein text-on-bright grid place-items-center
+            <span className="w-8 h-8 rounded-full bg-klein text-white grid place-items-center
               text-[11px] font-semibold shrink-0">
               {profil.first_name[0]}{profil.last_name[0]}
             </span>
@@ -185,7 +178,7 @@ function Horloge() {
   );
 
   return (
-    <span className="chip border-klein/30 text-klein bg-klein/8 tabular" suppressHydrationWarning>
+    <span className="chip bg-klein-fond text-klein tabular" suppressHydrationWarning>
       <Horlogette /> {heure || "--:--"} Casablanca
     </span>
   );
@@ -193,34 +186,7 @@ function Horloge() {
 
 /* ══ Ornements ═══════════════════════════════════════════════════════════ */
 
-function Losange() {
-  return (
-    <div className="px-5 flex items-center gap-2" aria-hidden>
-      <span className="h-px flex-1 bg-line" />
-      <svg width="7" height="7" viewBox="0 0 8 8" className="text-klein/60">
-        <path d="M4 0 8 4 4 8 0 4z" fill="currentColor" />
-      </svg>
-      <span className="h-px flex-1 bg-line" />
-    </div>
-  );
-}
 
-function Tampon() {
-  return (
-    <svg width="118" height="118" viewBox="0 0 120 120" className="tampon text-klein/55" aria-hidden>
-      <defs>
-        <path id="cercle-tampon" d="M60,60 m-42,0 a42,42 0 1,1 84,0 a42,42 0 1,1 -84,0" fill="none" />
-      </defs>
-      <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3 4" />
-      <circle cx="60" cy="60" r="46" fill="none" stroke="currentColor" strokeWidth="0.8" />
-      <text fontSize="8.4" letterSpacing="2.4" fill="currentColor" fontWeight="600">
-        <textPath href="#cercle-tampon" startOffset="0%">
-          BUANDERIE · CENTRALE CASABLANCA ·
-        </textPath>
-      </text>
-    </svg>
-  );
-}
 
 /* ══ Icônes ══════════════════════════════════════════════════════════════ */
 
