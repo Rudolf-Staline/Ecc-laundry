@@ -5,7 +5,7 @@ import { createServerClient } from "@supabase/ssr";
  * Rafraîchit le jeton Supabase à chaque navigation et garde les routes
  * privées. Sous Next 16, ce fichier remplace `middleware.ts`.
  */
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
