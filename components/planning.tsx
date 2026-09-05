@@ -275,9 +275,8 @@ export function Planning({
         <div className="panel border-coral/40 px-4 py-3 flex items-start gap-3" role="alert">
           <span className="point bg-coral mt-[7px] shrink-0" aria-hidden />
           <p className="text-sm text-mist">
-            <span className="text-chalk">Votre compte est suspendu.</span>{" "}
-            Vous pourrez réserver de nouveau {fmtRelative(profil.suspended_until!)}. En
-            attendant, la grille reste consultable.
+            <span className="text-chalk">Compte suspendu.</span>{" "}
+            Réservation possible de nouveau {fmtRelative(profil.suspended_until!)}.
           </p>
         </div>
       )}
@@ -286,9 +285,8 @@ export function Planning({
         <div className="panel border-ember/35 px-4 py-3 flex items-start gap-3">
           <span className="point bg-acid mt-[7px] shrink-0" aria-hidden />
           <p className="text-sm text-mist">
-            <span className="text-chalk">Quota atteint pour cette semaine.</span>{" "}
-            Les créneaux de {nuitDebut} h à {nuitFin} h restent ouverts : ils ne se décomptent
-            pas du quota. Ils peuvent être réservés à tout moment.
+            <span className="text-chalk">Quota atteint.</span>{" "}
+            Les créneaux de {nuitDebut} h à {nuitFin} h restent ouverts, hors quota.
           </p>
         </div>
       )}
@@ -521,14 +519,7 @@ export function Planning({
           </span>
         </div>
 
-        <p className="text-[11px] text-dim leading-relaxed max-w-3xl flex items-start gap-2">
-          <IconeNuit />
-          <span>
-            Les créneaux de {nuitDebut} h à {nuitFin} h ne se décomptent pas du quota
-            hebdomadaire.
 
-          </span>
-        </p>
       </div>
 
       {/* Barre de confirmation — un clic sur une case ne consomme rien tant que

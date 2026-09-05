@@ -35,26 +35,21 @@ export default async function Accueil() {
 
       <main className="flex-1">
         {/* ── Héro ──────────────────────────────────────────────────────── */}
-        <section className="mx-auto max-w-[1180px] px-5 sm:px-8 pt-16 sm:pt-24 pb-16">
-          <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-12 lg:gap-8 items-center">
+        <section className="mx-auto max-w-[1180px] px-5 sm:px-8 pt-12 pb-10">
+          <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-10 items-center">
             <div className="reveal-stagger">
               <p className="eyebrow">{NOM_ECOLE} · Résidences</p>
 
-              <h1 className="display text-[clamp(3.2rem,11vw,7rem)] mt-5 text-chalk">
-                Le linge
-                <br />
-                n&apos;attend pas.
+              <h1 className="display text-[clamp(1.9rem,4.5vw,3rem)] mt-3 text-chalk">
+                Le linge n&apos;attend pas.
               </h1>
 
-              <p className="text-mist text-base sm:text-lg leading-relaxed mt-7 max-w-lg">
-                Le planning de la buanderie, en direct. Vous choisissez votre créneau —
-                une heure ou deux — vous pointez sur la machine, vous récupérez votre
-                linge à l&apos;heure.
-                <span className="text-chalk"> Quatre réservations par semaine</span>, pour
-                que tout le monde en ait.
+              <p className="text-mist text-[15px] mt-4 max-w-lg">
+                Le planning de la buanderie des résidences. Créneaux d&apos;une ou deux
+                heures, quatre par semaine.
               </p>
 
-              <div className="flex flex-wrap items-center gap-3 mt-9">
+              <div className="flex flex-wrap items-center gap-2.5 mt-6">
                 <Link
                   href="/connexion"
                   className="group inline-flex items-center gap-2.5 bg-encre text-ink
@@ -74,7 +69,7 @@ export default async function Accueil() {
                 </Link>
               </div>
 
-              <p className="text-xs text-dim mt-6 font-mono">
+              <p className="text-[13px] text-dim mt-6">
                 Accès réservé aux adresses <span className="text-mist">prenom.nom@centrale-casablanca.ma</span>
               </p>
             </div>
@@ -87,7 +82,7 @@ export default async function Accueil() {
                   aria-hidden
                 />
                 <Tambour
-                  size={330}
+                  size={250}
                   spinning="cycle"
                   strokeWidth={1}
                   className="relative text-klein w-[min(54vw,330px)] h-auto"
@@ -111,38 +106,11 @@ export default async function Accueil() {
           </div>
         </section>
 
-        {/* ── Bandeau défilant ──────────────────────────────────────────── */}
-        <section className="border-y border-line/70 py-3 overflow-hidden bg-surface/40" aria-hidden>
-          <div className="marquee gap-10">
-            {[0, 1].map((k) => (
-              <div key={k} className="flex gap-10 shrink-0 pr-10">
-                {[
-                  "RÉSERVER EN 2 CLICS",
-                  "POINTAGE PAR QR CODE",
-                  "FILE D'ATTENTE AUTOMATIQUE",
-                  "4 RÉSERVATIONS / SEMAINE",
-                  "CRÉNEAUX D'1 H OU 2 H",
-                  "LA NUIT HORS QUOTA",
-                  "SUIVI DES CYCLES EN DIRECT",
-                  "SIGNALEMENT DE PANNE",
-                  "EXPORT AGENDA",
-                ].map((t) => (
-                  <span key={t} className="eyebrow whitespace-nowrap flex items-center gap-10">
-                    {t}
-                    <span className="text-klein">◆</span>
-                  </span>
-                ))}
-              </div>
-            ))}
-          </div>
-        </section>
-
         {/* ── État du parc ──────────────────────────────────────────────── */}
-        <section id="parc" className="mx-auto max-w-[1180px] px-5 sm:px-8 py-20">
+        <section id="parc" className="mx-auto max-w-[1180px] px-5 sm:px-8 py-14">
           <div className="flex items-end justify-between gap-4 flex-wrap mb-8">
             <div>
-              <p className="eyebrow">Temps réel</p>
-              <h2 className="display text-3xl sm:text-4xl mt-2 text-chalk">État du parc</h2>
+              <h2 className="display text-2xl sm:text-3xl text-chalk">État du parc</h2>
             </div>
             {supabaseConfigure && parc.length > 0 && (
               <div className="flex gap-2 flex-wrap">
@@ -158,10 +126,7 @@ export default async function Accueil() {
           ) : parc.length === 0 ? (
             <div className="panel px-6 py-14 text-center">
               <Tambour size={48} spinning className="text-line-hi mx-auto mb-4" />
-              <p className="text-mist">Aucune machine enregistrée pour l&apos;instant.</p>
-              <p className="text-sm text-dim mt-2">
-                Un administrateur doit renseigner le parc depuis la console.
-              </p>
+              <p className="text-mist">Aucune machine enregistrée.</p>
             </div>
           ) : (
             <>
@@ -172,7 +137,7 @@ export default async function Accueil() {
               </div>
 
               {enCycle.length > 0 && (
-                <p className="text-xs text-dim mt-6 font-mono">
+                <p className="text-[13px] text-dim mt-6">
                   Prochaine machine libre à{" "}
                   <span className="text-acid">
                     {fmtTime(
@@ -188,77 +153,23 @@ export default async function Accueil() {
         </section>
 
         {/* ── Fonctionnement ────────────────────────────────────────────── */}
-        <section className="mx-auto max-w-[1180px] px-5 sm:px-8 pb-24">
-          <p className="eyebrow">Mode d&apos;emploi</p>
-          <h2 className="display text-3xl sm:text-4xl mt-2 mb-10 text-chalk">Trois gestes</h2>
-
-          <div className="grid md:grid-cols-3 gap-3 reveal-stagger">
+        {/* ── Les règles, en chiffres ───────────────────────────────────── */}
+        <section className="mx-auto max-w-[1180px] px-5 sm:px-8 pb-20">
+          <dl className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
             {[
-              {
-                n: "01",
-                t: "Vous réservez",
-                d: "La grille de la semaine, machine par machine. Un créneau libre se prend en un clic — et disparaît instantanément de l'écran des autres.",
-              },
-              {
-                n: "02",
-                t: "Vous pointez",
-                d: "Un QR code est collé sur chaque machine. Scannez-le en arrivant : votre créneau est confirmé. Sans pointage, il repart au pot commun au bout d'un quart d'heure.",
-              },
-              {
-                n: "03",
-                t: "Vous récupérez",
-                d: "Le compte à rebours du cycle tourne sur votre tableau de bord. À la fin, vous videz la machine — le suivant vous en sera reconnaissant.",
-              },
-            ].map((e) => (
-              <article key={e.n} className="panel p-6 sweep group">
-                <p className="display text-5xl text-line-hi group-hover:text-klein transition-colors duration-500">
-                  {e.n}
-                </p>
-                <h3 className="display text-xl mt-4 text-chalk">{e.t}</h3>
-                <p className="text-sm text-mist leading-relaxed mt-3">{e.d}</p>
-              </article>
+              { k: "4", v: "réservations par semaine" },
+              { k: "1–2 h", v: "au choix, par créneau" },
+              { k: "24 h", v: "d'horizon glissant" },
+              { k: "0–6 h", v: "la nuit, hors quota" },
+            ].map((r) => (
+              <div key={r.v} className="panel p-5">
+                <dt className="display text-3xl text-klein tabular">{r.k}</dt>
+                <dd className="text-[13px] text-mist mt-2">{r.v}</dd>
+              </div>
             ))}
-          </div>
+          </dl>
         </section>
 
-        {/* ── Règles ────────────────────────────────────────────────────── */}
-        <section className="border-t border-line/70 bg-surface/30">
-          <div className="mx-auto max-w-[1180px] px-5 sm:px-8 py-20 grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <p className="eyebrow">La règle du jeu</p>
-              <h2 className="display text-3xl sm:text-4xl mt-2 text-chalk">
-                Quatre créneaux.
-                <br />
-                Pas cinq.
-              </h2>
-              <p className="text-mist leading-relaxed mt-5">
-                Le quota est vérifié par la base de données, pas par le navigateur.
-                Deux étudiants qui cliquent sur le même créneau à la même seconde ?
-                Un seul passe — la contrainte est posée au niveau du moteur.
-              </p>
-              <p className="text-mist leading-relaxed mt-4">
-                Annuler à l&apos;avance ne coûte rien et rend le créneau à quelqu&apos;un
-                d&apos;autre. Ne pas venir, en revanche, se paie. Et si vos quatre
-                réservations sont épuisées, la tranche de <span className="text-chalk">00 h
-                à 06 h</span> reste ouverte — à condition de la poser la veille.
-              </p>
-            </div>
-
-            <dl className="grid grid-cols-2 gap-3">
-              {[
-                { k: "4", v: "réservations par semaine" },
-                { k: "1–2 h", v: "au choix, par créneau" },
-                { k: "24 h", v: "d'horizon glissant" },
-                { k: "0–6 h", v: "la nuit, hors quota" },
-              ].map((s) => (
-                <div key={s.v} className="panel p-5">
-                  <dt className="display text-4xl text-klein tabular">{s.k}</dt>
-                  <dd className="text-xs text-mist mt-2 leading-snug">{s.v}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </section>
       </main>
 
       <footer className="border-t border-line/70">
