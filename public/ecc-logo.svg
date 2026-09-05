@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 84" role="img" aria-labelledby="title desc">
+  <title id="title">École Centrale Casablanca</title>
+  <desc id="desc">Signature visuelle Centrale Casablanca pour l'interface Laundry.</desc>
+  <g fill="none" fill-rule="evenodd">
+    <g transform="translate(4 6)">
+      <path d="M34 0 62 16 62 48 34 64 6 48 6 16Z" fill="#0A3042"/>
+      <path d="M34 8 54 19.5 54 43 34 54.5 14 43 14 19.5Z" fill="#23B9B5"/>
+      <path d="M25 22h25v7H32v12h18v7H25Z" fill="#fff"/>
+      <path d="M18 13h16v7H18z" fill="#BFEAE7" opacity=".92"/>
+    </g>
+    <g fill="#0A3042" font-family="Arial, Helvetica, sans-serif">
+      <text x="86" y="36" font-size="27" font-weight="700" letter-spacing="-.8">Centrale</text>
+      <text x="87" y="58" font-size="13" font-weight="700" letter-spacing="3.8">CASABLANCA</text>
+      <text x="87" y="75" font-size="8.5" font-weight="600" letter-spacing="1.2" fill="#5C7A84">ÉCOLE CENTRALE CASABLANCA</text>
+    </g>
+  </g>
+</svg>
