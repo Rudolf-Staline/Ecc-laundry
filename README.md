@@ -100,8 +100,16 @@ Authentication → **URL Configuration** :
 - *Redirect URLs* : ajoutez `https://votre-domaine/auth/callback` et
   `http://localhost:3000/auth/callback`
 
-Authentication → **Email Templates** → *Magic Link*. Pour que le code à six
-chiffres apparaisse, le gabarit doit contenir `{{ .Token }}` :
+Authentication → **Email Templates** → modifiez **les deux** gabarits
+suivants pour qu'ils contiennent `{{ .Token }}` — pas un seul :
+
+- ***Magic Link*** : utilisé quand un compte existant se reconnecte.
+- ***Confirm signup*** : utilisé au tout premier passage. Comme le compte se
+  crée au premier login (pas d'inscription séparée), **c'est ce gabarit que
+  reçoit chaque étudiant la toute première fois** — l'oublier revient à ne
+  couvrir qu'une reconnexion sur deux.
+
+Le même contenu convient aux deux :
 
 ```html
 <h2>Votre code Tambour</h2>
@@ -109,6 +117,11 @@ chiffres apparaisse, le gabarit doit contenir `{{ .Token }}` :
 <p style="font-size:32px;letter-spacing:8px;font-family:monospace">{{ .Token }}</p>
 <p>Ou cliquez simplement <a href="{{ .ConfirmationURL }}">ici</a>. Le code expire dans 10 minutes.</p>
 ```
+
+> Le gabarit *Confirm signup* de Supabase, par défaut, ne contient que le
+> lien — jamais `{{ .Token }}`. Sans cette modification, le premier passage
+> de chaque étudiant reçoit un mail sans code, et cliquer sur le lien échoue
+> si l'URL de redirection n'est pas dans la liste ci-dessus.
 
 > Le domaine `@centrale-casablanca.ma` est aussi imposé côté base : même si
 > quelqu'un appelle l'API directement, le trigger refuse la création du compte.
