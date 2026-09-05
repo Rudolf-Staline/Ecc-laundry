@@ -54,7 +54,6 @@ export default async function PageTableau() {
 
   return (
     <div className="space-y-8">
-      {/* Salutation */}
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div>
           <p className="eyebrow">{fmtDay(new Date())}</p>
@@ -74,8 +73,6 @@ export default async function PageTableau() {
         {semaine && <AnneauQuota utilises={semaine.used} quota={semaine.quota} taille={88} />}
       </div>
 
-      {/* Le parc en quatre chiffres, avant tout le reste : la question qu'on se
-          pose en arrivant, c'est « y a-t-il une machine ». */}
       <section className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         <Tuile etiquette="Machines libres" valeur={String(n.libres)}
                legende={`sur ${n.total} au total`} ton={n.libres > 0 ? "menthe" : "coral"} />
@@ -89,7 +86,6 @@ export default async function PageTableau() {
                ton={n.indisponibles > 0 ? "acid" : "neutre"} />
       </section>
 
-      {/* Cycle en cours */}
       {enCours.length > 0 && (
         <section className="grid gap-3 sm:grid-cols-2">
           {enCours.map((r) => (
@@ -110,7 +106,6 @@ export default async function PageTableau() {
         </section>
       )}
 
-      {/* Prochaines réservations */}
       <section>
         <div className="flex items-end justify-between gap-4 mb-4">
           <div>
@@ -128,7 +123,6 @@ export default async function PageTableau() {
         {aVenir.length === 0 ? (
           <Vide
             titre="Aucun créneau réservé"
-
             action={
               <Link
                 href="/reserver"
@@ -154,7 +148,7 @@ export default async function PageTableau() {
                     {r.duration_minutes > 60 && (
                       <span className="text-dim"> · {r.duration_minutes / 60} h</span>
                     )}
-                    {r.is_night && <span className="text-klein-2"> · nuit, hors quota</span>}
+                    {r.is_night && <span className="text-klein-2"> · nuit</span>}
                   </p>
                 </div>
                 <span className="text-[11px] font-mono text-dim tabular">
@@ -167,7 +161,6 @@ export default async function PageTableau() {
         )}
       </section>
 
-      {/* File d'attente */}
       {file.length > 0 && (
         <section>
           <p className="eyebrow mb-3">File d&apos;attente</p>
@@ -192,7 +185,6 @@ export default async function PageTableau() {
         </section>
       )}
 
-      {/* Coup d'œil sur le parc */}
       <section>
         <div className="flex items-end justify-between gap-4 mb-4">
           <div>
@@ -224,7 +216,6 @@ export default async function PageTableau() {
   );
 }
 
-/* ── Tuile de tête ────────────────────────────────────────────────────────── */
 function Tuile({
   etiquette, valeur, legende, ton = "neutre",
 }: {
