@@ -12,14 +12,13 @@ import {
 } from "@/lib/time";
 import {
   MOTIFS,
-  type BoardRow, type BookingPurpose, type Machine, type Profile,
+  type BoardRow, type BookingPurpose, type Machine,
   type Room, type WaitlistEntry, type WeekStatus,
 } from "@/lib/types";
 
 type Etat = "libre" | "mien" | "pris" | "passe" | "indispo" | "horizon";
 
 export function Planning({
-  profil,
   buanderies,
   machines,
   planningInitial,
@@ -29,7 +28,6 @@ export function Planning({
   nuitDebut,
   nuitFin,
 }: {
-  profil: Profile;
   buanderies: Room[];
   machines: Machine[];
   planningInitial: BoardRow[];
@@ -137,7 +135,7 @@ export function Planning({
   const index = useMemo(() => {
     const m = new Map<string, BoardRow>();
     for (const r of planning) {
-      if (r.status !== "booked" && r.status !== "checked_in") continue;
+      if (r.status !== "booked") continue;
       const debut = new Date(r.starts_at).getTime();
       const fin = new Date(r.ends_at).getTime();
       const pas = 60_000 * (buanderies.find((b) => b.id === r.room_id)?.slot_minutes ?? 60);
@@ -200,7 +198,7 @@ export function Planning({
       toast({
         ton: "ok",
         titre: `${machine.name} réservée`,
-        detail: `${fmtDay(creneau.start)}, ${creneau.label} → ${fmtTime(fin)}. Pensez à pointer sur place.`,
+        detail: `${fmtDay(creneau.start)}, ${creneau.label} → ${fmtTime(fin)}.`,
       });
       setSelection(null);
     }
@@ -239,9 +237,6 @@ export function Planning({
   }
 
   /* ── Rendu ────────────────────────────────────────────────────────────── */
-  const suspendu = Boolean(
-    profil.suspended_until && new Date(profil.suspended_until).getTime() > maintenant,
-  );
   const quotaAtteint = Boolean(statut && statut.remaining <= 0);
 
   return (
@@ -271,17 +266,7 @@ export function Planning({
         )}
       </div>
 
-      {suspendu && (
-        <div className="panel border-coral/40 px-4 py-3 flex items-start gap-3" role="alert">
-          <span className="point bg-coral mt-[7px] shrink-0" aria-hidden />
-          <p className="text-sm text-mist">
-            <span className="text-chalk">Compte suspendu.</span>{" "}
-            Réservation possible de nouveau {fmtRelative(profil.suspended_until!)}.
-          </p>
-        </div>
-      )}
-
-      {quotaAtteint && !suspendu && (
+      {quotaAtteint && (
         <div className="panel border-ember/35 px-4 py-3 flex items-start gap-3">
           <span className="point bg-acid mt-[7px] shrink-0" aria-hidden />
           <p className="text-sm text-mist">
@@ -469,7 +454,7 @@ export function Planning({
                             }
                             occupe={enVol === cle}
                             annulationEnCours={enVol}
-                            verrouille={quotaAtteint && !nuit ? true : suspendu}
+                            verrouille={quotaAtteint && !nuit}
                             enFile={enAttente.has(`${buanderie.id}|${m.kind}|${c.start.toISOString()}`)}
                             onSurvol={(actif) => setSurvol(actif ? cle : null)}
                             onChoisir={() =>
@@ -654,7 +639,6 @@ function Cellule({
   }
 
   if (etat === "mien" && ligne) {
-    const pointe = ligne.status === "checked_in";
     return (
       <button
         onClick={() => onAnnuler(ligne)}
@@ -663,18 +647,12 @@ function Cellule({
         className={`${base} bg-acid-fond border-acid/25 hover:bg-coral-fond hover:border-coral/30
           group disabled:opacity-50`}
       >
-        {pointe ? (
-          <Tambour size={14} spinning="cycle" className="text-acid" />
-        ) : (
-          <>
-            <span className="text-[9px] font-semibold uppercase tracking-[0.04em] text-acid group-hover:hidden">
-              vous
-            </span>
-            <span className="hidden group-hover:inline text-[9px] font-semibold uppercase text-coral">
-              ✕
-            </span>
-          </>
-        )}
+        <span className="text-[9px] font-semibold uppercase tracking-[0.04em] text-acid group-hover:hidden">
+          vous
+        </span>
+        <span className="hidden group-hover:inline text-[9px] font-semibold uppercase text-coral">
+          ✕
+        </span>
       </button>
     );
   }

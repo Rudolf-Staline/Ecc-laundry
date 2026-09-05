@@ -23,18 +23,14 @@ export async function generateMetadata({
 
 const TONS: Record<BookingStatus, "libre" | "occupe" | "panne" | "neutre" | "info"> = {
   booked: "info",
-  checked_in: "occupe",
   completed: "libre",
   cancelled: "neutre",
   cancelled_late: "neutre",
-  no_show: "panne",
 };
 
 /** Ce que le statut implique, quand il implique quelque chose. */
 const EXPLICATIONS: Partial<Record<BookingStatus, string>> = {
-  booked: "À pointer sur la machine en arrivant.",
   cancelled_late: "Annulation tardive : le créneau reste décompté.",
-  no_show: "Jamais pointé : décompté, et retiré du karma.",
 };
 
 export default async function PageReservation({
@@ -62,11 +58,10 @@ export default async function PageReservation({
   const maintenant = Date.now();
   const enCours = debut <= maintenant && fin > maintenant;
   const aVenir = debut > maintenant;
-  const annulable = (r.status === "booked" || r.status === "checked_in") && fin > maintenant;
+  const annulable = r.status === "booked" && fin > maintenant;
 
   const etapes: Array<{ label: string; date: string | null; fait: boolean }> = [
     { label: "Réservée", date: r.created_at, fait: true },
-    { label: "Pointée sur la machine", date: r.checked_in_at, fait: Boolean(r.checked_in_at) },
     r.cancelled_at
       ? { label: "Annulée", date: r.cancelled_at, fait: true }
       : { label: "Cycle terminé", date: r.status === "completed" ? r.ends_at : null,
@@ -88,17 +83,16 @@ export default async function PageReservation({
           <div className="flex items-start gap-4 min-w-0">
             <Tambour
               size={52}
-              spinning={r.status === "checked_in" ? "cycle" : false}
+              spinning={enCours ? "cycle" : false}
               className={
-                r.status === "checked_in" ? "text-ember"
-                : r.status === "no_show" ? "text-coral"
+                enCours ? "text-ember"
                 : r.kind === "washer" ? "text-cat-lavage" : "text-cat-sechage"
               }
             />
             <div className="min-w-0">
               <div className="flex items-center gap-2.5 flex-wrap">
                 <code className="text-[11px] font-mono text-dim">{r.reference}</code>
-                <Etiquette ton={TONS[r.status]} point={r.status === "checked_in"} pulse={enCours}>
+                <Etiquette ton={TONS[r.status]} point={enCours} pulse={enCours}>
                   {LIBELLES_STATUT[r.status]}
                 </Etiquette>
                 {r.is_night && <Etiquette ton="info">nuit · hors quota</Etiquette>}
@@ -118,9 +112,11 @@ export default async function PageReservation({
           )}
         </div>
 
-        <p className="text-sm text-mist leading-relaxed mt-6 pt-5 border-t border-line">
-          {EXPLICATIONS[r.status]}
-        </p>
+        {EXPLICATIONS[r.status] && (
+          <p className="text-sm text-mist leading-relaxed mt-6 pt-5 border-t border-line">
+            {EXPLICATIONS[r.status]}
+          </p>
+        )}
       </header>
 
       <section className="panel p-6">
@@ -180,11 +176,6 @@ export default async function PageReservation({
       </section>
 
       <div className="flex flex-wrap gap-2">
-        {r.status === "booked" && enCours && (
-          <Link href="/pointage">
-            <Bouton variante="acide">Pointer sur la machine</Bouton>
-          </Link>
-        )}
         {annulable && <BoutonAnnuler idReservation={r.id} libelle={r.machine_name} />}
         <Link href={`/reclamations/nouvelle?reservation=${r.reference}`}>
           <Bouton variante="secondaire">Signaler un problème</Bouton>

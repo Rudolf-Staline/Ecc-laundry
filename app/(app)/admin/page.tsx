@@ -32,7 +32,7 @@ export default async function PageAdmin() {
     <div className="space-y-8">
       <TitreSection surtitre="Pilotage" titre="Vue d'ensemble" />
 
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 reveal-stagger">
+      <section className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 reveal-stagger">
         <Indicateur v={o?.students ?? 0} l="étudiants inscrits" />
         <Indicateur v={o?.bookings_week ?? 0} l="réservations cette semaine" />
         <Indicateur
@@ -40,25 +40,14 @@ export default async function PageAdmin() {
           l="machines en service"
           ton={(o?.machines_down ?? 0) > 0 ? "coral" : "acid"}
         />
-        <Indicateur
-          v={`${o?.no_show_rate ?? 0}%`}
-          l="taux d'absence (30 j)"
-          ton={(o?.no_show_rate ?? 0) > 15 ? "coral" : (o?.no_show_rate ?? 0) > 7 ? "ember" : "acid"}
-        />
       </section>
 
-      <section className="grid sm:grid-cols-3 gap-2.5">
+      <section className="grid sm:grid-cols-2 gap-2.5">
         <Raccourci
           href="/admin/pannes"
           titre="Signalements ouverts"
           valeur={o?.open_reports ?? 0}
           urgent={(o?.open_reports ?? 0) > 0}
-        />
-        <Raccourci
-          href="/admin/etudiants"
-          titre="Comptes suspendus"
-          valeur={o?.suspended ?? 0}
-          urgent={(o?.suspended ?? 0) > 0}
         />
         <Raccourci
           href="/admin/reclamations"

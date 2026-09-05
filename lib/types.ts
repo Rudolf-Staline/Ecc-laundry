@@ -2,7 +2,7 @@ export type UserRole = "student" | "admin";
 export type MachineKind = "washer" | "dryer";
 export type MachineStatus = "operational" | "maintenance" | "out_of_order";
 export type BookingStatus =
-  | "booked" | "checked_in" | "completed" | "cancelled" | "cancelled_late" | "no_show";
+  | "booked" | "completed" | "cancelled" | "cancelled_late";
 export type ReportStatus = "open" | "acknowledged" | "resolved" | "rejected";
 export type LiveStatus = "free" | "busy" | "maintenance" | "out_of_order";
 
@@ -14,11 +14,6 @@ export type Profile = {
   display_name: string;
   promo: number | null;
   role: UserRole;
-  karma: number;
-  no_show_count: number;
-  completed_count: number;
-  cancelled_count: number;
-  suspended_until: string | null;
   ics_token: string;
   locale: "fr" | "en";
   theme: "dark" | "light";
@@ -61,7 +56,6 @@ export type Booking = {
   starts_at: string;
   ends_at: string;
   status: BookingStatus;
-  checked_in_at: string | null;
   created_at: string;
 };
 
@@ -72,7 +66,6 @@ export type BoardRow = {
   starts_at: string;
   ends_at: string;
   status: BookingStatus;
-  checked_in_at: string | null;
   room_id: string;
   kind: MachineKind;
   machine_name: string;
@@ -160,9 +153,7 @@ export type WaitlistEntry = {
 export type MyStats = {
   total: number;
   completed: number;
-  no_show: number;
   cancelled: number;
-  karma: number;
   water_liters: number;
   kwh: number;
   favourite_hour: number | null;
@@ -177,20 +168,8 @@ export type AdminOverview = {
   machines_down: number;
   bookings_today: number;
   bookings_week: number;
-  no_show_rate: number;
   open_reports: number;
   open_claims: number;
-  suspended: number;
-};
-
-/** Étiquette QR d'une machine — lisible des seuls administrateurs. */
-export type MachineCode = {
-  machine_id: string;
-  machine_name: string;
-  room_name: string;
-  room_position: number;
-  machine_position: number;
-  qr_code: string;
 };
 
 export type AffluenceCell = { dow: number; hour: number; bookings: number; intensity: number };
@@ -209,13 +188,12 @@ export const CATEGORIES_PANNE: Record<string, string> = {
 
 export type ClaimCategory =
   | "linge_sorti" | "linge_abime" | "creneau_occupe"
-  | "pointage" | "quota" | "proprete" | "autre";
+  | "quota" | "proprete" | "autre";
 
 export const CATEGORIES_RECLAMATION: Record<ClaimCategory, string> = {
   linge_sorti: "Mon linge a été sorti de la machine",
   linge_abime: "Linge abîmé ou disparu",
   creneau_occupe: "Machine occupée hors réservation",
-  pointage: "Problème de pointage",
   quota: "Problème de quota",
   proprete: "Propreté du local",
   autre: "Autre",
@@ -226,7 +204,6 @@ export const CATEGORIES_RECLAMATION_COURT: Record<ClaimCategory, string> = {
   linge_sorti: "linge sorti",
   linge_abime: "linge abîmé",
   creneau_occupe: "créneau occupé",
-  pointage: "pointage",
   quota: "quota",
   proprete: "propreté",
   autre: "autre",
@@ -285,7 +262,6 @@ export type HistoryRow = {
   ends_at: string;
   status: BookingStatus;
   purpose: BookingPurpose | null;
-  checked_in_at: string | null;
   cancelled_at: string | null;
   created_at: string;
   duration_minutes: number;
@@ -298,11 +274,9 @@ export type HistoryRow = {
 
 export const LIBELLES_STATUT: Record<BookingStatus, string> = {
   booked: "réservée",
-  checked_in: "en cours",
   completed: "terminée",
   cancelled: "annulée",
   cancelled_late: "annulée tardivement",
-  no_show: "absent",
 };
 
 export const LIBELLES_STATUT_RECLAMATION: Record<ReportStatus, string> = {

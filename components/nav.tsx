@@ -56,15 +56,6 @@ export function BarreLaterale({ profil }: { profil: Profile }) {
             </Link>
           );
         })}
-
-        <Link
-          href="/pointage"
-          onClick={() => setOuvert(false)}
-          className="mt-3 flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-[8px]
-            bg-encre text-ink text-[13px] font-semibold hover:opacity-88 transition-opacity"
-        >
-          <QrIcone /> Pointer
-        </Link>
       </nav>
 
       <div className="p-3 border-t border-line">
@@ -280,13 +271,3 @@ function Horlogette() {
   );
 }
 
-function QrIcone() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.8" />
-      <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.8" />
-      <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M14 14h3v3h-3zM18 18h3v3h-3z" fill="currentColor" />
-    </svg>
-  );
-}

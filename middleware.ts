@@ -30,7 +30,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const chemin = request.nextUrl.pathname;
-  const privee = ["/tableau", "/reserver", "/machines", "/statistiques", "/pointage",
+  const privee = ["/tableau", "/reserver", "/machines", "/statistiques",
                   "/historique", "/reclamations", "/reservation", "/compte", "/admin"]
     .some((p) => chemin === p || chemin.startsWith(`${p}/`));
 
@@ -43,10 +43,22 @@ export async function middleware(request: NextRequest) {
 
   if (user && (chemin === "/connexion" || chemin === "/")) {
     if (chemin === "/connexion") {
-      const vers = request.nextUrl.clone();
-      vers.pathname = "/tableau";
-      vers.search = "";
-      return NextResponse.redirect(vers);
+      // Un utilisateur authentifié mais sans ligne `profiles` (compte de test
+      // créé hors du flux d'inscription, trigger jamais passé…) ne doit pas
+      // être renvoyé vers /tableau : exigerProfil l'en ferait aussitôt
+      // ressortir, et le rebond /connexion ⇄ /tableau tournerait à l'infini.
+      const { data: profil } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profil) {
+        const vers = request.nextUrl.clone();
+        vers.pathname = "/tableau";
+        vers.search = "";
+        return NextResponse.redirect(vers);
+      }
     }
   }
 

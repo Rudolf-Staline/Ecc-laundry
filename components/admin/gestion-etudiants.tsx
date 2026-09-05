@@ -6,7 +6,6 @@ import { creerClientNavigateur } from "@/lib/supabase/client";
 import { messageErreur } from "@/lib/errors";
 import { useToast } from "@/components/toast";
 import { Bouton, Champ, Etiquette } from "@/components/ui";
-import { fmtRelative } from "@/lib/time";
 import type { Profile } from "@/lib/types";
 
 export function GestionEtudiants({
@@ -20,30 +19,20 @@ export function GestionEtudiants({
   const [recherche, setRecherche] = useState(rechercheInitiale);
   const [enCours, setEnCours] = useState<string | null>(null);
 
-  async function agir(
-    p: Profile,
-    action: "suspendre" | "lever" | "promouvoir" | "retrograder",
-  ) {
+  async function agir(p: Profile, action: "promouvoir" | "retrograder") {
     setEnCours(p.id);
     const supabase = creerClientNavigateur();
 
-    const { error } =
-      action === "suspendre"
-        ? await supabase.rpc("admin_set_suspension", { p_user_id: p.id, p_days: 7 })
-        : action === "lever"
-          ? await supabase.rpc("admin_set_suspension", { p_user_id: p.id, p_days: 0 })
-          : await supabase.rpc("admin_set_role", {
-              p_user_id: p.id,
-              p_role: action === "promouvoir" ? "admin" : "student",
-            });
+    const { error } = await supabase.rpc("admin_set_role", {
+      p_user_id: p.id,
+      p_role: action === "promouvoir" ? "admin" : "student",
+    });
 
     setEnCours(null);
     if (error) {
       toast({ ton: "erreur", titre: "Action refusée", detail: messageErreur(error) });
     } else {
       const messages = {
-        suspendre: "Compte suspendu 7 jours",
-        lever: "Suspension levée",
         promouvoir: "Promu administrateur",
         retrograder: "Droits d'administration retirés",
       };
@@ -74,57 +63,35 @@ export function GestionEtudiants({
       </p>
 
       <ul className="grid gap-2">
-        {profils.map((p) => {
-          const suspendu = p.suspended_until && new Date(p.suspended_until) > new Date();
-          return (
-            <li key={p.id} className="panel p-4 flex flex-wrap items-center gap-3">
-              <span className="w-8 h-8 rounded-full bg-klein/15 border border-klein/35 grid place-items-center
-                text-[10px] font-mono text-klein-2 shrink-0">
-                {p.first_name[0]}{p.last_name[0]}
-              </span>
+        {profils.map((p) => (
+          <li key={p.id} className="panel p-4 flex flex-wrap items-center gap-3">
+            <span className="w-8 h-8 rounded-full bg-klein/15 border border-klein/35 grid place-items-center
+              text-[10px] font-mono text-klein-2 shrink-0">
+              {p.first_name[0]}{p.last_name[0]}
+            </span>
 
-              <div className="min-w-0 flex-1">
-                <p className="text-sm text-chalk truncate">{p.display_name}</p>
-                <p className="text-[11px] font-mono text-dim truncate">{p.email}</p>
-              </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-chalk truncate">{p.display_name}</p>
+              <p className="text-[11px] font-mono text-dim truncate">{p.email}</p>
+            </div>
 
+            {p.role === "admin" && (
               <div className="flex gap-1.5 flex-wrap items-center">
-                {p.role === "admin" && <Etiquette ton="info">admin</Etiquette>}
-                <Etiquette ton={p.karma >= 80 ? "libre" : p.karma >= 40 ? "occupe" : "panne"}>
-                  {p.karma}/100
-                </Etiquette>
-                {p.no_show_count > 0 && (
-                  <Etiquette ton="neutre">
-                    {p.no_show_count} absence{p.no_show_count > 1 ? "s" : ""}
-                  </Etiquette>
-                )}
-                {suspendu && (
-                  <Etiquette ton="panne" point>
-                    suspendu · {fmtRelative(p.suspended_until!)}
-                  </Etiquette>
-                )}
+                <Etiquette ton="info">admin</Etiquette>
               </div>
+            )}
 
-              <div className="flex gap-1.5 shrink-0">
-                <Bouton
-                  taille="sm"
-                  variante={suspendu ? "acide" : "fantome"}
-                  enCours={enCours === p.id}
-                  onClick={() => agir(p, suspendu ? "lever" : "suspendre")}
-                >
-                  {suspendu ? "Lever" : "Suspendre"}
-                </Bouton>
-                <Bouton
-                  taille="sm" variante="fantome"
-                  enCours={enCours === p.id}
-                  onClick={() => agir(p, p.role === "admin" ? "retrograder" : "promouvoir")}
-                >
-                  {p.role === "admin" ? "Retirer admin" : "Promouvoir"}
-                </Bouton>
-              </div>
-            </li>
-          );
-        })}
+            <div className="flex gap-1.5 shrink-0">
+              <Bouton
+                taille="sm" variante="fantome"
+                enCours={enCours === p.id}
+                onClick={() => agir(p, p.role === "admin" ? "retrograder" : "promouvoir")}
+              >
+                {p.role === "admin" ? "Retirer admin" : "Promouvoir"}
+              </Bouton>
+            </div>
+          </li>
+        ))}
       </ul>
 
       {profils.length === 0 && (

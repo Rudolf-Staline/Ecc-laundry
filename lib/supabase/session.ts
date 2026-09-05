@@ -27,8 +27,19 @@ export async function profilCourant(): Promise<Profile | null> {
 /** Exige une session ; renvoie vers la connexion sinon. */
 export async function exigerProfil(cheminRetour?: string): Promise<Profile> {
   const profil = await profilCourant();
+  const suite = cheminRetour ? `?suite=${encodeURIComponent(cheminRetour)}` : "";
+
   if (!profil) {
-    const suite = cheminRetour ? `?suite=${encodeURIComponent(cheminRetour)}` : "";
+    // Authentifié mais sans ligne `profiles` : le signaler plutôt que de
+    // renvoyer silencieusement vers la connexion (le middleware ne fait pas
+    // rebondir ce cas vers /tableau, mais autant prévenir la personne).
+    const supabase = await creerClientServeur();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const separateur = suite ? "&" : "?";
+      const erreur = encodeURIComponent("Profil introuvable. Contactez l'administration.");
+      redirect(`/connexion${suite}${separateur}erreur=${erreur}`);
+    }
     redirect(`/connexion${suite}`);
   }
   return profil;

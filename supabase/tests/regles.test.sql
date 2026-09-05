@@ -223,9 +223,6 @@ select pg_temp.expect_fail(format($q$select public.book_slot((select id from m w
 select pg_temp.expect_fail(
   $q$update public.profiles set role = 'admin' where id = auth.uid()$q$,
   'un étudiant ne peut pas se promouvoir admin');
-select pg_temp.expect_fail(
-  $q$update public.profiles set karma = 100, no_show_count = 0 where id = auth.uid()$q$,
-  'un étudiant ne peut pas réécrire son karma');
 select pg_temp.expect_ok(
   $q$update public.profiles set locale = 'en', theme = 'light' where id = auth.uid()$q$,
   'il peut modifier ses préférences');
@@ -244,12 +241,6 @@ select pg_temp.expect_fail(
 select pg_temp.expect_fail(
   $q$select public.promote_admin('rudolf.staline@centrale-casablanca.ma')$q$,
   'ni s''auto-nommer administrateur');
-select pg_temp.expect_fail(
-  $q$select qr_code from public.machines limit 1$q$,
-  'ni lire les codes QR — sinon on pointe sans venir');
-select pg_temp.expect_fail(
-  $q$select public.admin_machine_codes()$q$,
-  'ni les obtenir par la fonction d''administration');
 select pg_temp.expect_ok(
   $q$select name, status from public.machines limit 1$q$,
   'mais le reste du parc lui reste lisible');
@@ -259,8 +250,6 @@ select pg_temp.expect_ok(
 reset role;
 set role anon;
 select set_config('request.jwt.claim.sub', '', false);
-select pg_temp.expect_fail($q$select public.admin_machine_codes()$q$,
-  'anon ne peut pas appeler la fonction des codes QR');
 select pg_temp.expect_fail($q$select public.admin_overview()$q$,
   'ni le tableau de bord d''administration');
 select pg_temp.expect_fail($q$select public.set_setting('max_bookings_per_week','99')$q$,
@@ -268,8 +257,6 @@ select pg_temp.expect_fail($q$select public.set_setting('max_bookings_per_week',
 select pg_temp.expect_fail(
   $q$select public.book_slot((select id from m where n = 0), now() + interval '3 hours', 1)$q$,
   'ni réserver');
-select pg_temp.expect_fail($q$select qr_code from public.machines limit 1$q$,
-  'ni lire un code QR');
 select pg_temp.expect_ok($q$select name, live_status from public.v_machine_live limit 1$q$,
   'mais le tableau public du parc reste lisible');
 select pg_temp.expect_ok($q$select name from public.rooms limit 1$q$,
@@ -300,36 +287,27 @@ select p.first_name, b.status,
  order by b.created_at;
 
 \echo ''
-\echo '━━━ 9. Absence : balayage automatique ━━━'
--- Relevé avant balayage : les vérifications portent sur l'écart, pas sur une
--- valeur absolue qui dépendrait de ce qu'ont fait les sections précédentes.
-create temp table avant as
-  select karma, no_show_count from public.profiles
-   where id = '22222222-2222-2222-2222-222222222222';
+\echo '━━━ 9. Balayage automatique : clôture des cycles ━━━'
+-- Machine de la buanderie A (n = 1) : ni mise hors service (n = 5, section 6),
+-- ni dans une buanderie aux horaires restreints (n = 6.., section 6 aussi).
+create temp table cycle_a_clore as
+with ins as (
+  insert into public.bookings (machine_id, user_id, starts_at, ends_at, status)
+  select (select id from m where n = 1), '22222222-2222-2222-2222-222222222222',
+         date_trunc('hour', now()) + interval '2 hours',
+         date_trunc('hour', now()) + interval '3 hours', 'booked'
+  returning id
+)
+select id from ins;
 
-insert into public.bookings (machine_id, user_id, starts_at, ends_at, status)
-select (select id from m where n = 7), '22222222-2222-2222-2222-222222222222',
-       date_trunc('hour', now()) + interval '2 hours',
-       date_trunc('hour', now()) + interval '3 hours', 'booked';
 update public.bookings
-   set starts_at = now() - interval '40 minutes', ends_at = now() + interval '20 minutes'
- where machine_id = (select id from m where n = 7);
+   set starts_at = now() - interval '40 minutes', ends_at = now() - interval '5 minutes'
+ where id = (select id from cycle_a_clore);
 select public.sweep_maintenance();
 
 select pg_temp.expect_eq(
-  (select bool_and(status = 'no_show') from public.bookings
-    where machine_id = (select id from m where n = 7)),
-  true, 'le créneau jamais pointé bascule en absence');
-select pg_temp.expect_eq(
-  (select p.no_show_count = a.no_show_count + 1
-     from public.profiles p, avant a
-    where p.id = '22222222-2222-2222-2222-222222222222'),
-  true, 'l''absence est portée au dossier de l''étudiant');
-select pg_temp.expect_eq(
-  (select p.karma = greatest(0, a.karma - public.setting_int('no_show_penalty', 20))
-     from public.profiles p, avant a
-    where p.id = '22222222-2222-2222-2222-222222222222'),
-  true, 'et le karma amputé de la pénalité');
+  (select status = 'completed' from public.bookings where id = (select id from cycle_a_clore)),
+  true, 'le créneau dont l''horaire est passé bascule en terminé, sans confirmation de présence');
 
 \echo ''
 \echo '━━━ 10. Réglages par l''admin ━━━'
