@@ -103,7 +103,7 @@ export type WeekStatus = {
   used: number;
   quota: number;
   remaining: number;
-  /** Créneaux de nuit posés cette semaine — hors quota. */
+  /** Nombre de réservations nocturnes, déjà incluses dans `used`. */
   night_used: number;
 };
 
@@ -209,18 +209,6 @@ export const CATEGORIES_RECLAMATION_COURT: Record<ClaimCategory, string> = {
   autre: "autre",
 };
 
-export type BookingPurpose =
-  | "courant" | "draps" | "sport" | "delicat" | "volumineux" | "autre";
-
-export const MOTIFS: Record<BookingPurpose, string> = {
-  courant: "Lessive courante",
-  draps: "Draps et serviettes",
-  sport: "Tenue de sport",
-  delicat: "Linge délicat",
-  volumineux: "Gros volume",
-  autre: "Autre",
-};
-
 export type ClaimRow = {
   id: string;
   reference: string;
@@ -261,7 +249,6 @@ export type HistoryRow = {
   starts_at: string;
   ends_at: string;
   status: BookingStatus;
-  purpose: BookingPurpose | null;
   cancelled_at: string | null;
   created_at: string;
   duration_minutes: number;
