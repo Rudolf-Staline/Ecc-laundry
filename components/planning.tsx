@@ -51,6 +51,7 @@ export function Planning({
   const [attente, setAttente] = useState(attenteInitiale);
   const [enVol, setEnVol] = useState<string | null>(null);
   const [survol, setSurvol] = useState<string | null>(null);
+  const [selection, setSelection] = useState<{ machine: Machine; creneau: Slot } | null>(null);
   const [maintenant, setMaintenant] = useState(() => Date.now());
 
   const grille = useRef<HTMLDivElement>(null);
@@ -59,6 +60,21 @@ export function Planning({
   const parc = useMemo(
     () => machines.filter((m) => m.room_id === buanderie.id).sort((a, b) => a.position - b.position),
     [machines, buanderie.id],
+  );
+
+  // Lave-linge et sèche-linge ne se réservent pas pour les mêmes raisons :
+  // les séparer évite de compter les uns pour les autres d'un coup d'œil.
+  const groupes = useMemo(
+    () =>
+      (
+        [
+          { kind: "washer" as const, label: "Lave-linge" },
+          { kind: "dryer" as const, label: "Sèche-linge" },
+        ]
+      )
+        .map((g) => ({ ...g, machines: parc.filter((m) => m.kind === g.kind) }))
+        .filter((g) => g.machines.length > 0),
+    [parc],
   );
 
   // L'horizon glissant de 24 h ne touche jamais plus de deux jours civils.
@@ -164,7 +180,9 @@ export function Planning({
   );
 
   /* ── Actions ──────────────────────────────────────────────────────────── */
-  async function reserver(machine: Machine, creneau: Slot) {
+  async function reserver() {
+    if (!selection) return;
+    const { machine, creneau } = selection;
     const cle = `${machine.id}|${creneau.key}`;
     setEnVol(cle);
     const { error } = await supabase.rpc("book_slot", {
@@ -184,6 +202,7 @@ export function Planning({
         titre: `${machine.name} réservée`,
         detail: `${fmtDay(creneau.start)}, ${creneau.label} → ${fmtTime(fin)}. Pensez à pointer sur place.`,
       });
+      setSelection(null);
     }
     await recharger();
   }
@@ -220,7 +239,6 @@ export function Planning({
   }
 
   /* ── Rendu ────────────────────────────────────────────────────────────── */
-  const largeurColonne = parc.length <= 4 ? "minmax(112px,1fr)" : "minmax(96px,1fr)";
   const suspendu = Boolean(
     profil.suspended_until && new Date(profil.suspended_until).getTime() > maintenant,
   );
@@ -299,21 +317,6 @@ export function Planning({
         ) : <span />}
 
         <div className="flex items-end gap-4 flex-wrap">
-          <label className="flex items-center gap-2">
-            <span className="eyebrow">Motif</span>
-            <select
-              value={motif}
-              onChange={(e) => setMotif(e.target.value as BookingPurpose | "")}
-              className="bg-ink-2 border border-line rounded-[3px] px-3 py-2 text-[12px]
-                text-mist outline-none focus:border-klein transition-colors"
-            >
-              <option value="">non précisé</option>
-              {(Object.keys(MOTIFS) as BookingPurpose[]).map((m) => (
-                <option key={m} value={m}>{MOTIFS[m]}</option>
-              ))}
-            </select>
-          </label>
-
         {dureesPossibles.length > 1 && (
           <fieldset className="flex items-center gap-2">
             <legend className="sr-only">Durée du créneau</legend>
@@ -370,97 +373,123 @@ export function Planning({
         </div>
       </div>
 
-      {/* La grille */}
+      {/* La grille — machines en lignes, heures en colonnes : douze machines
+          se lisent d'un coup d'œil là où vingt-quatre heures empilées
+          obligeaient à faire défiler la page. */}
       {parc.length === 0 ? (
         <div className="panel corners px-6 py-14 text-center">
           <Tambour size={44} className="text-line-hi mx-auto mb-4" />
           <p className="text-mist">Aucune machine dans cette buanderie.</p>
         </div>
       ) : (
-        <div className="panel corners overflow-hidden">
-          <div ref={grille} className="scroll-x">
+        <div className="panel corners p-3 sm:p-4">
+          <div ref={grille} className="scroll-x nice-scroll">
             <div
               className="min-w-max"
               style={{
                 display: "grid",
-                gridTemplateColumns: `78px repeat(${parc.length}, ${largeurColonne})`,
+                gridTemplateColumns: `124px repeat(${creneaux.length}, 34px)`,
+                gap: "3px",
               }}
             >
-              <div className="sticky left-0 z-20 bg-surface border-b border-r border-line px-3 py-3">
-                <span className="eyebrow">Heure</span>
-              </div>
-              {parc.map((m) => (
-                <div key={m.id} className="border-b border-line px-2 py-3 text-center bg-surface/60">
-                  <div className="flex items-center justify-center gap-1.5">
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                        m.status === "operational"
-                          ? m.kind === "washer" ? "bg-cat-lavage" : "bg-cat-sechage"
-                          : "bg-coral"
-                      }`}
-                      aria-hidden
-                    />
-                    <span className="text-[11px] text-chalk truncate font-medium">{m.name}</span>
-                  </div>
-                  <span className="block text-[9px] font-mono text-dim uppercase tracking-[0.1em] mt-1">
-                    {m.status !== "operational"
-                      ? m.status === "maintenance" ? "maintenance" : "hors service"
-                      : m.kind === "washer" ? "lavage" : "séchage"}
-                  </span>
-                </div>
-              ))}
-
+              {/* Bandeau des heures */}
+              <div className="sticky left-0 z-20 bg-surface" />
               {creneaux.map((c) => {
                 const nuit = estCreneauNuit(c.start, nuitDebut, nuitFin);
-                const passe = c.start.getTime() < maintenant;
-
                 return (
-                  <div key={c.key} className="contents">
-                    <div
-                      className={`sticky left-0 z-10 border-r border-line px-3 py-2.5
-                        flex items-center gap-1.5 ${nuit ? "bg-klein/[0.07]" : "bg-surface"}
-                        ${passe ? "opacity-40" : ""}`}
-                    >
-                      <span className="tabular text-[12px] text-mist">{c.label}</span>
-                      {nuit && <IconeNuit />}
-                    </div>
-
-                    {parc.map((m) => {
-                      const { etat, ligne } = etatCellule(m, c.start);
-                      const cle = `${m.id}|${c.key}`;
-                      const bloqueParDuree =
-                        etat === "libre" && dureeEffective > 1 && !secondeHeureLibre(m, c.start);
-                      const apercu =
-                        survol !== null &&
-                        dureeEffective > 1 &&
-                        survol === `${m.id}|${new Date(c.start.getTime() - buanderie.slot_minutes * 60_000).toISOString()}`;
-
-                      return (
-                        <Cellule
-                          key={cle}
-                          machine={m}
-                          creneau={c}
-                          etat={etat}
-                          ligne={ligne}
-                          nuit={nuit}
-                          duree={dureeEffective}
-                          pasMinutes={buanderie.slot_minutes}
-                          bloqueParDuree={bloqueParDuree}
-                          apercu={apercu}
-                          occupe={enVol === cle}
-                          annulationEnCours={enVol}
-                          verrouille={quotaAtteint && !nuit ? true : suspendu}
-                          enFile={enAttente.has(`${buanderie.id}|${m.kind}|${c.start.toISOString()}`)}
-                          onSurvol={(actif) => setSurvol(actif ? cle : null)}
-                          onReserver={() => reserver(m, c)}
-                          onAnnuler={(l) => annuler(l)}
-                          onFile={() => rejoindreFile(c, m.kind)}
-                        />
-                      );
-                    })}
+                  <div key={`h-${c.key}`} className="pb-1 grid place-items-center" title={c.label}>
+                    {nuit ? (
+                      <IconeNuit />
+                    ) : (
+                      <span className="text-[10px] tabular text-dim">{c.label.slice(0, 2)}</span>
+                    )}
                   </div>
                 );
               })}
+
+              {groupes.map((g) => (
+                <div key={g.kind} className="contents">
+                  <div
+                    style={{ gridColumn: "1 / -1" }}
+                    className="flex items-center gap-2 pt-3 pb-0.5"
+                  >
+                    <span className={g.kind === "washer" ? "text-cat-lavage" : "text-cat-sechage"}>
+                      <IconeType kind={g.kind} />
+                    </span>
+                    <span className="eyebrow">{g.label}</span>
+                  </div>
+
+                  {g.machines.map((m) => (
+                    <div key={m.id} className="contents">
+                      <div className="sticky left-0 z-10 bg-surface pr-2 flex items-center gap-2 min-w-0">
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                            m.status === "operational"
+                              ? m.kind === "washer" ? "bg-cat-lavage" : "bg-cat-sechage"
+                              : "bg-ember"
+                          }`}
+                          aria-hidden
+                        />
+                        <span className="text-[12px] text-chalk truncate">{m.name}</span>
+                        {m.status !== "operational" && (
+                          <span className="text-[9px] text-ember shrink-0 uppercase tracking-[0.08em]">
+                            hs
+                          </span>
+                        )}
+                      </div>
+
+                      {creneaux.map((c) => {
+                        const nuit = estCreneauNuit(c.start, nuitDebut, nuitFin);
+                        const { etat, ligne } = etatCellule(m, c.start);
+                        const cle = `${m.id}|${c.key}`;
+                        const bloqueParDuree =
+                          etat === "libre" && dureeEffective > 1 && !secondeHeureLibre(m, c.start);
+                        const precedent = new Date(c.start.getTime() - buanderie.slot_minutes * 60_000).toISOString();
+                        const apercu =
+                          dureeEffective > 1 &&
+                          (survol === `${m.id}|${precedent}` ||
+                            (selection !== null &&
+                              selection.machine.id === m.id &&
+                              selection.creneau.start.toISOString() === precedent));
+
+                        return (
+                          <Cellule
+                            key={cle}
+                            machine={m}
+                            creneau={c}
+                            etat={etat}
+                            ligne={ligne}
+                            nuit={nuit}
+                            duree={dureeEffective}
+                            pasMinutes={buanderie.slot_minutes}
+                            bloqueParDuree={bloqueParDuree}
+                            apercu={apercu}
+                            choisi={
+                              selection !== null &&
+                              selection.machine.id === m.id &&
+                              selection.creneau.key === c.key
+                            }
+                            occupe={enVol === cle}
+                            annulationEnCours={enVol}
+                            verrouille={quotaAtteint && !nuit ? true : suspendu}
+                            enFile={enAttente.has(`${buanderie.id}|${m.kind}|${c.start.toISOString()}`)}
+                            onSurvol={(actif) => setSurvol(actif ? cle : null)}
+                            onChoisir={() =>
+                              setSelection((s) =>
+                                s && s.machine.id === m.id && s.creneau.key === c.key
+                                  ? null
+                                  : { machine: m, creneau: c },
+                              )
+                            }
+                            onAnnuler={(l) => annuler(l)}
+                            onFile={() => rejoindreFile(c, m.kind)}
+                          />
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -468,21 +497,27 @@ export function Planning({
 
       {/* Légende */}
       <div className="space-y-3">
-        <div className="flex flex-wrap gap-2.5 items-center text-[11px] font-mono text-dim">
+        <div className="flex flex-wrap gap-3 items-center text-[11px] text-dim">
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 border border-line-hi rounded-[2px]" /> libre
+            <span className="w-3.5 h-3.5 border border-klein-2/25 bg-klein-2/12 rounded-[4px]" /> libre
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 border border-acid/50 bg-acid/15 rounded-[2px]" /> à vous
+            <span className="w-3.5 h-3.5 border border-acid bg-acid rounded-[4px]" /> votre choix
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 border border-klein/40 bg-klein/12 rounded-[2px]" /> pris
+            <span className="w-3.5 h-3.5 border border-acid/50 bg-acid/25 rounded-[4px]" /> à vous
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 border border-line bg-line/40 rounded-[2px]" /> indisponible
+            <span className="w-3.5 h-3.5 border border-coral/30 bg-coral/18 rounded-[4px]" /> occupé
           </span>
-          <span className="ml-auto flex items-center gap-1.5 text-acid">
-            <span className="w-1.5 h-1.5 rounded-full bg-acid pulse-live" /> mise à jour en direct
+          <span className="flex items-center gap-1.5">
+            <span className="w-3.5 h-3.5 border border-violet/25 night-cell rounded-[4px]" /> nuit
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-3.5 h-3.5 border border-ember/25 maintenance-stripes rounded-[4px]" /> hors service
+          </span>
+          <span className="ml-auto flex items-center gap-1.5 text-klein">
+            <span className="w-1.5 h-1.5 rounded-full bg-klein pulse-live" /> en direct
           </span>
         </div>
 
@@ -495,6 +530,70 @@ export function Planning({
           </span>
         </p>
       </div>
+
+      {/* Barre de confirmation — un clic sur une case ne consomme rien tant que
+          rien n'est confirmé : sur quatre réservations par semaine, une erreur
+          de visée coûte cher. */}
+      {selection && (
+        <div className="fixed inset-x-0 bottom-0 z-40 px-4 pb-4 md:pl-[272px] md:pr-8 no-print">
+          <div className="panel-deep corners mx-auto max-w-[860px] px-4 py-3
+            flex flex-wrap items-center gap-x-5 gap-y-3 reveal">
+            <div className="min-w-0">
+              <p className="eyebrow">Créneau sélectionné</p>
+              <p className="text-[14px] text-chalk mt-0.5">
+                <span className="font-semibold">{selection.machine.name}</span>
+                <span className="text-dim"> · </span>
+                {fmtDay(selection.creneau.start)}
+                <span className="text-dim"> · </span>
+                <span className="tabular">
+                  {selection.creneau.label} → {fmtTime(new Date(
+                    selection.creneau.start.getTime() + dureeEffective * buanderie.slot_minutes * 60_000,
+                  ))}
+                </span>
+              </p>
+              <p className="text-[11px] text-dim mt-0.5">
+                {estCreneauNuit(selection.creneau.start, nuitDebut, nuitFin)
+                  ? "Créneau de nuit — hors quota hebdomadaire."
+                  : `Quota après réservation : ${Math.min(statut.used + 1, statut.quota)}/${statut.quota}`}
+              </p>
+            </div>
+
+            <label className="flex items-center gap-2 ml-auto">
+              <span className="eyebrow">Motif</span>
+              <select
+                value={motif}
+                onChange={(e) => setMotif(e.target.value as BookingPurpose | "")}
+                className="bg-ink-2 border border-line rounded-[6px] px-3 py-2 text-[12px]
+                  text-mist outline-none focus:border-klein transition-colors"
+              >
+                <option value="">non précisé</option>
+                {(Object.keys(MOTIFS) as BookingPurpose[]).map((m) => (
+                  <option key={m} value={m}>{MOTIFS[m]}</option>
+                ))}
+              </select>
+            </label>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSelection(null)}
+                className="px-3.5 py-2 text-[12.5px] text-dim hover:text-chalk transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={reserver}
+                disabled={enVol !== null}
+                className="px-5 py-2.5 rounded-[var(--radius-tambour)] bg-klein text-on-bright
+                  text-[13px] font-semibold hover:bg-klein-2 transition-colors
+                  disabled:opacity-60 flex items-center gap-2"
+              >
+                {enVol !== null ? <Tambour size={14} spinning className="text-on-bright" /> : null}
+                Confirmer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -507,10 +606,25 @@ function IconeNuit() {
   );
 }
 
+function IconeType({ kind }: { kind: "washer" | "dryer" }) {
+  return kind === "washer" ? (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+      <path d="M12 4c-3 3.4-5 5.9-5 8a5 5 0 0 0 10 0c0-2.1-2-4.6-5-8z" />
+    </svg>
+  ) : (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4" />
+    </svg>
+  );
+}
+
 /* ── Une case de la grille ────────────────────────────────────────────────── */
 function Cellule({
-  machine, creneau, etat, ligne, nuit, duree, pasMinutes, bloqueParDuree, apercu,
-  occupe, annulationEnCours, verrouille, enFile, onSurvol, onReserver, onAnnuler, onFile,
+  machine, creneau, etat, ligne, nuit, duree, pasMinutes, bloqueParDuree, apercu, choisi,
+  occupe, annulationEnCours, verrouille, enFile, onSurvol, onChoisir, onAnnuler, onFile,
 }: {
   machine: Machine;
   creneau: Slot;
@@ -521,29 +635,31 @@ function Cellule({
   pasMinutes: number;
   bloqueParDuree: boolean;
   apercu: boolean;
+  choisi: boolean;
   occupe: boolean;
   annulationEnCours: string | null;
   verrouille: boolean;
   enFile: boolean;
   onSurvol: (actif: boolean) => void;
-  onReserver: () => void;
+  onChoisir: () => void;
   onAnnuler: (l: BoardRow) => void;
   onFile: () => void;
 }) {
   const base =
-    "border-b border-l border-line px-1.5 py-2 min-h-[52px] flex items-center justify-center text-center transition-all duration-200";
-  const fondNuit = nuit ? "bg-klein/[0.05]" : "";
+    "h-[34px] rounded-[6px] border grid place-items-center text-center transition-all duration-150";
 
   if (etat === "indispo") {
     return (
-      <div className={`${base} bg-line/[0.18]`} aria-label={`${machine.name} indisponible`}>
-        <span className="text-[10px] font-mono text-dim/70">—</span>
-      </div>
+      <div
+        className={`${base} maintenance-stripes border-ember/25`}
+        title={`${machine.name} hors service`}
+        aria-label={`${machine.name} hors service`}
+      />
     );
   }
 
   if (etat === "passe") {
-    return <div className={`${base} bg-line/[0.10] opacity-50`} aria-hidden />;
+    return <div className={`${base} border-line/40 bg-ink-2/40 opacity-50`} aria-hidden />;
   }
 
   if (etat === "mien" && ligne) {
@@ -553,31 +669,27 @@ function Cellule({
         onClick={() => onAnnuler(ligne)}
         disabled={annulationEnCours === ligne.id}
         title={`Votre réservation ${fmtTime(ligne.starts_at)} → ${fmtTime(ligne.ends_at)}. Cliquer pour annuler.`}
-        className={`${base} bg-acid/[0.13] border-l-acid/40 hover:bg-coral/15 hover:border-l-coral/50 group
-          disabled:opacity-50`}
+        className={`${base} bg-acid/25 border-acid/50 hover:bg-coral/25 hover:border-coral/50
+          group disabled:opacity-50`}
       >
-        <span className="flex flex-col items-center gap-0.5">
-          {pointe ? (
-            <Tambour size={16} spinning="cycle" className="text-acid" />
-          ) : (
-            <span className="text-[10px] font-mono uppercase tracking-[0.08em] text-acid group-hover:hidden">
-              à vous
+        {pointe ? (
+          <Tambour size={14} spinning="cycle" className="text-acid" />
+        ) : (
+          <>
+            <span className="text-[9px] font-semibold uppercase tracking-[0.04em] text-acid group-hover:hidden">
+              vous
             </span>
-          )}
-          <span className="hidden group-hover:inline text-[10px] font-mono uppercase tracking-[0.08em] text-coral">
-            annuler
-          </span>
-          {ligne.duration_minutes > pasMinutes && (
-            <span className="text-[9px] font-mono text-acid/70 group-hover:hidden tabular">
-              {ligne.duration_minutes / 60} h
+            <span className="hidden group-hover:inline text-[9px] font-semibold uppercase text-coral">
+              ✕
             </span>
-          )}
-        </span>
+          </>
+        )}
       </button>
     );
   }
 
   if (etat === "pris" && ligne) {
+    const initiales = ligne.owner_first_name.slice(0, 2).toUpperCase();
     return (
       <button
         onClick={onFile}
@@ -587,18 +699,10 @@ function Cellule({
             ? "Vous êtes déjà en file d'attente sur ce créneau"
             : `Pris par ${ligne.owner_first_name}. Cliquer pour rejoindre la file d'attente.`
         }
-        className={`${base} bg-klein/[0.10] hover:bg-klein/[0.18] group cursor-pointer`}
+        className={`${base} bg-coral/18 border-coral/30 hover:bg-coral/28`}
       >
-        <span className="flex flex-col items-center gap-0.5 min-w-0">
-          <span className="text-[11px] text-klein-2 truncate max-w-full">{ligne.owner_first_name}</span>
-          {enFile ? (
-            <span className="text-[9px] font-mono text-ember uppercase tracking-[0.08em]">en file</span>
-          ) : (
-            <span className="text-[9px] font-mono text-dim uppercase tracking-[0.08em]
-              opacity-0 group-hover:opacity-100 transition-opacity">
-              + attendre
-            </span>
-          )}
+        <span className={`text-[9px] font-semibold ${enFile ? "text-ember" : "text-coral"}`}>
+          {enFile ? "file" : initiales}
         </span>
       </button>
     );
@@ -607,11 +711,9 @@ function Cellule({
   if (etat === "horizon") {
     return (
       <div
-        className={`${base} ${fondNuit} opacity-45`}
+        className={`${base} border-line/40 bg-ink-2/30 opacity-55`}
         title={`Ce créneau s'ouvrira ${fmtRelative(new Date(creneau.start.getTime() - 24 * 3_600_000))}`}
-      >
-        <span className="text-[10px] font-mono text-dim">pas encore</span>
-      </div>
+      />
     );
   }
 
@@ -621,33 +723,38 @@ function Cellule({
 
   return (
     <button
-      onClick={onReserver}
+      onClick={onChoisir}
       onMouseEnter={() => onSurvol(true)}
       onMouseLeave={() => onSurvol(false)}
       onFocus={() => onSurvol(true)}
       onBlur={() => onSurvol(false)}
       disabled={occupe || indisponible}
+      aria-pressed={choisi}
       title={
         verrouille
           ? "Quota hebdomadaire atteint — les créneaux de nuit restent ouverts"
           : bloqueParDuree
             ? "L'heure suivante est déjà prise : ce créneau de 2 h ne tient pas"
-            : `Réserver ${machine.name} de ${creneau.label} à ${fmtTime(finPrevue)}`
+            : `${machine.name}, ${creneau.label} → ${fmtTime(finPrevue)}`
       }
-      className={`${base} ${fondNuit} sweep group
-        ${apercu ? "bg-acid/[0.10] border-l-acid/40" : ""}
-        ${indisponible ? "cursor-not-allowed opacity-45" : "hover:bg-acid/[0.10] hover:border-l-acid/40"}`}
+      className={`${base}
+        ${choisi
+          ? "bg-acid border-acid text-on-bright shadow-[0_6px_16px_-8px_rgba(161,98,7,0.9)]"
+          : apercu
+            ? "bg-acid/30 border-acid/50"
+            : nuit
+              ? "night-cell border-violet/25 hover:border-acid/60"
+              : "bg-klein-2/12 border-klein-2/25 hover:bg-acid/25 hover:border-acid/50"}
+        ${indisponible ? "cursor-not-allowed opacity-40" : ""}`}
     >
       {occupe ? (
-        <Tambour size={16} spinning className="text-acid" />
-      ) : (
-        <span
-          className={`text-[10px] font-mono uppercase tracking-[0.1em] transition-colors
-            ${indisponible ? "text-dim" : "text-dim group-hover:text-acid"}`}
-        >
-          {indisponible ? "—" : "libre"}
-        </span>
-      )}
+        <Tambour size={13} spinning className="text-acid" />
+      ) : choisi ? (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M20 6 9 17l-5-5" />
+        </svg>
+      ) : null}
     </button>
   );
 }
