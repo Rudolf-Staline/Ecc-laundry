@@ -4,8 +4,6 @@ import { NOM_APP, NOM_ECOLE, urlSite } from "@/lib/config";
 import { FournisseurToasts } from "@/components/toast";
 import "./globals.css";
 
-// Une seule famille pour le titrage et le texte : les interfaces de référence
-// ne changent pas de voix entre un titre et un libellé de colonne.
 const corps = Inter({
   subsets: ["latin"],
   variable: "--f-body",
@@ -26,7 +24,7 @@ export const metadata: Metadata = {
     template: `%s · ${NOM_APP}`,
   },
   description:
-    "Réservez une machine à laver de la résidence, suivez les cycles en direct et récupérez votre linge à l'heure. Quatre créneaux par semaine, pour tout le monde.",
+    "Réservez une machine à laver de la résidence, consultez le calendrier et suivez vos réservations depuis Laundry.",
   applicationName: NOM_APP,
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: NOM_APP, statusBarStyle: "black-translucent" },
@@ -34,22 +32,21 @@ export const metadata: Metadata = {
     type: "website",
     siteName: NOM_APP,
     title: `${NOM_APP} · la buanderie de Centrale Casablanca`,
-    description: "Le planning de la buanderie, en direct.",
+    description: "La buanderie du campus, claire et simple à réserver.",
   },
   robots: { index: true, follow: false },
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0d0f12" },
-    { media: "(prefers-color-scheme: light)", color: "#f2f3f5" },
+    { media: "(prefers-color-scheme: dark)", color: "#071a24" },
+    { media: "(prefers-color-scheme: light)", color: "#eef7f8" },
   ],
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
 };
 
-// Applique le thème avant la première peinture : pas de flash blanc à 7 h du matin.
 const SCRIPT_THEME = `
 (function () {
   try {
