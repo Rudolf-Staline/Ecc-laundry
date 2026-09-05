@@ -49,7 +49,7 @@ export async function GET(
   return new NextResponse(ics, {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
-      "Content-Disposition": `inline; filename="tambour.ics"`,
+      "Content-Disposition": `inline; filename="laundry.ics"`,
       "Cache-Control": "no-cache, must-revalidate",
     },
   });
@@ -113,6 +113,7 @@ function construireCalendrier(reservations: LigneReservation[]): string {
 
     lignes.push(
       "BEGIN:VEVENT",
+      // UID historique conservé pour ne pas dupliquer les événements chez les abonnés existants.
       `UID:${r.id}@tambour`,
       `DTSTAMP:${maintenant}`,
       `DTSTART:${horodatage(r.starts_at)}`,
