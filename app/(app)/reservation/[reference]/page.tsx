@@ -30,14 +30,11 @@ const TONS: Record<BookingStatus, "libre" | "occupe" | "panne" | "neutre" | "inf
   no_show: "panne",
 };
 
-/** Ce que le statut veut dire, en une phrase — plutôt qu'un mot isolé. */
-const EXPLICATIONS: Record<BookingStatus, string> = {
-  booked: "Le créneau vous est réservé. Pointez le QR code sur la machine en arrivant, sinon il repartira au pot commun.",
-  checked_in: "Vous avez pointé, le cycle tourne. Pensez à vider la machine à la fin.",
-  completed: "Cycle mené à terme. Il compte dans votre score de fiabilité.",
-  cancelled: "Annulée à l'avance : le créneau est retourné aux autres et ne vous a rien coûté.",
-  cancelled_late: "Annulée après la limite : la machine a été libérée, mais le créneau reste décompté de votre quota.",
-  no_show: "Créneau jamais pointé. La machine est restée bloquée à vide — c'est ce que le score de fiabilité sanctionne.",
+/** Ce que le statut implique, quand il implique quelque chose. */
+const EXPLICATIONS: Partial<Record<BookingStatus, string>> = {
+  booked: "À pointer sur la machine en arrivant.",
+  cancelled_late: "Annulation tardive : le créneau reste décompté.",
+  no_show: "Jamais pointé : décompté, et retiré du karma.",
 };
 
 export default async function PageReservation({

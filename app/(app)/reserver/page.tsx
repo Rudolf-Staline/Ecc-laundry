@@ -48,7 +48,7 @@ export default async function PageReserver() {
     return (
       <Vide
         titre="Aucune buanderie ouverte"
-        detail="Le parc n'a pas encore été renseigné, ou toutes les buanderies sont fermées. Un administrateur peut y remédier depuis la console."
+        detail="Aucune buanderie ouverte."
       />
     );
   }

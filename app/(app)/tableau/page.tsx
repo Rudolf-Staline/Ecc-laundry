@@ -64,12 +64,12 @@ export default async function PageTableau() {
           </h1>
           <p className="text-mist mt-3 max-w-lg leading-relaxed">
             {enCours.length > 0
-              ? "Un cycle tourne en ce moment. Pensez à venir vider la machine à la fin."
+              ? "Un cycle tourne en ce moment."
               : aVenir.length > 0
                 ? `Prochain créneau ${fmtRelative(aVenir[0].starts_at)}.`
                 : n.libres > 0
                   ? `${n.libres} machine${n.libres > 1 ? "s" : ""} libre${n.libres > 1 ? "s" : ""} en ce moment.`
-                  : "Toutes les machines tournent. La grille de demain est ouverte."}
+                  : "Toutes les machines tournent."}
           </p>
         </div>
         {semaine && <AnneauQuota utilises={semaine.used} quota={semaine.quota} taille={88} />}
@@ -153,7 +153,7 @@ export default async function PageTableau() {
         {aVenir.length === 0 ? (
           <Vide
             titre="Aucun créneau réservé"
-            detail="La grille est ouverte sur les deux prochaines semaines. Les créneaux de 8 h et de 20 h partent en premier."
+
             action={
               <Link
                 href="/reserver"
