@@ -52,7 +52,7 @@ export default async function PageEtiquettes() {
         </Link>
       </div>
 
-      <div className="no-print panel corners p-4 flex items-start gap-3">
+      <div className="no-print panel p-4 flex items-start gap-3">
         <Etiquette ton="info">confidentiel</Etiquette>
         <p className="text-xs text-mist leading-relaxed">
           Ces codes valent preuve de présence devant la machine : ils ne sont
@@ -62,11 +62,11 @@ export default async function PageEtiquettes() {
       </div>
 
       {error ? (
-        <div className="panel corners px-6 py-12 text-center text-coral no-print">
+        <div className="panel px-6 py-12 text-center text-coral no-print">
           {error.message}
         </div>
       ) : parc.length === 0 ? (
-        <div className="panel corners px-6 py-12 text-center text-mist no-print">
+        <div className="panel px-6 py-12 text-center text-mist no-print">
           Aucune machine à étiqueter.
         </div>
       ) : (
@@ -74,7 +74,7 @@ export default async function PageEtiquettes() {
           {etiquettes.map((m) => (
             <article
               key={m.machine_id}
-              className="bg-white text-black rounded-[3px] p-5 flex flex-col items-center
+              className="bg-white text-black rounded-[8px] p-5 flex flex-col items-center
                 text-center break-inside-avoid border border-line"
             >
               <div className="flex items-center gap-2 self-start">

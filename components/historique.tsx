@@ -121,16 +121,28 @@ export function TableauHistorique({
         </Selecteur>
       </div>
 
-      {/* Synthèse */}
-      <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] font-mono text-dim">
-        <span><span className="text-chalk tabular">{synthese.total}</span> réservation{synthese.total > 1 ? "s" : ""}</span>
-        <span><span className="text-chalk tabular">{synthese.heures}</span> h de machine</span>
-        {synthese.nuit > 0 && (
-          <span><span className="text-klein-2 tabular">{synthese.nuit}</span> de nuit, hors quota</span>
-        )}
-        {synthese.absences > 0 && (
-          <span><span className="text-coral tabular">{synthese.absences}</span> absence{synthese.absences > 1 ? "s" : ""}</span>
-        )}
+      {/* Synthèse — trois tuiles plutôt qu'une ligne de chiffres serrés */}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Tuile
+          icone={<IconeRegistre />}
+          etiquette="Réservations"
+          valeur={String(synthese.total)}
+          legende={`sur ${lignes.length} au total`}
+        />
+        <Tuile
+          icone={<IconeHorloge />}
+          etiquette="Temps de machine"
+          valeur={String(synthese.heures)}
+          unite="h"
+          legende={synthese.nuit > 0 ? `dont ${synthese.nuit} de nuit, hors quota` : "toutes dans le quota"}
+        />
+        <Tuile
+          icone={<IconeAbsence />}
+          etiquette="Absences"
+          valeur={String(synthese.absences)}
+          legende={synthese.absences === 0 ? "aucun créneau perdu" : "créneaux jamais pointés"}
+          alerte={synthese.absences > 0}
+        />
       </div>
 
       {filtrees.length === 0 ? (
@@ -144,12 +156,12 @@ export function TableauHistorique({
         />
       ) : (
         <>
-          <div className="panel corners overflow-hidden">
+          <div className="panel overflow-hidden">
             <div className="scroll-x">
               <table className="w-full min-w-[760px] text-sm">
                 <caption className="sr-only">Historique de vos réservations</caption>
                 <thead>
-                  <tr className="border-b border-line">
+                  <tr className="border-b border-line bg-surface-hi/60">
                     {["Référence", "Machine", "Créneau", "Durée", "Motif", "Statut"].map((h) => (
                       <th key={h} scope="col"
                           className="text-left px-4 py-3 eyebrow font-normal whitespace-nowrap">
@@ -160,11 +172,11 @@ export function TableauHistorique({
                 </thead>
                 <tbody>
                   {visibles.map((l) => (
-                    <tr key={l.id} className="border-b border-line/60 last:border-0 hover:bg-surface-hi/50 transition-colors">
+                    <tr key={l.id} className="border-b border-line last:border-0 hover:bg-ink-2/50 transition-colors">
                       <td className="px-4 py-3">
                         <Link
                           href={`/reservation/${l.reference}`}
-                          className="font-mono text-[12px] text-klein-2 hover:underline"
+                          className="tabular text-[12px] text-klein hover:underline"
                         >
                           {l.reference}
                         </Link>
@@ -175,13 +187,14 @@ export function TableauHistorique({
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span className="text-mist">{fmtDay(l.starts_at)}</span>
-                        <span className="block text-[11px] font-mono text-dim tabular">
+                        <span className="block text-[11px] text-dim tabular">
                           {fmtTime(l.starts_at)} → {fmtTime(l.ends_at)}
-                          {l.is_night && <span className="text-klein-2"> · nuit</span>}
+                          {l.is_night && <span className="text-klein"> · nuit</span>}
                         </span>
                       </td>
-                      <td className="px-4 py-3 tabular text-mist whitespace-nowrap">
-                        {l.duration_minutes / 60} h
+                      <td className="px-4 py-3 text-mist whitespace-nowrap">
+                        <span className="tabular">{l.duration_minutes / 60}</span>
+                        <span className="text-dim ml-1">h</span>
                       </td>
                       <td className="px-4 py-3 text-[12px] text-dim">
                         {l.purpose ? MOTIFS[l.purpose] : "—"}
@@ -205,8 +218,8 @@ export function TableauHistorique({
                 <button
                   onClick={() => setPage(Math.max(0, pageSure - 1))}
                   disabled={pageSure === 0}
-                  className="px-3 py-1.5 text-[11px] font-mono uppercase tracking-[0.1em] border
-                    border-line rounded-[3px] text-dim hover:text-chalk hover:border-line-hi
+                  className="px-3 py-1.5 text-[11px] font-medium border
+                    border-line rounded-[8px] text-dim hover:text-chalk hover:bg-ink-2
                     disabled:opacity-40 disabled:pointer-events-none transition-colors"
                 >
                   Précédent
@@ -217,8 +230,8 @@ export function TableauHistorique({
                 <button
                   onClick={() => setPage(Math.min(pages - 1, pageSure + 1))}
                   disabled={pageSure >= pages - 1}
-                  className="px-3 py-1.5 text-[11px] font-mono uppercase tracking-[0.1em] border
-                    border-line rounded-[3px] text-dim hover:text-chalk hover:border-line-hi
+                  className="px-3 py-1.5 text-[11px] font-medium border
+                    border-line rounded-[8px] text-dim hover:text-chalk hover:bg-ink-2
                     disabled:opacity-40 disabled:pointer-events-none transition-colors"
                 >
                   Suivant
@@ -229,5 +242,68 @@ export function TableauHistorique({
         </>
       )}
     </div>
+  );
+}
+
+/* ── Tuile de synthèse ────────────────────────────────────────────────────── */
+function Tuile({
+  icone, etiquette, valeur, unite, legende, alerte = false,
+}: {
+  icone: React.ReactNode;
+  etiquette: string;
+  valeur: string;
+  unite?: string;
+  legende: string;
+  alerte?: boolean;
+}) {
+  return (
+    <div className="panel px-4 py-3.5">
+      <div className="flex items-center gap-2.5">
+        <span className={`w-7 h-7 rounded-[7px] grid place-items-center shrink-0
+          ${alerte ? "bg-coral-fond text-coral" : "bg-ink-2 text-dim"}`}>
+          {icone}
+        </span>
+        <span className="eyebrow">{etiquette}</span>
+      </div>
+      <p className={`text-[26px] leading-none mt-3 ${alerte ? "text-coral" : "text-chalk"}`}>
+        <span className="tabular">{valeur}</span>
+        {unite && <span className="text-[16px] text-dim ml-1">{unite}</span>}
+      </p>
+      <p className="text-[12px] text-dim mt-1.5">{legende}</p>
+    </div>
+  );
+}
+
+const traitsTuile = {
+  width: 15, height: 15, viewBox: "0 0 24 24", fill: "none",
+  stroke: "currentColor", strokeWidth: 1.8,
+  strokeLinecap: "round" as const, strokeLinejoin: "round" as const,
+  "aria-hidden": true,
+};
+
+function IconeRegistre() {
+  return (
+    <svg {...traitsTuile}>
+      <path d="M5 3h11l4 4v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+      <path d="M8 11h8M8 15h5" />
+    </svg>
+  );
+}
+
+function IconeHorloge() {
+  return (
+    <svg {...traitsTuile}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </svg>
+  );
+}
+
+function IconeAbsence() {
+  return (
+    <svg {...traitsTuile}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M15 9l-6 6M9 9l6 6" />
+    </svg>
   );
 }

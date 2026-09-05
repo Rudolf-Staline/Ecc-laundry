@@ -49,7 +49,7 @@ export default async function PageConnexion({
                 "Vos créneaux exportés vers votre agenda",
               ].map((t) => (
                 <li key={t} className="flex items-start gap-3 text-sm text-mist">
-                  <span className="text-acid mt-0.5 shrink-0" aria-hidden>▸</span>
+                  <span className="point bg-acid mt-[7px] shrink-0" aria-hidden />
                   {t}
                 </li>
               ))}

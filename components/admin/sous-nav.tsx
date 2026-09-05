@@ -29,8 +29,8 @@ export function SousNavAdmin() {
                 key={o.href}
                 href={o.href}
                 aria-current={actif ? "page" : undefined}
-                className={`px-3.5 py-2 text-[11px] font-mono uppercase tracking-[0.12em] border
-                  rounded-[3px] transition-colors whitespace-nowrap ${
+                className={`px-3.5 py-2 text-[11px] font-medium border
+                  rounded-[8px] transition-colors whitespace-nowrap ${
                     actif
                       ? "border-klein bg-klein/12 text-chalk"
                       : "border-line text-dim hover:text-mist hover:border-line-hi"

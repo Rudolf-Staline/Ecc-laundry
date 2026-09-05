@@ -1,10 +1,9 @@
 @import "tailwindcss";
 
 /* ══════════════════════════════════════════════════════════════════
-   TAMBOUR — Système visuel « Le Lavoir »
-   Atelier éditorial : papier crème, encre de pin, vert bouteille,
-   ocre, terracotta. Grain de papier, perforations de ticket,
-   rubans washi, tampon rotatif.
+   TAMBOUR — Système visuel
+   Produit SaaS clair : page gris froid, cartes blanches posées dessus,
+   indigo de marque, états en pastilles pastel, chiffres tabulaires.
    ══════════════════════════════════════════════════════════════════ */
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
@@ -27,27 +26,34 @@
   --color-coral:      var(--c-coral);
   --color-violet:     var(--c-violet);
 
-  /* Encodage catégoriel (type de machine) — distinct des couleurs d'état,
-     et validé pour la vision des couleurs sur les deux surfaces. */
+  /* Fond des pastilles d'état — pastel, texte foncé par-dessus. */
+  --color-menthe:     var(--c-menthe);
+  --color-menthe-fond: var(--c-menthe-fond);
+  --color-acid-fond:  var(--c-acid-fond);
+  --color-coral-fond: var(--c-coral-fond);
+  --color-klein-fond: var(--c-klein-fond);
+  --color-ember-fond: var(--c-ember-fond);
+  --color-violet-fond: var(--c-violet-fond);
+
   --color-acid-vif:   var(--c-acid-vif);
   --color-on-bright:  var(--c-on-bright);
+  --color-encre:      var(--c-encre);
 
   --color-cat-lavage:  var(--c-cat-lavage);
   --color-cat-sechage: var(--c-cat-sechage);
 
-  /* Rampe séquentielle d'affluence : une seule teinte, du papier à l'encre. */
+  /* Rampe séquentielle d'affluence : une seule teinte, du clair au dense. */
   --color-aff-0: var(--c-aff-0);
   --color-aff-1: var(--c-aff-1);
   --color-aff-2: var(--c-aff-2);
   --color-aff-3: var(--c-aff-3);
   --color-aff-4: var(--c-aff-4);
 
-  --font-display: var(--f-display);
+  --font-display: var(--f-body);
   --font-body:    var(--f-body);
-  --font-hand:    var(--f-hand);
   --font-mono:    var(--f-mono);
 
-  --radius-tambour: 0.65rem;
+  --radius-tambour: 12px;
 
   --ease-drum:  cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-snap:  cubic-bezier(0.16, 1, 0.3, 1);
@@ -55,96 +61,94 @@
 
 /* ── Jetons : jour (défaut) ───────────────────────────────────── */
 :root {
-  --c-ink:        #f4edde;
-  --c-ink-2:      #efe6d3;
-  --c-surface:    #fcf8ee;
-  --c-surface-hi: #fdfaf2;
-  --c-line:       rgba(34, 49, 42, 0.16);
-  --c-line-hi:    rgba(34, 49, 42, 0.30);
-  --c-chalk:      #22312a;
-  --c-mist:       #3a4a41;
-  --c-dim:        #6f6a55;
+  --c-ink:        #f2f3f5;
+  --c-ink-2:      #eaecef;
+  --c-surface:    #ffffff;
+  --c-surface-hi: #fafbfc;
+  --c-line:       #e6e8ec;
+  --c-line-hi:    #d5d8de;
+  --c-chalk:      #14161a;
+  --c-mist:       #4a4f57;
+  --c-dim:        #6b7280;
 
-  --c-klein:      #1a5c4a;   /* encre de pin — accent principal */
-  --c-klein-2:    #0e7466;   /* lagon — disponible, lave-linge */
-  --c-acid:       #a16207;   /* ocre — sélection, nuit, attention */
-  --c-ember:      #b4552d;   /* terracotta — maintenance, sèche-linge */
-  --c-coral:      #b23a48;   /* garance — occupé, danger */
-  --c-violet:     #3d5a80;   /* bleu de travail — accents froids */
+  --c-klein:      #5b5bd6;   /* indigo de marque */
+  --c-klein-2:    #4a4ad0;
+  --c-acid:       #8a5a00;   /* ambre — vos créneaux, attention */
+  --c-ember:      #a94f1d;   /* brûlé — maintenance, séchage */
+  --c-coral:      #b03a26;   /* corail — occupé, danger */
+  --c-violet:     #7c3aed;
+  --c-menthe:     #0f7a4f;   /* menthe — libre, terminé */
 
-  --c-acid-vif:   #a16207;
-  --c-on-bright:  #f7f1e0;
+  --c-menthe-fond: #e7f6ee;
+  --c-acid-fond:   #fdf3e0;
+  --c-coral-fond:  #fdece7;
+  --c-klein-fond:  #eaeafb;
+  --c-ember-fond:  #fbeee4;
+  --c-violet-fond: #f1eafd;
 
-  --c-cat-lavage:  #0e7466;
-  --c-cat-sechage: #b4552d;
+  --c-acid-vif:   #8a5a00;
+  --c-on-bright:  #ffffff;
+  --c-encre:      #111318;   /* l'action principale : une pastille noire */
 
-  --c-aff-0: #fcf8ee;
-  --c-aff-1: #dce8e1;
-  --c-aff-2: #a9c8ba;
-  --c-aff-3: #5c9a85;
-  --c-aff-4: #1a5c4a;
+  --c-cat-lavage:  #5b5bd6;
+  --c-cat-sechage: #a94f1d;
 
-  --grain-opacity: 0.5;
-  --grain-blend: multiply;
-  --teintures:
-    radial-gradient(1100px 520px at 88% -8%, rgba(14, 116, 102, 0.09), transparent 60%),
-    radial-gradient(900px 500px at -8% 18%, rgba(61, 90, 128, 0.07), transparent 55%),
-    radial-gradient(760px 720px at 52% 118%, rgba(180, 85, 45, 0.07), transparent 60%);
-  --shadow-lift:
-    0 1px 2px rgba(34, 49, 42, 0.05),
-    0 18px 42px -24px rgba(34, 49, 42, 0.28);
-  --shadow-deep:
-    0 2px 0 rgba(34, 49, 42, 0.06),
-    0 24px 48px -24px rgba(34, 49, 42, 0.35);
-  --filet: rgba(26, 92, 74, 0.28);
+  --c-aff-0: #ffffff;
+  --c-aff-1: #e8e8fb;
+  --c-aff-2: #c3c3f2;
+  --c-aff-3: #8b8be4;
+  --c-aff-4: #4a4ad0;
+
+  --ombre-carte: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --ombre-levee: 0 4px 12px -2px rgba(16, 24, 40, 0.08), 0 2px 4px -2px rgba(16, 24, 40, 0.04);
+  --ombre-flottante: 0 12px 32px -8px rgba(16, 24, 40, 0.18);
 
   color-scheme: light;
 }
 
 /* ── Jetons : nuit ────────────────────────────────────────────── */
 [data-theme="dark"] {
-  --c-ink:        #101a15;
-  --c-ink-2:      #0d1512;
-  --c-surface:    #16231d;
-  --c-surface-hi: #182720;
-  --c-line:       rgba(216, 210, 189, 0.16);
-  --c-line-hi:    rgba(216, 210, 189, 0.30);
-  --c-chalk:      #efe8d6;
-  --c-mist:       #d8d2bd;
-  --c-dim:        #97a08c;
+  --c-ink:        #0d0f12;
+  --c-ink-2:      #14171b;
+  --c-surface:    #16191e;
+  --c-surface-hi: #1c2027;
+  --c-line:       rgba(255, 255, 255, 0.09);
+  --c-line-hi:    rgba(255, 255, 255, 0.17);
+  --c-chalk:      #f2f4f7;
+  --c-mist:       #c2c7cf;
+  --c-dim:        #8b929c;
 
-  --c-klein:      #4fb89a;
-  --c-klein-2:    #3d9c7f;
-  --c-acid:       #d9a441;
-  --c-ember:      #e08b5c;
-  --c-coral:      #e8737f;
-  --c-violet:     #8fb0d9;
+  --c-klein:      #8b8bf0;
+  --c-klein-2:    #a5a5f5;
+  --c-acid:       #e0a94a;
+  --c-ember:      #e08a5c;
+  --c-coral:      #ef7364;
+  --c-violet:     #a78bfa;
+  --c-menthe:     #4ec98d;
 
-  --c-acid-vif:   #d9a441;
-  --c-on-bright:  #0c1712;
+  --c-menthe-fond: rgba(78, 201, 141, 0.14);
+  --c-acid-fond:   rgba(224, 169, 74, 0.14);
+  --c-coral-fond:  rgba(239, 115, 100, 0.14);
+  --c-klein-fond:  rgba(139, 139, 240, 0.16);
+  --c-ember-fond:  rgba(224, 138, 92, 0.14);
+  --c-violet-fond: rgba(167, 139, 250, 0.16);
 
-  --c-cat-lavage:  #3d9c7f;
-  --c-cat-sechage: #e08b5c;
+  --c-acid-vif:   #e0a94a;
+  --c-on-bright:  #0d0f12;
+  --c-encre:      #f2f4f7;
 
-  --c-aff-0: #16231d;
-  --c-aff-1: #1d3a2f;
-  --c-aff-2: #2a5c4a;
-  --c-aff-3: #3d8a6d;
-  --c-aff-4: #4fb89a;
+  --c-cat-lavage:  #8b8bf0;
+  --c-cat-sechage: #e08a5c;
 
-  --grain-opacity: 0.22;
-  --grain-blend: overlay;
-  --teintures:
-    radial-gradient(1100px 520px at 88% -8%, rgba(61, 156, 127, 0.10), transparent 60%),
-    radial-gradient(900px 500px at -8% 18%, rgba(143, 176, 217, 0.07), transparent 55%),
-    radial-gradient(760px 720px at 52% 118%, rgba(224, 139, 92, 0.07), transparent 60%);
-  --shadow-lift:
-    0 1px 2px rgba(0, 0, 0, 0.3),
-    0 18px 42px -24px rgba(0, 0, 0, 0.6);
-  --shadow-deep:
-    0 2px 0 rgba(0, 0, 0, 0.25),
-    0 24px 48px -24px rgba(0, 0, 0, 0.7);
-  --filet: rgba(79, 184, 154, 0.30);
+  --c-aff-0: #16191e;
+  --c-aff-1: #22263a;
+  --c-aff-2: #343a63;
+  --c-aff-3: #4f56a5;
+  --c-aff-4: #8b8bf0;
+
+  --ombre-carte: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --ombre-levee: 0 4px 12px -2px rgba(0, 0, 0, 0.5);
+  --ombre-flottante: 0 12px 32px -8px rgba(0, 0, 0, 0.7);
 
   color-scheme: dark;
 }
@@ -159,77 +163,44 @@ html {
 
 body {
   background-color: var(--c-ink);
-  background-image: var(--teintures);
-  background-attachment: fixed;
   color: var(--c-chalk);
   font-family: var(--f-body), ui-sans-serif, system-ui, sans-serif;
-  font-feature-settings: "liga", "kern";
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
 }
 
-/* Grain de papier — voile fixe, sans animation : le papier ne grésille pas. */
-.grain::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  pointer-events: none;
-  opacity: var(--grain-opacity);
-  mix-blend-mode: var(--grain-blend);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.055'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-::selection { background: rgba(26, 92, 74, 0.25); }
-[data-theme="dark"] ::selection { background: rgba(79, 184, 154, 0.3); }
+::selection { background: rgba(91, 91, 214, 0.18); }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
   background: var(--c-line-hi);
   border-radius: 999px;
-  border: 2px solid var(--c-ink);
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
-::-webkit-scrollbar-thumb:hover { background: var(--c-klein); }
+::-webkit-scrollbar-thumb:hover { background: var(--c-dim); background-clip: content-box; }
 
 :focus-visible {
   outline: 2px solid var(--c-klein);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 /* ══ Typographie ══════════════════════════════════════════════ */
 
-/* Titre éditorial — Fraunces, la voix de la maison */
 .display {
-  font-family: var(--f-display), ui-serif, Georgia, serif;
+  font-family: var(--f-body), ui-sans-serif, system-ui, sans-serif;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.02;
-  font-variation-settings: "SOFT" 20, "WONK" 1, "opsz" 48;
-}
-
-/* Italique doré — le mot qu'on souligne à la main */
-.display-italic {
-  font-family: var(--f-display), ui-serif, Georgia, serif;
-  font-style: italic;
-  font-weight: 700;
-  color: var(--c-klein);
-  font-variation-settings: "SOFT" 40, "WONK" 1, "opsz" 48;
-}
-
-/* Annotation manuscrite */
-.hand {
-  font-family: var(--f-hand), ui-rounded, cursive;
-  font-size: 1.15em;
-  line-height: 1.3;
-  color: var(--c-acid);
+  letter-spacing: -0.028em;
+  line-height: 1.08;
 }
 
 .eyebrow {
   font-size: 0.6875rem;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--c-dim);
   font-weight: 600;
@@ -237,155 +208,82 @@ body {
 
 .tabular { font-variant-numeric: tabular-nums; font-family: var(--f-mono), ui-monospace, monospace; }
 
-/* Soulignement ondulé tracé à la main */
-.souligne-main {
-  position: relative;
-  display: inline-block;
-}
-.souligne-main::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -0.18em;
-  height: 0.32em;
-  background-repeat: repeat-x;
-  background-size: 22px 100%;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='8' viewBox='0 0 22 8'%3E%3Cpath d='M0 5 Q5.5 1 11 5 T22 5' fill='none' stroke='%23a16207' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
-}
-
 /* ══ Composants ═══════════════════════════════════════════════ */
 
-/* Panneau : la feuille de papier posée */
+/* La carte blanche posée sur la page grise — l'unité de base. */
 @utility panel {
   position: relative;
-  background: linear-gradient(172deg, var(--c-surface-hi), var(--c-surface));
+  background: var(--c-surface);
   border: 1px solid var(--c-line);
   border-radius: var(--radius-tambour);
-  box-shadow: var(--shadow-lift);
+  box-shadow: var(--ombre-carte);
 }
 
-/* Papier épais — pour les moments forts */
 @utility panel-deep {
   position: relative;
-  background: linear-gradient(172deg, var(--c-surface-hi), var(--c-surface));
-  border: 1px solid var(--c-line-hi);
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
   border-radius: var(--radius-tambour);
-  box-shadow: var(--shadow-deep);
+  box-shadow: var(--ombre-flottante);
 }
 
-/* Double filet art-déco — la signature de la maison, en lieu et place
-   des équerres techniques de l'ancienne identité. */
-.corners::after {
-  content: "";
-  position: absolute;
-  inset: 5px;
-  border: 1px solid var(--filet);
-  border-radius: inherit;
-  pointer-events: none;
-}
+/* Héritée de l'identité précédente : plus d'ornement de cadre ici, mais la
+   classe reste posée sur beaucoup de cartes — on la laisse inerte plutôt que
+   d'aller la retirer une par une. */
+.corners::before,
+.corners::after { content: none; }
 
-/* Étiquette de statut — pastille arrondie */
+/* Pastille d'état — fond pastel, point coloré, texte foncé. */
 @utility chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.2rem 0.6rem;
+  gap: 0.375rem;
+  padding: 0.1875rem 0.5rem;
   font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  border: 1px solid;
+  font-weight: 500;
+  border: 1px solid transparent;
   border-radius: 999px;
   white-space: nowrap;
+  line-height: 1.4;
 }
 
-/* Bord perforé de ticket */
-.ticket-edge { position: relative; }
-.ticket-edge::before {
-  content: "";
-  position: absolute;
-  left: -7px;
-  top: 0;
-  bottom: 0;
-  width: 14px;
-  background-image: radial-gradient(circle at 7px 7px, transparent 0 4.5px, var(--c-surface) 4.6px);
-  background-size: 14px 22px;
-  background-repeat: repeat-y;
-  pointer-events: none;
-}
-
-/* Encoches rondes haut et bas — le ticket qu'on détache */
-.ticket-notch { position: relative; }
-.ticket-notch::before,
-.ticket-notch::after {
-  content: "";
-  position: absolute;
-  left: -13px;
-  width: 26px;
-  height: 26px;
+/* Le point qui précède le libellé dans une pastille. */
+@utility point {
+  width: 0.375rem;
+  height: 0.375rem;
   border-radius: 999px;
-  background: var(--c-ink);
-  border: 1px solid var(--c-line);
-  pointer-events: none;
-}
-.ticket-notch::before { top: -13px; }
-.ticket-notch::after  { bottom: -13px; }
-
-/* Ruban washi — le scotch qui tient la feuille */
-.washi {
-  position: absolute;
-  width: 96px;
-  height: 26px;
-  opacity: 0.85;
-  background:
-    linear-gradient(105deg, rgba(161, 98, 7, 0.28), rgba(161, 98, 7, 0.16)),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.35) 0 6px, transparent 6px 12px);
-  border-left: 1px dashed rgba(255, 255, 255, 0.5);
-  border-right: 1px dashed rgba(255, 255, 255, 0.5);
-  box-shadow: 0 2px 6px rgba(34, 49, 42, 0.12);
-}
-.washi-pine {
-  background:
-    linear-gradient(105deg, rgba(26, 92, 74, 0.3), rgba(26, 92, 74, 0.16)),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.3) 0 6px, transparent 6px 12px);
+  background: currentColor;
+  flex: none;
 }
 
-/* Créneau de nuit — encre indigo semée d'étoiles dorées */
-.night-cell {
-  background:
-    radial-gradient(2px 2px at 20% 30%, rgba(161, 98, 7, 0.55), transparent),
-    radial-gradient(1.5px 1.5px at 70% 22%, rgba(244, 237, 222, 0.5), transparent),
-    radial-gradient(1.5px 1.5px at 45% 65%, rgba(161, 98, 7, 0.4), transparent),
-    radial-gradient(1.5px 1.5px at 82% 70%, rgba(161, 98, 7, 0.35), transparent),
-    linear-gradient(180deg, rgba(34, 43, 64, 0.14), rgba(34, 43, 64, 0.24));
+/* Bouton principal : la pastille noire des références. */
+@utility bouton-encre {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--c-encre);
+  color: var(--c-ink);
+  border: 1px solid var(--c-encre);
+  border-radius: 8px;
+  padding: 0.5625rem 0.9375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: opacity 0.15s;
 }
+@utility bouton-encre-hover { opacity: 0.88; }
 
-/* Machine hors service — rayures terracotta */
+/* Machine hors service — hachures discrètes plutôt qu'un aplat mort. */
 .maintenance-stripes {
   background-image: repeating-linear-gradient(
     -45deg,
-    rgba(180, 85, 45, 0.20) 0 6px,
-    rgba(180, 85, 45, 0.06) 6px 12px
+    var(--c-line-hi) 0 1px,
+    transparent 1px 7px
   );
 }
 
-/* Halos */
-.glow-pin  { box-shadow: 0 0 0 1px rgba(14, 116, 102, 0.3), 0 12px 34px -12px rgba(14, 116, 102, 0.4); }
-.glow-ocre { box-shadow: 0 0 0 1px rgba(161, 98, 7, 0.3), 0 12px 34px -12px rgba(161, 98, 7, 0.42); }
-
-/* Dégradé de texte — encre & laiton */
-.text-aurora {
-  background: linear-gradient(94deg, #1a5c4a 0%, #0e7466 52%, #3d5a80 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-[data-theme="dark"] .text-aurora {
-  background: linear-gradient(94deg, #4fb89a 0%, #3d9c7f 52%, #8fb0d9 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-}
+/* Créneau de nuit — teinte lavande, sans folklore. */
+.night-cell { background: var(--c-klein-fond); }
 
 /* ── Le tambour qui tourne ───────────────────────────────────── */
 .drum-spin { animation: drum 3.2s linear infinite; transform-origin: center; }
@@ -400,105 +298,64 @@ body {
   55%      { transform: rotate(170deg); }
 }
 
-/* Tampon rotatif — le cachet de la buanderie */
-.tampon { animation: drum 38s linear infinite; transform-origin: center; }
-
-/* ── Bulles de savon ─────────────────────────────────────────── */
-@keyframes bulle {
-  0%   { transform: translateY(0) scale(1); opacity: 0; }
-  8%   { opacity: 0.7; }
-  50%  { transform: translateY(-55vh) scale(1.18) translateX(14px); }
-  100% { transform: translateY(-112vh) scale(1.4) translateX(-10px); opacity: 0; }
-}
-.bulle {
-  position: absolute;
-  border-radius: 999px;
-  background: radial-gradient(circle at 32% 30%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.28) 45%, rgba(14, 116, 102, 0.12) 70%, transparent 72%);
-  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.5);
-  animation: bulle linear infinite;
-  pointer-events: none;
-}
-
-/* ── Révélation en cascade au chargement ────────────────────── */
-.reveal {
-  animation: reveal 0.5s var(--ease-snap) both;
-}
+/* ── Révélation au chargement ────────────────────────────────── */
+.reveal { animation: reveal 0.4s var(--ease-snap) both; }
 @keyframes reveal {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: none; }
 }
-.reveal-stagger > * {
-  animation: reveal 0.5s var(--ease-snap) both;
-}
+.reveal-stagger > * { animation: reveal 0.4s var(--ease-snap) both; }
 .reveal-stagger > *:nth-child(1)  { animation-delay: 0.02s; }
-.reveal-stagger > *:nth-child(2)  { animation-delay: 0.06s; }
-.reveal-stagger > *:nth-child(3)  { animation-delay: 0.10s; }
-.reveal-stagger > *:nth-child(4)  { animation-delay: 0.14s; }
-.reveal-stagger > *:nth-child(5)  { animation-delay: 0.18s; }
-.reveal-stagger > *:nth-child(6)  { animation-delay: 0.22s; }
-.reveal-stagger > *:nth-child(7)  { animation-delay: 0.26s; }
-.reveal-stagger > *:nth-child(8)  { animation-delay: 0.30s; }
-.reveal-stagger > *:nth-child(9)  { animation-delay: 0.34s; }
-.reveal-stagger > *:nth-child(n+10) { animation-delay: 0.38s; }
-
-/* ── Balayage lumineux (créneau libre au survol) ─────────────── */
-.sweep { position: relative; overflow: hidden; }
-.sweep::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  transform: translateX(-102%);
-  background: linear-gradient(90deg, transparent, rgba(255, 253, 246, 0.55), transparent);
-  transition: transform 0.6s var(--ease-drum);
-  pointer-events: none;
-}
-.sweep:hover::after { transform: translateX(102%); }
+.reveal-stagger > *:nth-child(2)  { animation-delay: 0.05s; }
+.reveal-stagger > *:nth-child(3)  { animation-delay: 0.08s; }
+.reveal-stagger > *:nth-child(4)  { animation-delay: 0.11s; }
+.reveal-stagger > *:nth-child(5)  { animation-delay: 0.14s; }
+.reveal-stagger > *:nth-child(6)  { animation-delay: 0.17s; }
+.reveal-stagger > *:nth-child(7)  { animation-delay: 0.20s; }
+.reveal-stagger > *:nth-child(8)  { animation-delay: 0.23s; }
+.reveal-stagger > *:nth-child(9)  { animation-delay: 0.26s; }
+.reveal-stagger > *:nth-child(n+10) { animation-delay: 0.29s; }
 
 /* ── Pulsation « en cours » ──────────────────────────────────── */
 .pulse-live { animation: pulse-live 2.2s ease-in-out infinite; }
 @keyframes pulse-live {
   0%, 100% { opacity: 1; }
-  50%      { opacity: 0.45; }
+  50%      { opacity: 0.4; }
 }
 
-/* ── Remplissage liquide (progression de cycle) ──────────────── */
+/* ── Remplissage de progression ──────────────────────────────── */
 .liquid {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(90deg, var(--c-klein-2), var(--c-klein));
+  background: var(--c-klein);
 }
 .liquid::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 253, 246, 0.35), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
   animation: liquid-slide 2.4s linear infinite;
 }
-@keyframes liquid-slide {
-  to { transform: translateX(100%); }
-}
+@keyframes liquid-slide { to { transform: translateX(100%); } }
 
-/* ── Barre de défilement horizontale discrète ───────────────── */
-.scroll-x {
-  overflow-x: auto;
-  scrollbar-width: thin;
-}
+/* ── Défilement horizontal ───────────────────────────────────── */
+.scroll-x { overflow-x: auto; scrollbar-width: thin; }
+.nice-scroll::-webkit-scrollbar { height: 8px; width: 8px; }
 
 /* ── Bandeau défilant ────────────────────────────────────────── */
 .marquee { display: flex; width: max-content; animation: marquee 38s linear infinite; }
 @keyframes marquee { to { transform: translateX(-50%); } }
 
-/* Ruban imprimé — la bande de tissu qui traverse la page */
-.ruban {
-  background: var(--c-klein);
-  color: var(--c-on-bright);
-  font-family: var(--f-display), ui-serif, Georgia, serif;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-.ruban-terracotta { background: var(--c-ember); }
+/* Neutralisées avec l'identité papier : les classes restent posées dans le
+   balisage, elles ne doivent simplement plus rien peindre. */
+.grain::before,
+.washi,
+.ticket-edge::before,
+.ticket-notch::before,
+.ticket-notch::after { content: none; display: none; }
+.tampon { animation: none; }
+.souligne-main::after { content: none; }
+.display-italic { font-style: normal; color: inherit; }
 
 /* ── Accessibilité mouvement ────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
@@ -510,13 +367,10 @@ body {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
-  .grain::before { opacity: 0.28; }
 }
 
 /* ── Impression ─────────────────────────────────────────────── */
 @media print {
-  .grain::before,
-  .washi,
   .marquee { display: none !important; }
   body { background: #fff; color: #000; }
 }

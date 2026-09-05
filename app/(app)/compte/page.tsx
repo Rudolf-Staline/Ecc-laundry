@@ -24,7 +24,7 @@ export default async function PageCompte() {
       <TitreSection surtitre="Réglages" titre="Mon compte" />
 
       {/* Identité */}
-      <section className="panel corners p-6">
+      <section className="panel p-6">
         <div className="flex items-start gap-4">
           <span className="w-14 h-14 rounded-full bg-klein/15 border border-klein/40 grid place-items-center
             display text-lg text-klein-2 shrink-0">

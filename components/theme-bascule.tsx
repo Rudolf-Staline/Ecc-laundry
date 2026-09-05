@@ -10,7 +10,7 @@ export function BasculeTheme({ compact = false }: { compact?: boolean }) {
       onClick={() => appliquerTheme(theme === "dark" ? "light" : "dark")}
       aria-label={theme === "dark" ? "Passer en thème clair" : "Passer en thème sombre"}
       title={theme === "dark" ? "Thème clair" : "Thème sombre"}
-      className={`inline-flex items-center justify-center border border-line rounded-[3px]
+      className={`inline-flex items-center justify-center border border-line rounded-[8px]
         text-mist hover:text-chalk hover:border-line-hi transition-colors
         ${compact ? "w-8 h-8" : "w-9 h-9"}`}
     >

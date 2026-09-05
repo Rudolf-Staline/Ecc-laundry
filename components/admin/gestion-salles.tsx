@@ -100,7 +100,7 @@ export function GestionSalles({
 
       <ul className="grid gap-2.5">
         {sallesInitiales.map((s) => (
-          <li key={s.id} className="panel corners p-5 flex flex-wrap items-center gap-4">
+          <li key={s.id} className="panel p-5 flex flex-wrap items-center gap-4">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2.5 flex-wrap">
                 <p className="text-sm text-chalk font-medium">{s.name}</p>
@@ -144,7 +144,7 @@ export function GestionSalles({
       </ul>
 
       {sallesInitiales.length === 0 && (
-        <div className="panel corners px-6 py-12 text-center text-mist">
+        <div className="panel px-6 py-12 text-center text-mist">
           Aucune buanderie enregistrée.
         </div>
       )}
@@ -157,7 +157,7 @@ export function GestionSalles({
         >
           <form
             onSubmit={(e) => { e.preventDefault(); enregistrer(edition); }}
-            className="panel corners p-6 w-full max-w-lg reveal my-8"
+            className="panel p-6 w-full max-w-lg reveal my-8"
           >
             <p className="eyebrow">{edition.id ? "Modification" : "Nouvelle buanderie"}</p>
             <h2 className="display text-xl mt-2 mb-5 text-chalk">

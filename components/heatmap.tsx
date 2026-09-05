@@ -42,7 +42,7 @@ export function Heatmap({
 
   if (total === 0) {
     return (
-      <div className="panel corners px-6 py-12 text-center">
+      <div className="panel px-6 py-12 text-center">
         <p className="text-mist">Pas encore assez d&apos;historique.</p>
         <p className="text-sm text-dim mt-2">
           La carte d&apos;affluence se construit sur les huit dernières semaines.
@@ -54,7 +54,7 @@ export function Heatmap({
   const actif = survol ? index.get(`${survol.dow}|${survol.hour}`) : null;
 
   return (
-    <div className="panel corners p-5 sm:p-6">
+    <div className="panel p-5 sm:p-6">
       {/* Bandeau de lecture — la valeur survolée, en texte, jamais en couleur seule */}
       <div className="h-11 mb-3 flex items-center">
         {survol ? (
@@ -121,7 +121,7 @@ export function Heatmap({
                     onFocus={() => setSurvol({ dow, hour: h })}
                     onBlur={() => setSurvol(null)}
                     aria-label={`${JOURS[dow - 1]} ${h}:00 — ${c?.bookings ?? 0} réservations, affluence ${p.nom}`}
-                    className="h-[26px] rounded-[2px] transition-all duration-150"
+                    className="h-[26px] rounded-[6px] transition-all duration-150"
                     style={{
                       background: p.jeton,
                       border: `1px solid ${vise ? "var(--c-chalk)" : "var(--c-line)"}`,
@@ -146,7 +146,7 @@ export function Heatmap({
               <span
                 key={p.nom}
                 title={p.nom}
-                className="w-6 h-3.5 rounded-[2px] border border-line"
+                className="w-6 h-3.5 rounded-[6px] border border-line"
                 style={{ background: p.jeton }}
               />
             ))}
@@ -156,7 +156,7 @@ export function Heatmap({
 
         <button
           onClick={() => setTableau((t) => !t)}
-          className="text-[10px] font-mono uppercase tracking-[0.1em] text-dim hover:text-chalk transition-colors"
+          className="text-[10px] font-medium text-dim hover:text-chalk transition-colors"
           aria-expanded={tableau}
         >
           {tableau ? "Masquer" : "Voir"} les données

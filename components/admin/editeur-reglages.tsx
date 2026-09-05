@@ -39,7 +39,7 @@ export function EditeurReglages({ reglages }: { reglages: Setting[] }) {
   return (
     <div className="grid gap-2.5">
       {reglages.map((r) => (
-        <div key={r.key} className="panel corners p-5">
+        <div key={r.key} className="panel p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
               <label htmlFor={`set-${r.key}`} className="text-sm text-chalk font-medium block">
@@ -57,7 +57,7 @@ export function EditeurReglages({ reglages }: { reglages: Setting[] }) {
                 inputMode={r.kind === "number" ? "numeric" : "text"}
                 value={valeurs[r.key] ?? ""}
                 onChange={(e) => setValeurs((v) => ({ ...v, [r.key]: e.target.value }))}
-                className={`bg-ink-2 border rounded-[3px] px-3 py-2 text-sm text-chalk font-mono
+                className={`bg-ink-2 border rounded-[8px] px-3 py-2 text-sm text-chalk font-mono
                   outline-none transition-colors focus:border-klein
                   ${modifie(r) ? "border-ember/60" : "border-line"}
                   ${r.kind === "number" ? "w-24 text-center tabular" : "w-56"}`}

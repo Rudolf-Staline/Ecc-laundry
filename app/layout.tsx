@@ -1,27 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Outfit, Caveat, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { NOM_APP, NOM_ECOLE, urlSite } from "@/lib/config";
 import { FournisseurToasts } from "@/components/toast";
 import "./globals.css";
 
-const display = Fraunces({
-  subsets: ["latin"],
-  variable: "--f-display",
-  display: "swap",
-  axes: ["SOFT", "WONK", "opsz"],
-});
-
-const corps = Outfit({
+// Une seule famille pour le titrage et le texte : les interfaces de référence
+// ne changent pas de voix entre un titre et un libellé de colonne.
+const corps = Inter({
   subsets: ["latin"],
   variable: "--f-body",
   display: "swap",
-});
-
-const main = Caveat({
-  subsets: ["latin"],
-  variable: "--f-hand",
-  display: "swap",
-  weight: ["400", "600"],
 });
 
 const mono = JetBrains_Mono({
@@ -53,8 +41,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#101a15" },
-    { media: "(prefers-color-scheme: light)", color: "#f4edde" },
+    { media: "(prefers-color-scheme: dark)", color: "#0d0f12" },
+    { media: "(prefers-color-scheme: light)", color: "#f2f3f5" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -80,7 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: SCRIPT_THEME }} />
       </head>
-      <body className={`${display.variable} ${corps.variable} ${main.variable} ${mono.variable} grain antialiased`}>
+      <body className={`${corps.variable} ${mono.variable} antialiased`}>
         <FournisseurToasts>{children}</FournisseurToasts>
       </body>
     </html>

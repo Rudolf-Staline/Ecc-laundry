@@ -24,8 +24,9 @@ export function AnneauQuota({
   const ecart = quota > 1 ? 7 : 0; // degrés entre deux segments
   const pas = 360 / Math.max(1, quota);
 
+  // Vert tant qu'il reste de la marge, ambre au dernier créneau, corail à zéro.
   const teinte =
-    restants === 0 ? "var(--c-coral)" : restants === 1 ? "var(--c-ember)" : "var(--c-acid)";
+    restants === 0 ? "var(--c-coral)" : restants === 1 ? "var(--c-acid)" : "var(--c-klein)";
 
   function arc(index: number) {
     const debut = -90 + index * pas + ecart / 2;

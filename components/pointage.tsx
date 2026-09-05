@@ -125,7 +125,7 @@ export function Pointage({ aPointer }: { aPointer: BoardRow[] }) {
         <section className="space-y-2.5">
           <p className="eyebrow">En attente de votre pointage</p>
           {aPointer.map((r) => (
-            <div key={r.id} className="panel corners p-4 flex items-center gap-4 border-acid/30">
+            <div key={r.id} className="panel p-4 flex items-center gap-4 border-acid/30">
               <Tambour size={34} className="text-acid" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm text-chalk font-medium truncate">{r.machine_name}</p>
@@ -138,7 +138,7 @@ export function Pointage({ aPointer }: { aPointer: BoardRow[] }) {
           ))}
         </section>
       ) : (
-        <div className="panel corners p-5 border-line">
+        <div className="panel p-5 border-line">
           <p className="text-sm text-mist">
             Aucun créneau à pointer dans l&apos;heure qui vient. Le pointage s&apos;ouvre
             dix minutes avant le début de votre réservation.
@@ -148,14 +148,14 @@ export function Pointage({ aPointer }: { aPointer: BoardRow[] }) {
 
       {/* Scanner */}
       {scannerDispo && (
-        <section className="panel corners p-5">
+        <section className="panel p-5">
           <p className="eyebrow mb-3">Scanner</p>
           {scanne ? (
             <div className="space-y-3">
-              <div className="relative rounded-[3px] overflow-hidden border border-klein/40 bg-ink-2">
+              <div className="relative rounded-[8px] overflow-hidden border border-klein/40 bg-ink-2">
                 <video ref={video} playsInline muted className="w-full aspect-video object-cover" />
                 <div className="absolute inset-0 grid place-items-center pointer-events-none">
-                  <div className="w-40 h-40 border-2 border-acid/70 rounded-[3px]" />
+                  <div className="w-40 h-40 border-2 border-acid/70 rounded-[8px]" />
                 </div>
               </div>
               <Bouton
@@ -177,7 +177,7 @@ export function Pointage({ aPointer }: { aPointer: BoardRow[] }) {
       {/* Saisie manuelle */}
       <form
         onSubmit={(e) => { e.preventDefault(); void pointer(code); }}
-        className="panel corners p-5"
+        className="panel p-5"
       >
         <p className="eyebrow mb-3">Saisie manuelle</p>
         <Champ

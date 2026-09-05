@@ -6,16 +6,18 @@ import { forwardRef } from "react";
 type VarianteBouton = "primaire" | "secondaire" | "fantome" | "danger" | "acide";
 
 const VARIANTES: Record<VarianteBouton, string> = {
+  // L'action principale est une pastille encre, jamais une couleur de marque :
+  // l'indigo sert à situer, pas à pousser au clic.
   primaire:
-    "bg-klein text-white border-klein hover:bg-klein-2 hover:border-klein-2 shadow-[0_0_28px_-8px] shadow-klein/60",
+    "bg-encre text-ink border-encre hover:opacity-88",
   acide:
-    "bg-acid-vif text-on-bright border-acid-vif hover:brightness-110 font-semibold",
+    "bg-klein text-white border-klein hover:bg-klein-2 hover:border-klein-2",
   secondaire:
-    "bg-surface-hi text-chalk border-line-hi hover:border-mist hover:bg-surface",
+    "bg-surface text-chalk border-line hover:bg-ink-2 hover:border-line-hi",
   fantome:
-    "bg-transparent text-mist border-transparent hover:text-chalk hover:bg-surface-hi",
+    "bg-transparent text-mist border-transparent hover:text-chalk hover:bg-ink-2",
   danger:
-    "bg-transparent text-coral border-coral/40 hover:bg-coral hover:text-white hover:border-coral",
+    "bg-transparent text-coral border-coral/35 hover:bg-coral hover:text-white hover:border-coral",
 };
 
 export const Bouton = forwardRef<
@@ -30,17 +32,17 @@ export const Bouton = forwardRef<
   ref,
 ) {
   const tailles = {
-    sm: "text-[11px] px-2.5 py-1.5 gap-1.5",
+    sm: "text-[12px] px-3 py-1.5 gap-1.5",
     md: "text-[13px] px-4 py-2.5 gap-2",
-    lg: "text-sm px-6 py-3.5 gap-2.5",
+    lg: "text-[14px] px-6 py-3 gap-2.5",
   }[taille];
 
   return (
     <button
       ref={ref}
       disabled={disabled || enCours}
-      className={`inline-flex items-center justify-center border rounded-[3px] font-mono uppercase
-        tracking-[0.12em] transition-all duration-200 active:scale-[0.98]
+      className={`inline-flex items-center justify-center border rounded-[8px] font-semibold
+        transition-all duration-150 active:scale-[0.99]
         disabled:opacity-40 disabled:pointer-events-none ${tailles} ${VARIANTES[variante]} ${className}`}
       {...rest}
     >
@@ -57,7 +59,7 @@ export function Etiquette({
   ton = "neutre",
   children,
   className = "",
-  point = false,
+  point = true,
   pulse = false,
 }: {
   ton?: "neutre" | "libre" | "occupe" | "panne" | "info" | "mien";
@@ -67,18 +69,18 @@ export function Etiquette({
   pulse?: boolean;
 }) {
   const tons = {
-    neutre: "text-mist border-line-hi",
-    libre: "text-acid border-acid/35 bg-acid/[0.06]",
-    occupe: "text-ember border-ember/35 bg-ember/[0.06]",
-    panne: "text-coral border-coral/35 bg-coral/[0.06]",
-    info: "text-klein-2 border-klein/35 bg-klein/[0.07]",
-    mien: "text-chalk border-chalk/30 bg-chalk/[0.06]",
+    neutre: "text-dim bg-ink-2",
+    libre: "text-menthe bg-menthe-fond",
+    occupe: "text-acid bg-acid-fond",
+    panne: "text-coral bg-coral-fond",
+    info: "text-klein bg-klein-fond",
+    mien: "text-violet bg-violet-fond",
   }[ton];
 
   return (
     <span className={`chip ${tons} ${className}`}>
       {point && (
-        <span className={`w-1.5 h-1.5 rounded-full bg-current shrink-0 ${pulse ? "pulse-live" : ""}`} />
+        <span className={`point ${pulse ? "pulse-live" : ""}`} />
       )}
       {children}
     </span>
@@ -103,14 +105,14 @@ export const Champ = forwardRef<
         id={uid}
         aria-invalid={Boolean(erreur)}
         aria-describedby={erreur ? `${uid}-err` : aide ? `${uid}-aide` : undefined}
-        className={`w-full bg-ink-2 border rounded-[3px] px-3.5 py-3 text-sm text-chalk
+        className={`w-full bg-ink-2 border rounded-[8px] px-3.5 py-3 text-sm text-chalk
           placeholder:text-dim transition-colors outline-none
           ${erreur ? "border-coral/60" : "border-line focus:border-klein"} ${className}`}
         {...rest}
       />
       {erreur && (
         <p id={`${uid}-err`} className="text-xs text-coral mt-2 flex items-start gap-1.5">
-          <span aria-hidden>▸</span>
+          <span className="point bg-current shrink-0" aria-hidden />
           {erreur}
         </p>
       )}
@@ -134,7 +136,7 @@ export function Selecteur({
     <div className="w-full">
       {etiquette && <label className="eyebrow block mb-2">{etiquette}</label>}
       <select
-        className={`w-full bg-ink-2 border border-line rounded-[3px] px-3 py-2.5 text-sm
+        className={`w-full bg-ink-2 border border-line rounded-[8px] px-3 py-2.5 text-sm
           text-chalk outline-none focus:border-klein transition-colors ${className}`}
         {...rest}
       >
@@ -170,7 +172,7 @@ export function TitreSection({
 /* ── État vide ───────────────────────────────────────────────────────────── */
 export function Vide({ titre, detail, action }: { titre: string; detail?: string; action?: React.ReactNode }) {
   return (
-    <div className="panel corners px-6 py-14 text-center">
+    <div className="panel px-6 py-14 text-center">
       <p className="display text-lg text-mist">{titre}</p>
       {detail && <p className="text-sm text-dim mt-2 max-w-sm mx-auto leading-relaxed">{detail}</p>}
       {action && <div className="mt-6 flex justify-center">{action}</div>}

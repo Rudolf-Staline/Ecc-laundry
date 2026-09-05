@@ -50,7 +50,7 @@ export function GestionPannes({ signalements }: { signalements: LignePanne[] }) 
             key={f}
             onClick={() => setFiltre(f)}
             aria-pressed={filtre === f}
-            className={`px-3.5 py-2 text-[11px] font-mono uppercase tracking-[0.12em] border rounded-[3px]
+            className={`px-3.5 py-2 text-[11px] font-medium border rounded-[8px]
               transition-colors ${
                 filtre === f ? "border-klein bg-klein/12 text-chalk" : "border-line text-dim hover:text-mist"
               }`}
@@ -61,7 +61,7 @@ export function GestionPannes({ signalements }: { signalements: LignePanne[] }) 
       </div>
 
       {visibles.length === 0 ? (
-        <div className="panel corners px-6 py-12 text-center">
+        <div className="panel px-6 py-12 text-center">
           <p className="text-mist">
             {filtre === "ouverts" ? "Aucun signalement ouvert. Le parc tourne." : "Aucun signalement."}
           </p>
@@ -69,7 +69,7 @@ export function GestionPannes({ signalements }: { signalements: LignePanne[] }) 
       ) : (
         <ul className="grid gap-2.5">
           {visibles.map((s) => (
-            <li key={s.id} className="panel corners p-5">
+            <li key={s.id} className="panel p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2.5 flex-wrap">

@@ -54,7 +54,7 @@ export function Preferences({ profil, urlBase }: { profil: Profile; urlBase: str
 
   return (
     <>
-      <section className="panel corners p-6">
+      <section className="panel p-6">
         <p className="eyebrow">Préférences</p>
         <h2 className="display text-xl mt-2 text-chalk">Vos réglages</h2>
 
@@ -92,7 +92,7 @@ export function Preferences({ profil, urlBase }: { profil: Profile; urlBase: str
         </Bouton>
       </section>
 
-      <section className="panel corners p-6">
+      <section className="panel p-6">
         <p className="eyebrow">Agenda</p>
         <h2 className="display text-xl mt-2 text-chalk">Vos créneaux dans votre calendrier</h2>
         <p className="text-sm text-mist mt-3 leading-relaxed">
@@ -102,7 +102,7 @@ export function Preferences({ profil, urlBase }: { profil: Profile; urlBase: str
         </p>
 
         <div className="mt-4 flex gap-2">
-          <code className="flex-1 min-w-0 bg-ink-2 border border-line rounded-[3px] px-3 py-2.5
+          <code className="flex-1 min-w-0 bg-ink-2 border border-line rounded-[8px] px-3 py-2.5
             text-[11px] font-mono text-mist truncate" title={lienAgenda}>
             {lienAgenda}
           </code>
