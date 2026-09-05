@@ -39,20 +39,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(vers);
   }
 
-  if (user && (chemin === "/connexion" || chemin === "/")) {
-    if (chemin === "/connexion") {
-      const { data: profil } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("id", user.id)
-        .maybeSingle();
+  if (user && (chemin === "/connexion" || chemin === "/inscription")) {
+    // Un compte authentifié mais sans ligne `profiles` reste sur place : le
+    // renvoyer vers /tableau le ferait aussitôt ressortir via exigerProfil.
+    // / redirige de toute façon systématiquement vers /connexion depuis
+    // app/page.tsx : plus besoin de le traiter ici.
+    const { data: profil } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
 
-      if (profil) {
-        const vers = request.nextUrl.clone();
-        vers.pathname = "/tableau";
-        vers.search = "";
-        return NextResponse.redirect(vers);
-      }
+    if (profil) {
+      const vers = request.nextUrl.clone();
+      vers.pathname = "/tableau";
+      vers.search = "";
+      return NextResponse.redirect(vers);
     }
   }
 

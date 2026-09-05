@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef } from "react";
+import { forwardRef, useState } from "react";
 
 type VarianteBouton = "primaire" | "secondaire" | "fantome" | "danger" | "acide";
 
@@ -117,6 +117,78 @@ export const Champ = forwardRef<
     </div>
   );
 });
+
+export const ChampMotDePasse = forwardRef<
+  HTMLInputElement,
+  Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> & { etiquette?: string; erreur?: string; aide?: string }
+>(function ChampMotDePasse({ etiquette, erreur, aide, className = "", id, ...rest }, ref) {
+  const [visible, setVisible] = useState(false);
+  const uid = id ?? rest.name;
+
+  return (
+    <div className="w-full">
+      {etiquette && (
+        <label htmlFor={uid} className="eyebrow block mb-2.5">
+          {etiquette}
+        </label>
+      )}
+      <div className="relative">
+        <input
+          ref={ref}
+          id={uid}
+          type={visible ? "text" : "password"}
+          aria-invalid={Boolean(erreur)}
+          aria-describedby={erreur ? `${uid}-err` : aide ? `${uid}-aide` : undefined}
+          className={`w-full bg-surface-hi/85 border rounded-[12px] pl-4 pr-11 py-3.5 text-sm text-chalk
+            placeholder:text-dim transition-all duration-200 outline-none shadow-[inset_0_1px_0_rgba(255,255,255,.45)]
+            ${erreur ? "border-coral/60 ring-2 ring-coral/5" : "border-line focus:border-klein/60 focus:ring-4 focus:ring-klein/8 focus:bg-surface"} ${className}`}
+          {...rest}
+        />
+        <button
+          type="button"
+          tabIndex={-1}
+          onClick={() => setVisible((v) => !v)}
+          aria-label={visible ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+          className="absolute inset-y-0 right-0 px-3.5 grid place-items-center text-dim hover:text-chalk transition-colors"
+        >
+          {visible ? <OeilBarre /> : <Oeil />}
+        </button>
+      </div>
+      {erreur && (
+        <p id={`${uid}-err`} className="text-xs text-coral mt-2 flex items-start gap-1.5">
+          <span className="point bg-current shrink-0 mt-1" aria-hidden />
+          {erreur}
+        </p>
+      )}
+      {!erreur && aide && (
+        <p id={`${uid}-aide`} className="text-xs text-dim mt-2.5 leading-relaxed">
+          {aide}
+        </p>
+      )}
+    </div>
+  );
+});
+
+function Oeil() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function OeilBarre() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M2 12s3.5-7 10-7c1.6 0 3 .3 4.2.8M22 12s-3.5 7-10 7c-1.6 0-3-.3-4.2-.8" />
+      <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+      <path d="M3 3l18 18" />
+    </svg>
+  );
+}
 
 export function Selecteur({
   etiquette,

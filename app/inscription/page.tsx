@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
-import { Logotype, Tambour } from "@/components/marque";
+import { LogoECC, Logotype, Tambour } from "@/components/marque";
 import { BasculeTheme } from "@/components/theme-bascule";
-import { FormulaireConnexion } from "@/components/formulaire-connexion";
+import { FormulaireInscription } from "@/components/formulaire-inscription";
 import { supabaseConfigure } from "@/lib/config";
 
-export const metadata: Metadata = { title: "Connexion" };
+export const metadata: Metadata = { title: "Inscription" };
 
 const BULLES = Array.from({ length: 14 }, (_, i) => i + 1);
 
-export default async function PageConnexion({
+export default async function PageInscription({
   searchParams,
 }: {
-  searchParams: Promise<{ suite?: string; erreur?: string }>;
+  searchParams: Promise<{ suite?: string }>;
 }) {
-  const { suite, erreur } = await searchParams;
+  const { suite } = await searchParams;
 
   return (
     <div className="auth-shell relative min-h-dvh overflow-hidden">
@@ -24,7 +24,10 @@ export default async function PageConnexion({
       <header className="relative z-20">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-8 h-20 flex items-center justify-between gap-5">
           <Logotype />
-          <BasculeTheme />
+          <div className="flex items-center gap-4">
+            <LogoECC compact className="hidden sm:block w-[136px] dark:brightness-[1.7] dark:saturate-0" />
+            <BasculeTheme />
+          </div>
         </div>
       </header>
 
@@ -56,14 +59,17 @@ export default async function PageConnexion({
 
         <section className="flex items-center justify-center py-8 lg:py-12 lg:pl-10 xl:pl-16">
           <div className="w-full max-w-[450px] reveal">
+            <div className="lg:hidden mb-8">
+              <LogoECC className="w-[170px] dark:brightness-[1.7] dark:saturate-0" />
+            </div>
             <div className="mb-7">
               <p className="eyebrow text-klein">Accès étudiant</p>
-              <h2 className="display text-3xl sm:text-4xl mt-2 text-chalk">Bienvenue sur Laundry.</h2>
+              <h2 className="display text-3xl sm:text-4xl mt-2 text-chalk">Rejoignez Laundry.</h2>
               <p className="text-sm text-mist mt-3 leading-relaxed">
-                Avec votre adresse Centrale et votre mot de passe.
+                Créez votre compte avec votre adresse Centrale.
               </p>
             </div>
-            <FormulaireConnexion suite={suite} erreurInitiale={erreur} configure={supabaseConfigure} />
+            <FormulaireInscription suite={suite} configure={supabaseConfigure} />
           </div>
         </section>
       </main>
