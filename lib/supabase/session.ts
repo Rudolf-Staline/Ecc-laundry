@@ -33,12 +33,17 @@ export async function exigerProfil(cheminRetour?: string): Promise<Profile> {
     // Authentifié mais sans ligne `profiles` : le signaler plutôt que de
     // renvoyer silencieusement vers la connexion (le middleware ne fait pas
     // rebondir ce cas vers /tableau, mais autant prévenir la personne).
-    const supabase = await creerClientServeur();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const separateur = suite ? "&" : "?";
-      const erreur = encodeURIComponent("Profil introuvable. Contactez l'administration.");
-      redirect(`/connexion${suite}${separateur}erreur=${erreur}`);
+    // Ne s'applique que si Supabase est effectivement branché : sinon
+    // `creerClientServeur` lève faute de variables d'environnement, et une
+    // installation neuve doit atterrir sur /connexion, pas sur une erreur 500.
+    if (supabaseConfigure) {
+      const supabase = await creerClientServeur();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const separateur = suite ? "&" : "?";
+        const erreur = encodeURIComponent("Profil introuvable. Contactez l'administration.");
+        redirect(`/connexion${suite}${separateur}erreur=${erreur}`);
+      }
     }
     redirect(`/connexion${suite}`);
   }

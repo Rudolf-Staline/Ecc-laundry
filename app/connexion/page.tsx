@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { Logotype, Tambour } from "@/components/marque";
 import { BasculeTheme } from "@/components/theme-bascule";
@@ -18,9 +17,7 @@ export default async function PageConnexion({
     <div className="relative z-10 min-h-dvh flex flex-col">
       <header className="border-b border-line/70">
         <div className="mx-auto max-w-[1180px] px-5 sm:px-8 h-16 flex items-center justify-between">
-          <Link href="/" aria-label="Retour à l'accueil">
-            <Logotype />
-          </Link>
+          <Logotype />
           <BasculeTheme />
         </div>
       </header>

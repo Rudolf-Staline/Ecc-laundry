@@ -203,7 +203,7 @@ le même verdict à 3 h du matin qu'à midi.
 
 ```
 app/
-  page.tsx                  vitrine publique + état du parc en direct
+  page.tsx                  redirige vers /connexion
   connexion/                authentification par code
   (app)/
     tableau/                tableau de bord, cycles en cours
