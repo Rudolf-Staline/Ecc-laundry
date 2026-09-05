@@ -2,22 +2,19 @@
 
 import { forwardRef } from "react";
 
-/* ── Bouton ──────────────────────────────────────────────────────────────── */
 type VarianteBouton = "primaire" | "secondaire" | "fantome" | "danger" | "acide";
 
 const VARIANTES: Record<VarianteBouton, string> = {
-  // L'action principale est une pastille encre, jamais une couleur de marque :
-  // l'indigo sert à situer, pas à pousser au clic.
   primaire:
-    "bg-encre text-ink border-encre hover:opacity-88",
+    "bg-encre text-ink border-encre hover:-translate-y-0.5 hover:shadow-[var(--ombre-levee)]",
   acide:
-    "bg-klein text-white border-klein hover:bg-klein-2 hover:border-klein-2",
+    "bg-klein text-white border-klein hover:bg-klein-2 hover:border-klein-2 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-12px_rgba(22,156,167,.8)]",
   secondaire:
-    "bg-surface text-chalk border-line hover:bg-ink-2 hover:border-line-hi",
+    "bg-surface/90 text-chalk border-line hover:bg-surface-hi hover:border-line-hi hover:-translate-y-0.5",
   fantome:
-    "bg-transparent text-mist border-transparent hover:text-chalk hover:bg-ink-2",
+    "bg-transparent text-mist border-transparent hover:text-chalk hover:bg-surface-hi/80",
   danger:
-    "bg-transparent text-coral border-coral/35 hover:bg-coral hover:text-white hover:border-coral",
+    "bg-transparent text-coral border-coral/30 hover:bg-coral-fond hover:border-coral/45",
 };
 
 export const Bouton = forwardRef<
@@ -32,17 +29,17 @@ export const Bouton = forwardRef<
   ref,
 ) {
   const tailles = {
-    sm: "text-[12px] px-3 py-1.5 gap-1.5",
+    sm: "text-[12px] px-3.5 py-1.5 gap-1.5",
     md: "text-[13px] px-4 py-2.5 gap-2",
-    lg: "text-[14px] px-6 py-3 gap-2.5",
+    lg: "text-[14px] px-6 py-3.5 gap-2.5",
   }[taille];
 
   return (
     <button
       ref={ref}
       disabled={disabled || enCours}
-      className={`inline-flex items-center justify-center border rounded-[8px] font-semibold
-        transition-all duration-150 active:scale-[0.99]
+      className={`inline-flex items-center justify-center border rounded-[12px] font-semibold
+        transition-all duration-200 active:translate-y-0 active:scale-[0.99]
         disabled:opacity-40 disabled:pointer-events-none ${tailles} ${VARIANTES[variante]} ${className}`}
       {...rest}
     >
@@ -54,7 +51,6 @@ export const Bouton = forwardRef<
   );
 });
 
-/* ── Étiquette de statut ─────────────────────────────────────────────────── */
 export function Etiquette({
   ton = "neutre",
   children,
@@ -79,15 +75,12 @@ export function Etiquette({
 
   return (
     <span className={`chip ${tons} ${className}`}>
-      {point && (
-        <span className={`point ${pulse ? "pulse-live" : ""}`} />
-      )}
+      {point && <span className={`point ${pulse ? "pulse-live" : ""}`} />}
       {children}
     </span>
   );
 }
 
-/* ── Champ de saisie ─────────────────────────────────────────────────────── */
 export const Champ = forwardRef<
   HTMLInputElement,
   React.InputHTMLAttributes<HTMLInputElement> & { etiquette?: string; erreur?: string; aide?: string }
@@ -96,7 +89,7 @@ export const Champ = forwardRef<
   return (
     <div className="w-full">
       {etiquette && (
-        <label htmlFor={uid} className="eyebrow block mb-2">
+        <label htmlFor={uid} className="eyebrow block mb-2.5">
           {etiquette}
         </label>
       )}
@@ -105,19 +98,19 @@ export const Champ = forwardRef<
         id={uid}
         aria-invalid={Boolean(erreur)}
         aria-describedby={erreur ? `${uid}-err` : aide ? `${uid}-aide` : undefined}
-        className={`w-full bg-ink-2 border rounded-[8px] px-3.5 py-3 text-sm text-chalk
-          placeholder:text-dim transition-colors outline-none
-          ${erreur ? "border-coral/60" : "border-line focus:border-klein"} ${className}`}
+        className={`w-full bg-surface-hi/85 border rounded-[12px] px-4 py-3.5 text-sm text-chalk
+          placeholder:text-dim transition-all duration-200 outline-none shadow-[inset_0_1px_0_rgba(255,255,255,.45)]
+          ${erreur ? "border-coral/60 ring-2 ring-coral/5" : "border-line focus:border-klein/60 focus:ring-4 focus:ring-klein/8 focus:bg-surface"} ${className}`}
         {...rest}
       />
       {erreur && (
         <p id={`${uid}-err`} className="text-xs text-coral mt-2 flex items-start gap-1.5">
-          <span className="point bg-current shrink-0" aria-hidden />
+          <span className="point bg-current shrink-0 mt-1" aria-hidden />
           {erreur}
         </p>
       )}
       {!erreur && aide && (
-        <p id={`${uid}-aide`} className="text-xs text-dim mt-2">
+        <p id={`${uid}-aide`} className="text-xs text-dim mt-2.5 leading-relaxed">
           {aide}
         </p>
       )}
@@ -125,7 +118,6 @@ export const Champ = forwardRef<
   );
 });
 
-/* ── Sélecteur ───────────────────────────────────────────────────────────── */
 export function Selecteur({
   etiquette,
   className = "",
@@ -134,10 +126,10 @@ export function Selecteur({
 }: React.SelectHTMLAttributes<HTMLSelectElement> & { etiquette?: string }) {
   return (
     <div className="w-full">
-      {etiquette && <label className="eyebrow block mb-2">{etiquette}</label>}
+      {etiquette && <label className="eyebrow block mb-2.5">{etiquette}</label>}
       <select
-        className={`w-full bg-ink-2 border border-line rounded-[8px] px-3 py-2.5 text-sm
-          text-chalk outline-none focus:border-klein transition-colors ${className}`}
+        className={`w-full bg-surface-hi/85 border border-line rounded-[12px] px-3.5 py-3 text-sm
+          text-chalk outline-none focus:border-klein/60 focus:ring-4 focus:ring-klein/8 transition-all ${className}`}
         {...rest}
       >
         {children}
@@ -146,7 +138,6 @@ export function Selecteur({
   );
 }
 
-/* ── En-tête de section ──────────────────────────────────────────────────── */
 export function TitreSection({
   surtitre,
   titre,
@@ -159,7 +150,7 @@ export function TitreSection({
   className?: string;
 }) {
   return (
-    <div className={`flex items-end justify-between gap-4 flex-wrap ${className}`}>
+    <div className={`section-heading flex items-end justify-between gap-4 flex-wrap ${className}`}>
       <div>
         {surtitre && <p className="eyebrow mb-2">{surtitre}</p>}
         <h2 className="display text-2xl sm:text-3xl text-chalk">{titre}</h2>
@@ -169,10 +160,10 @@ export function TitreSection({
   );
 }
 
-/* ── État vide ───────────────────────────────────────────────────────────── */
 export function Vide({ titre, detail, action }: { titre: string; detail?: string; action?: React.ReactNode }) {
   return (
-    <div className="panel px-6 py-14 text-center">
+    <div className="panel px-6 py-14 text-center overflow-hidden">
+      <div className="empty-orb mx-auto mb-5" aria-hidden />
       <p className="display text-lg text-mist">{titre}</p>
       {detail && <p className="text-sm text-dim mt-2 max-w-sm mx-auto leading-relaxed">{detail}</p>}
       {action && <div className="mt-6 flex justify-center">{action}</div>}
