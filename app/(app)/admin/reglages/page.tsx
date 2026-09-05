@@ -8,13 +8,9 @@ export const metadata: Metadata = { title: "Réglages" };
 export const dynamic = "force-dynamic";
 
 // Réglages retirés de cet écran à la demande de l'admin : les valeurs restent
-// en base et continuent de piloter les règles (score de fiabilité, mise en
-// maintenance auto, empreinte écologique), seule leur édition ici disparaît.
+// en base et continuent de piloter les règles (mise en maintenance auto,
+// empreinte écologique), seule leur édition ici disparaît.
 const RETIRES = new Set([
-  "checkin_grace_minutes",
-  "no_show_penalty",
-  "completion_bonus",
-  "suspension_days",
   "auto_maintenance_reports",
   "eco_water_liters",
   "eco_wh_per_cycle",

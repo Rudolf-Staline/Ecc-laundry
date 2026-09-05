@@ -30,7 +30,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const chemin = request.nextUrl.pathname;
-  const privee = ["/tableau", "/reserver", "/machines", "/statistiques", "/pointage",
+  const privee = ["/tableau", "/reserver", "/machines", "/statistiques",
                   "/historique", "/reclamations", "/reservation", "/compte", "/admin"]
     .some((p) => chemin === p || chemin.startsWith(`${p}/`));
 

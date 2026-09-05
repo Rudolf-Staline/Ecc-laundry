@@ -51,7 +51,6 @@ export default async function PageTableau() {
     (r) => new Date(r.starts_at).getTime() <= maintenant && new Date(r.ends_at).getTime() > maintenant,
   );
   const aVenir = reservations.filter((r) => new Date(r.starts_at).getTime() > maintenant);
-  const suspendu = profil.suspended_until && new Date(profil.suspended_until) > new Date();
 
   return (
     <div className="space-y-8">
@@ -90,19 +89,6 @@ export default async function PageTableau() {
                ton={n.indisponibles > 0 ? "acid" : "neutre"} />
       </section>
 
-      {suspendu && (
-        <div className="panel border-coral/35 bg-coral-fond/40 px-4 py-3.5 flex items-start gap-3" role="alert">
-          <span className="point bg-coral mt-[7px] shrink-0" aria-hidden />
-          <div>
-            <p className="text-sm text-chalk">Compte suspendu</p>
-            <p className="text-sm text-mist mt-1">
-              Vous pourrez à nouveau réserver {fmtRelative(profil.suspended_until!)}. Les absences
-              répétées bloquent les machines pour tout le monde.
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* Cycle en cours */}
       {enCours.length > 0 && (
         <section className="grid gap-3 sm:grid-cols-2">
@@ -110,9 +96,7 @@ export default async function PageTableau() {
             <article key={r.id} className="panel p-5 flex items-center gap-5">
               <Tambour size={54} spinning="cycle" className="text-klein shrink-0" />
               <div className="min-w-0 flex-1">
-                <Etiquette ton="occupe" point pulse>
-                  {r.status === "checked_in" ? "cycle en cours" : "créneau ouvert"}
-                </Etiquette>
+                <Etiquette ton="occupe" point pulse>cycle en cours</Etiquette>
                 <p className="display text-lg text-chalk mt-2 truncate">{r.machine_name}</p>
                 <p className="text-xs text-dim tabular mt-0.5">
                   {fmtTime(r.starts_at)} → {fmtTime(r.ends_at)}
@@ -120,15 +104,6 @@ export default async function PageTableau() {
                 <p className="display text-2xl text-klein mt-2 tabular">
                   <CompteARebours vers={r.ends_at} depuis={r.starts_at} />
                 </p>
-                {r.status === "booked" && (
-                  <Link
-                    href="/pointage"
-                    className="inline-block text-[11px] font-medium
-                      text-acid hover:underline mt-3"
-                  >
-                    → Pointer sur la machine
-                  </Link>
-                )}
               </div>
             </article>
           ))}

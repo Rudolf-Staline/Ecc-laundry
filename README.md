@@ -23,14 +23,13 @@ par la base de données, pas par le navigateur.
 | **La nuit, hors quota** | Les créneaux de 00 h à 06 h ne se décomptent pas : c'est la soupape de ceux qui ont épuisé leurs quatre réservations. Ils restent réservables quota épuisé, dans le même horizon de 24 h que les autres. |
 | **Planning en direct** | Grille machines × créneaux, mise à jour par Supabase Realtime. Un créneau pris disparaît de l'écran des autres dans la seconde. |
 | **Zéro double réservation** | Contrainte d'exclusion GiST sur `(machine, intervalle)`. Deux clics simultanés sur le même créneau : un seul passe, garanti par le moteur, pas par une vérification applicative. |
-| **Pointage par QR** | Une étiquette par machine. L'appareil photo du téléphone suffit — aucune application à installer. Sans pointage dans le quart d'heure, le créneau repart au pot commun. |
 | **File d'attente** | S'inscrire sur un créneau complet ; à la première annulation, la machine est attribuée automatiquement au premier de la file. |
 | **Signalement de panne** | Trois signalements par des étudiants distincts retirent la machine du planning d'elle-même. |
 | **Chaque réservation a une référence** | `TB-1042`, lisible et citable. Une fiche par réservation : détail du créneau, compte à rebours, déroulé de la réservée à la terminée, et les actions au bon moment. |
-| **Historique filtrable** | Toutes ses réservations passées, cherchables par machine ou référence, filtrables par état et par buanderie, avec le total d'heures et le compte d'absences. |
-| **Réclamations suivies** | Linge sorti d'une machine, créneau occupé, pointage qui refuse : l'étudiant ouvre un dossier `REC-0001` rattaché à sa réservation et suit les réponses de l'équipe dans un fil, en direct. Côté admin, un triage par état. |
+| **Historique filtrable** | Toutes ses réservations passées, cherchables par machine ou référence, filtrables par état et par buanderie, avec le total d'heures. |
+| **Réclamations suivies** | Linge sorti d'une machine, créneau occupé : l'étudiant ouvre un dossier `REC-0001` rattaché à sa réservation et suit les réponses de l'équipe dans un fil, en direct. Côté admin, un triage par état. |
 | **Motif de réservation** | Courant, draps, sport, délicat, volumineux — renseigné à la réservation, utile pour l'entretien du parc. |
-| **Console admin** | Machines et buanderies (CRUD complet), comptes, suspensions, signalements, réclamations, annonces, réglages, planche de QR codes à imprimer. |
+| **Console admin** | Machines et buanderies (CRUD complet), comptes, signalements, réclamations, annonces, réglages. |
 | **Le reste** | Affluence jour × heure sur 8 semaines, statistiques personnelles, empreinte eau/électricité, export iCal, PWA installable, thème clair et sombre. |
 
 ## Architecture
@@ -168,8 +167,7 @@ select public.promote_admin('prenom.nom@centrale-casablanca.ma');
 ### 7. Renseigner le parc
 
 *Admin → Buanderies* pour créer les salles (horaires, pas de la grille, créneau
-le plus long), puis *Admin → Machines*. Enfin *Imprimer les QR codes* : une
-étiquette par machine, à coller sur le hublot.
+le plus long), puis *Admin → Machines*.
 
 Les buanderies sont ouvertes en continu par défaut (`00:00` → `24:00`), ce qui
 rend la tranche de nuit disponible. Vous pouvez les restreindre : la règle des
@@ -191,12 +189,12 @@ npm run db:test    # rejoue les migrations + la suite de tests métier
 ```
 
 `npm run db:test` a besoin d'un PostgreSQL local (≥ 14) avec `btree_gist`. Il
-crée une base jetable, applique les sept migrations et passe **66 vérifications** :
+crée une base jetable, applique les huit migrations et passe **59 vérifications** :
 domaine e-mail, longueur des créneaux, quota, horizon glissant, règle des
-créneaux de nuit, anti-collision, file d'attente, absences, références, motifs,
-cycle de vie des réclamations et cloisonnement des droits — y compris les
-tentatives d'élévation de privilèges, par un étudiant comme par un visiteur
-anonyme. Une erreur SQL survenue hors assertion fait échouer la suite : sans
+créneaux de nuit, anti-collision, file d'attente, clôture automatique des
+cycles, références, motifs, cycle de vie des réclamations et cloisonnement des
+droits — y compris les tentatives d'élévation de privilèges, par un étudiant
+comme par un visiteur anonyme. Une erreur SQL survenue hors assertion fait échouer la suite : sans
 ce garde-fou, une section entière pourrait ne rien exécuter sans faire rougir
 le total. Les créneaux visés sont calculés en décalage de `now()` : la suite rend
 le même verdict à 3 h du matin qu'à midi.
@@ -215,7 +213,6 @@ app/
     reservation/[reference] fiche d'une réservation, déroulé, actions
     reclamations/           dépôt et suivi des dossiers
     statistiques/           chiffres personnels, affluence
-    pointage/[code]/        cible des QR codes
     compte/                 préférences, lien iCal
     admin/                  console d'administration
   api/
@@ -236,9 +233,9 @@ proxy.ts                    rafraîchissement de session (ex-middleware)
 - **RLS active sur toutes les tables.** Un étudiant lit son profil, pas ceux des
   autres.
 - **Privilèges par colonne.** `authenticated` n'a le droit `UPDATE` que sur
-  `locale`, `theme`, `notify_reminders` et `promo`. Le rôle, le karma et les
-  suspensions ne sont pas modifiables — il n'y a pas de politique à contourner,
-  le privilège n'existe pas.
+  `locale`, `theme`, `notify_reminders` et `promo`. Le rôle n'est pas
+  modifiable — il n'y a pas de politique à contourner, le privilège n'existe
+  pas.
 - **Aucune politique `UPDATE` sur `bookings` pour les étudiants.** Les
   transitions passent par des fonctions `SECURITY DEFINER` qui vérifient
   elles-mêmes qui appelle.

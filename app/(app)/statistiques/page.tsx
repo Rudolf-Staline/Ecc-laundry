@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Statistiques" };
 export const dynamic = "force-dynamic";
 
 export default async function PageStatistiques() {
-  const profil = await exigerProfil("/statistiques");
+  await exigerProfil("/statistiques");
   const supabase = await creerClientServeur();
 
   const [{ data: stats }, { data: affluence }, { data: semaine }, { data: salles }] =
@@ -27,7 +27,6 @@ export default async function PageStatistiques() {
   const sem = (Array.isArray(semaine) ? semaine[0] : semaine) as WeekStatus | null;
   const buanderies = (salles as Room[]) ?? [];
 
-  const fiabilite = s?.karma ?? profil.karma;
   const heures = buanderies[0]
     ? { debut: Number(buanderies[0].opens_at.slice(0, 2)), fin: Number(buanderies[0].closes_at.slice(0, 2)) }
     : { debut: 7, fin: 23 };
@@ -42,21 +41,9 @@ export default async function PageStatistiques() {
 
       {/* Chiffres personnels — des tuiles, pas des graphiques :
           quatre valeurs isolées se lisent mieux nues. */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 reveal-stagger">
+      <section className="grid grid-cols-2 gap-2.5 reveal-stagger">
         <Tuile valeur={s?.total ?? 0} libelle="réservations" detail="depuis l'inscription" />
         <Tuile valeur={s?.completed ?? 0} libelle="cycles menés à terme" ton="acid" />
-        <Tuile
-          valeur={s?.no_show ?? 0}
-          libelle={`absence${(s?.no_show ?? 0) > 1 ? "s" : ""}`}
-          ton={(s?.no_show ?? 0) > 0 ? "coral" : undefined}
-          detail={(s?.no_show ?? 0) > 0 ? "créneaux perdus pour tous" : "aucune, parfait"}
-        />
-        <Tuile
-          valeur={fiabilite}
-          suffixe="/100"
-          libelle="fiabilité"
-          ton={fiabilite >= 80 ? "acid" : fiabilite >= 40 ? "ember" : "coral"}
-        />
       </section>
 
       {/* Empreinte */}

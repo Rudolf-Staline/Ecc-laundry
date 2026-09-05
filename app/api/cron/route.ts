@@ -5,10 +5,8 @@ export const dynamic = "force-dynamic";
 
 /**
  * Entretien périodique, déclenché par le cron Vercel (cf. vercel.json) :
- *  — marque « absent » les créneaux jamais pointés passé le délai de tolérance,
- *    ce qui libère la machine et débite le karma ;
- *  — clôt les cycles arrivés à terme ;
- *  — purge la file d'attente périmée et lève les suspensions échues.
+ *  — clôt les cycles arrivés à terme, sur leur horaire ;
+ *  — purge la file d'attente périmée.
  */
 export async function GET(request: NextRequest) {
   const attendu = process.env.CRON_SECRET;

@@ -11,11 +11,9 @@ import {
 
 const TONS: Record<BookingStatus, "libre" | "occupe" | "panne" | "neutre" | "info"> = {
   booked: "info",
-  checked_in: "occupe",
   completed: "libre",
   cancelled: "neutre",
   cancelled_late: "neutre",
-  no_show: "panne",
 };
 
 type Tri = "date" | "machine" | "statut";
@@ -44,7 +42,7 @@ export function TableauHistorique({
     const out = lignes.filter((l) => {
       if (salle !== "toutes" && l.room_id !== salle) return false;
       if (statut === "actives") {
-        if (l.status !== "booked" && l.status !== "checked_in") return false;
+        if (l.status !== "booked") return false;
       } else if (statut !== "tous" && l.status !== statut) return false;
       if (!q) return true;
       return (
@@ -70,12 +68,11 @@ export function TableauHistorique({
   // Synthèse sur l'ensemble filtré, pas seulement la page affichée.
   const synthese = useMemo(() => {
     const heures = filtrees
-      .filter((l) => l.status === "completed" || l.status === "checked_in")
+      .filter((l) => l.status === "completed")
       .reduce((a, l) => a + l.duration_minutes, 0) / 60;
     return {
       total: filtrees.length,
       heures: Math.round(heures * 10) / 10,
-      absences: filtrees.filter((l) => l.status === "no_show").length,
       nuit: filtrees.filter((l) => l.is_night).length,
     };
   }, [filtrees]);
@@ -122,7 +119,7 @@ export function TableauHistorique({
       </div>
 
       {/* Synthèse — trois tuiles plutôt qu'une ligne de chiffres serrés */}
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <Tuile
           icone={<IconeRegistre />}
           etiquette="Réservations"
@@ -135,13 +132,6 @@ export function TableauHistorique({
           valeur={String(synthese.heures)}
           unite="h"
           legende={synthese.nuit > 0 ? `dont ${synthese.nuit} de nuit, hors quota` : "toutes dans le quota"}
-        />
-        <Tuile
-          icone={<IconeAbsence />}
-          etiquette="Absences"
-          valeur={String(synthese.absences)}
-          legende={synthese.absences === 0 ? "aucun créneau perdu" : "créneaux jamais pointés"}
-          alerte={synthese.absences > 0}
         />
       </div>
 
@@ -295,15 +285,6 @@ function IconeHorloge() {
     <svg {...traitsTuile}>
       <circle cx="12" cy="12" r="9" />
       <path d="M12 7v5l3 2" />
-    </svg>
-  );
-}
-
-function IconeAbsence() {
-  return (
-    <svg {...traitsTuile}>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M15 9l-6 6M9 9l6 6" />
     </svg>
   );
 }

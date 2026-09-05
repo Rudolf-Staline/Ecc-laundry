@@ -38,7 +38,7 @@ export async function GET(
     .from("bookings")
     .select("id, starts_at, ends_at, status, machines(name, rooms(name, building))")
     .eq("user_id", profil.id)
-    .in("status", ["booked", "checked_in", "completed"])
+    .in("status", ["booked", "completed"])
     .gte("starts_at", new Date(Date.now() - 30 * 86_400_000).toISOString())
     .order("starts_at");
 
@@ -119,11 +119,7 @@ function construireCalendrier(reservations: LigneReservation[]): string {
       `DTEND:${horodatage(r.ends_at)}`,
       `SUMMARY:${echapper(`${machine} · ${salle}`)}`,
       `LOCATION:${echapper(batiment ? `${salle} — ${batiment}` : salle)}`,
-      `DESCRIPTION:${echapper(
-        r.status === "booked"
-          ? "Pensez à pointer le QR code en arrivant, sinon le créneau est libéré."
-          : "Créneau pointé.",
-      )}`,
+      `DESCRIPTION:${echapper("Réservation confirmée.")}`,
       "STATUS:CONFIRMED",
       "TRANSP:OPAQUE",
       // Rappel dix minutes avant : le temps de descendre avec son panier.

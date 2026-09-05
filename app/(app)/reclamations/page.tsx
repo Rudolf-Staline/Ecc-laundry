@@ -44,8 +44,8 @@ export default async function PageReclamations() {
       />
 
       <p className="text-sm text-mist leading-relaxed max-w-2xl">
-        Linge sorti d&apos;une machine, créneau occupé par quelqu&apos;un d&apos;autre,
-        pointage qui refuse : ouvrez un dossier. Vous verrez les réponses de
+        Linge sorti d&apos;une machine, créneau occupé par quelqu&apos;un d&apos;autre :
+        ouvrez un dossier. Vous verrez les réponses de
         l&apos;équipe directement dans le fil — ce n&apos;est pas une boîte aux lettres.
         Pour une machine en panne, passez plutôt par{" "}
         <Link href="/machines" className="text-klein-2 hover:underline">le parc</Link>,

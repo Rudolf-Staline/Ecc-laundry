@@ -15,8 +15,8 @@ type Reservation = Pick<HistoryRow, "id" | "reference" | "starts_at" | "machine_
 type Machine = Pick<MachineLive, "machine_id" | "name" | "room_name">;
 
 /** Catégories qui appellent naturellement une réservation ou une machine. */
-const DEMANDE_RESERVATION: ClaimCategory[] = ["linge_sorti", "linge_abime", "creneau_occupe", "pointage"];
-const DEMANDE_MACHINE: ClaimCategory[] = ["linge_sorti", "linge_abime", "creneau_occupe", "pointage", "proprete"];
+const DEMANDE_RESERVATION: ClaimCategory[] = ["linge_sorti", "linge_abime", "creneau_occupe"];
+const DEMANDE_MACHINE: ClaimCategory[] = ["linge_sorti", "linge_abime", "creneau_occupe", "proprete"];
 
 export function FormulaireReclamation({
   reservations, machines, reservationPreselectionnee, machinePreselectionnee,

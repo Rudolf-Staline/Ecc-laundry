@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 const REGLAGES = ["booking_horizon_hours", "night_start_hour", "night_end_hour"] as const;
 
 export default async function PageReserver() {
-  const profil = await exigerProfil("/reserver");
+  await exigerProfil("/reserver");
   const supabase = await creerClientServeur();
 
   const [{ data: rooms }, { data: machines }, { data: reglages }] = await Promise.all([
@@ -55,7 +55,6 @@ export default async function PageReserver() {
 
   return (
     <Planning
-      profil={profil}
       buanderies={rooms as Room[]}
       machines={(machines as Machine[]) ?? []}
       planningInitial={(board as BoardRow[]) ?? []}
