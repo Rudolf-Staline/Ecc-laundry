@@ -8,7 +8,7 @@ import { BoutonAnnuler } from "@/components/bouton-annuler";
 import { CompteARebours } from "@/components/compte-a-rebours";
 import { Tambour } from "@/components/marque";
 import { fmtDay, fmtTime, fmtDateTime, fmtRelative } from "@/lib/time";
-import { LIBELLES_STATUT, MOTIFS, type BookingStatus, type HistoryRow } from "@/lib/types";
+import { LIBELLES_STATUT, type BookingStatus, type HistoryRow } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +28,6 @@ const TONS: Record<BookingStatus, "libre" | "occupe" | "panne" | "neutre" | "inf
   cancelled_late: "neutre",
 };
 
-/** Ce que le statut implique, quand il implique quelque chose. */
 const EXPLICATIONS: Partial<Record<BookingStatus, string>> = {
   cancelled_late: "Annulation tardive : le créneau reste décompté.",
 };
@@ -53,7 +52,6 @@ export default async function PageReservation({
 
   const debut = new Date(r.starts_at).getTime();
   const fin = new Date(r.ends_at).getTime();
-  // Même remarque : rendu dynamique assumé.
   // eslint-disable-next-line react-hooks/purity
   const maintenant = Date.now();
   const enCours = debut <= maintenant && fin > maintenant;
@@ -95,7 +93,7 @@ export default async function PageReservation({
                 <Etiquette ton={TONS[r.status]} point={enCours} pulse={enCours}>
                   {LIBELLES_STATUT[r.status]}
                 </Etiquette>
-                {r.is_night && <Etiquette ton="info">nuit · hors quota</Etiquette>}
+                {r.is_night && <Etiquette ton="info">nuit</Etiquette>}
               </div>
               <h1 className="display text-2xl sm:text-3xl mt-2.5 text-chalk">{r.machine_name}</h1>
               <p className="text-sm text-mist mt-1.5">{r.room_name}</p>
@@ -139,10 +137,6 @@ export default async function PageReservation({
               {r.kind === "washer" ? "Lave-linge" : "Sèche-linge"}
             </dd>
           </div>
-          <div>
-            <dt className="eyebrow">Motif</dt>
-            <dd className="text-mist mt-1.5">{r.purpose ? MOTIFS[r.purpose] : "non précisé"}</dd>
-          </div>
         </dl>
 
         {aVenir && (
@@ -152,7 +146,6 @@ export default async function PageReservation({
         )}
       </section>
 
-      {/* Déroulé — ce que le modèle d'origine ne montrait pas du tout */}
       <section className="panel p-6">
         <p className="eyebrow mb-5">Déroulé</p>
         <ol className="space-y-4">
