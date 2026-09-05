@@ -10,10 +10,8 @@ import {
   buildSlots, dayKey, daySpan, estCreneauNuit, fmtDay, fmtRelative, fmtTime,
   isoDayOfWeek, JOURS_COURTS, startOfDay, type Slot,
 } from "@/lib/time";
-import {
-  MOTIFS,
-  type BoardRow, type BookingPurpose, type Machine,
-  type Room, type WaitlistEntry, type WeekStatus,
+import type {
+  BoardRow, Machine, Room, WaitlistEntry, WeekStatus,
 } from "@/lib/types";
 
 type Etat = "libre" | "mien" | "pris" | "passe" | "indispo" | "horizon";
@@ -43,7 +41,6 @@ export function Planning({
   const [buanderieId, setBuanderieId] = useState(buanderies[0].id);
   const [jourActif, setJourActif] = useState(() => dayKey(new Date()));
   const [duree, setDuree] = useState(1);
-  const [motif, setMotif] = useState<BookingPurpose | "">("");
   const [planning, setPlanning] = useState(planningInitial);
   const [statut, setStatut] = useState(statutInitial);
   const [attente, setAttente] = useState(attenteInitiale);
@@ -51,7 +48,6 @@ export function Planning({
   const [survol, setSurvol] = useState<string | null>(null);
   const [selection, setSelection] = useState<{ machine: Machine; creneau: Slot } | null>(null);
   const [maintenant, setMaintenant] = useState(() => Date.now());
-
   const grille = useRef<HTMLDivElement>(null);
 
   const buanderie = buanderies.find((b) => b.id === buanderieId) ?? buanderies[0];
@@ -60,40 +56,29 @@ export function Planning({
     [machines, buanderie.id],
   );
 
-  // Lave-linge et sèche-linge ne se réservent pas pour les mêmes raisons :
-  // les séparer évite de compter les uns pour les autres d'un coup d'œil.
   const groupes = useMemo(
-    () =>
-      (
-        [
-          { kind: "washer" as const, label: "Lave-linge" },
-          { kind: "dryer" as const, label: "Sèche-linge" },
-        ]
-      )
-        .map((g) => ({ ...g, machines: parc.filter((m) => m.kind === g.kind) }))
-        .filter((g) => g.machines.length > 0),
+    () => ([
+      { kind: "washer" as const, label: "Lave-linge" },
+      { kind: "dryer" as const, label: "Sèche-linge" },
+    ])
+      .map((g) => ({ ...g, machines: parc.filter((m) => m.kind === g.kind) }))
+      .filter((g) => g.machines.length > 0),
     [parc],
   );
 
-  // L'horizon glissant de 24 h ne touche jamais plus de deux jours civils.
   const jours = useMemo(
     () => daySpan(new Date(maintenant), Math.ceil(horizonHeures / 24) + 1),
     [horizonHeures, maintenant],
   );
   const jour = jours.find((j) => dayKey(j) === jourActif) ?? jours[0];
-
   const creneaux = useMemo(
     () => buildSlots(jour, buanderie.opens_at, buanderie.closes_at, buanderie.slot_minutes),
     [jour, buanderie],
   );
-
   const dureesPossibles = useMemo(
     () => Array.from({ length: Math.max(1, buanderie.max_blocks) }, (_, i) => i + 1),
     [buanderie.max_blocks],
   );
-
-  // Valeur dérivée plutôt qu'état recalé après coup : changer de buanderie
-  // ramène simplement la durée dans les limites de celle-ci.
   const dureeEffective = Math.min(duree, Math.max(1, buanderie.max_blocks));
 
   useEffect(() => {
@@ -101,11 +86,9 @@ export function Planning({
     return () => clearInterval(t);
   }, []);
 
-  /* ── Rechargement ─────────────────────────────────────────────────────── */
   const recharger = useCallback(async () => {
     const debut = startOfDay(new Date());
     const fin = new Date(debut.getTime() + 3 * 86_400_000);
-
     const [{ data: b }, { data: s }, { data: w }] = await Promise.all([
       supabase.from("v_board").select("*")
         .gte("starts_at", debut.toISOString())
@@ -120,7 +103,6 @@ export function Planning({
     if (w) setAttente(w as WaitlistEntry[]);
   }, [supabase]);
 
-  /* ── Temps réel ───────────────────────────────────────────────────────── */
   useEffect(() => {
     const canal = supabase
       .channel("planning-bookings")
@@ -131,28 +113,28 @@ export function Planning({
     return () => { void supabase.removeChannel(canal); };
   }, [supabase, recharger]);
 
-  /* ── Occupation : une réservation de 2 h occupe ses deux heures ───────── */
   const index = useMemo(() => {
-    const m = new Map<string, BoardRow>();
+    const map = new Map<string, BoardRow>();
     for (const r of planning) {
       if (r.status !== "booked") continue;
       const debut = new Date(r.starts_at).getTime();
       const fin = new Date(r.ends_at).getTime();
       const pas = 60_000 * (buanderies.find((b) => b.id === r.room_id)?.slot_minutes ?? 60);
       for (let t = debut; t < fin; t += pas) {
-        m.set(`${r.machine_id}|${new Date(t).toISOString()}`, r);
+        map.set(`${r.machine_id}|${new Date(t).toISOString()}`, r);
       }
     }
-    return m;
+    return map;
   }, [planning, buanderies]);
 
   const enAttente = useMemo(() => {
-    const s = new Set<string>();
-    for (const w of attente) s.add(`${w.room_id}|${w.kind}|${new Date(w.starts_at).toISOString()}`);
-    return s;
+    const set = new Set<string>();
+    for (const w of attente) set.add(`${w.room_id}|${w.kind}|${new Date(w.starts_at).toISOString()}`);
+    return set;
   }, [attente]);
 
   const limiteHorizon = maintenant + horizonHeures * 3_600_000;
+  const quotaAtteint = Boolean(statut && statut.remaining <= 0);
 
   const etatCellule = useCallback(
     (machine: Machine, debut: Date): { etat: Etat; ligne?: BoardRow } => {
@@ -161,23 +143,24 @@ export function Planning({
 
       const ligne = index.get(`${machine.id}|${debut.toISOString()}`);
       if (ligne) return { etat: ligne.is_mine ? "mien" : "pris", ligne };
-
       if (debut.getTime() > limiteHorizon) return { etat: "horizon" };
       return { etat: "libre" };
     },
     [index, maintenant, limiteHorizon],
   );
 
-  /** Un créneau de 2 h exige que l'heure suivante soit libre elle aussi. */
-  const secondeHeureLibre = useCallback(
+  const suiteLibre = useCallback(
     (machine: Machine, debut: Date) => {
-      const suite = new Date(debut.getTime() + buanderie.slot_minutes * 60_000);
-      return !index.get(`${machine.id}|${suite.toISOString()}`);
+      for (let i = 1; i < dureeEffective; i += 1) {
+        const suite = new Date(debut.getTime() + i * buanderie.slot_minutes * 60_000);
+        if (index.get(`${machine.id}|${suite.toISOString()}`)) return false;
+        if (suite.getTime() > limiteHorizon) return false;
+      }
+      return true;
     },
-    [index, buanderie.slot_minutes],
+    [index, dureeEffective, buanderie.slot_minutes, limiteHorizon],
   );
 
-  /* ── Actions ──────────────────────────────────────────────────────────── */
   async function reserver() {
     if (!selection) return;
     const { machine, creneau } = selection;
@@ -187,7 +170,6 @@ export function Planning({
       p_machine_id: machine.id,
       p_starts_at: creneau.start.toISOString(),
       p_blocs: dureeEffective,
-      p_motif: motif || null,
     });
     setEnVol(null);
 
@@ -209,7 +191,6 @@ export function Planning({
     setEnVol(ligne.id);
     const { error } = await supabase.rpc("cancel_booking", { p_booking_id: ligne.id });
     setEnVol(null);
-
     if (error) {
       toast({ ton: "erreur", titre: "Annulation impossible", detail: messageErreur(error) });
     } else {
@@ -236,12 +217,8 @@ export function Planning({
     await recharger();
   }
 
-  /* ── Rendu ────────────────────────────────────────────────────────────── */
-  const quotaAtteint = Boolean(statut && statut.remaining <= 0);
-
   return (
     <div className="space-y-6">
-      {/* En-tête */}
       <div className="flex flex-wrap items-start justify-between gap-5">
         <div>
           <p className="eyebrow">Planning</p>
@@ -254,16 +231,7 @@ export function Planning({
             {" · "}réservations ouvertes {horizonHeures} h à l&apos;avance
           </p>
         </div>
-        {statut && (
-          <div className="text-right">
-            <AnneauQuota utilises={statut.used} quota={statut.quota} />
-            {statut.night_used > 0 && (
-              <p className="text-[11px] font-mono text-klein-2 mt-1.5">
-                + {statut.night_used} de nuit, hors quota
-              </p>
-            )}
-          </div>
-        )}
+        {statut && <AnneauQuota utilises={statut.used} quota={statut.quota} />}
       </div>
 
       {quotaAtteint && (
@@ -271,12 +239,11 @@ export function Planning({
           <span className="point bg-acid mt-[7px] shrink-0" aria-hidden />
           <p className="text-sm text-mist">
             <span className="text-chalk">Quota atteint.</span>{" "}
-            Les créneaux de {nuitDebut} h à {nuitFin} h restent ouverts, hors quota.
+            Aucun nouveau créneau ne peut être réservé cette semaine, y compris la nuit.
           </p>
         </div>
       )}
 
-      {/* Buanderie + durée */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         {buanderies.length > 1 ? (
           <div className="flex gap-1.5 flex-wrap" role="tablist" aria-label="Buanderie">
@@ -285,13 +252,12 @@ export function Planning({
                 key={b.id}
                 role="tab"
                 aria-selected={b.id === buanderieId}
-                onClick={() => setBuanderieId(b.id)}
-                className={`px-3.5 py-2 text-[11px] font-medium border rounded-[8px]
-                  transition-colors ${
-                    b.id === buanderieId
-                      ? "border-klein bg-klein/12 text-chalk"
-                      : "border-line text-dim hover:text-mist hover:border-line-hi"
-                  }`}
+                onClick={() => { setBuanderieId(b.id); setSelection(null); }}
+                className={`px-3.5 py-2 text-[11px] font-medium border rounded-[8px] transition-colors ${
+                  b.id === buanderieId
+                    ? "border-klein bg-klein/12 text-chalk"
+                    : "border-line text-dim hover:text-mist hover:border-line-hi"
+                }`}
               >
                 {b.name}
               </button>
@@ -299,7 +265,6 @@ export function Planning({
           </div>
         ) : <span />}
 
-        <div className="flex items-end gap-4 flex-wrap">
         {dureesPossibles.length > 1 && (
           <fieldset className="flex items-center gap-2">
             <legend className="sr-only">Durée du créneau</legend>
@@ -308,7 +273,7 @@ export function Planning({
               {dureesPossibles.map((d) => (
                 <button
                   key={d}
-                  onClick={() => setDuree(d)}
+                  onClick={() => { setDuree(d); setSelection(null); }}
                   aria-pressed={dureeEffective === d}
                   className={`px-4 py-2 text-[12px] font-mono tabular transition-colors
                     ${d > 1 ? "border-l border-line" : ""}
@@ -322,33 +287,33 @@ export function Planning({
             </div>
           </fieldset>
         )}
-        </div>
       </div>
 
-      {/* Bandeau des jours */}
       <div className="scroll-x -mx-4 sm:-mx-6 px-4 sm:px-6">
         <div className="flex gap-1.5 pb-1 w-max" role="tablist" aria-label="Jour">
           {jours.map((j) => {
-            const k = dayKey(j);
-            const actif = k === jourActif;
-            const aujourdhui = k === dayKey(new Date(maintenant));
+            const cle = dayKey(j);
+            const actif = cle === jourActif;
+            const aujourdhui = cle === dayKey(new Date(maintenant));
             const jsem = isoDayOfWeek(j);
-
             return (
               <button
-                key={k}
+                key={cle}
                 role="tab"
                 aria-selected={actif}
-                onClick={() => { setJourActif(k); grille.current?.scrollTo({ left: 0 }); }}
+                onClick={() => {
+                  setJourActif(cle);
+                  setSelection(null);
+                  grille.current?.scrollTo({ left: 0 });
+                }}
                 className={`shrink-0 w-[76px] py-2.5 border rounded-[8px] transition-all text-center
                   ${actif ? "border-klein bg-klein/12" : "border-line hover:border-line-hi bg-surface/40"}`}
               >
-                <span className={`block text-[10px] font-mono tracking-[0.1em]
-                  ${actif ? "text-klein-2" : "text-dim"}`}>
+                <span className={`block text-[10px] font-mono tracking-[0.1em] ${actif ? "text-klein-2" : "text-dim"}`}>
                   {aujourdhui ? "AUJ." : JOURS_COURTS[jsem - 1]}
                 </span>
                 <span className={`block display text-xl mt-0.5 tabular ${actif ? "text-chalk" : "text-mist"}`}>
-                  {k.slice(8, 10)}
+                  {cle.slice(8, 10)}
                 </span>
               </button>
             );
@@ -356,9 +321,6 @@ export function Planning({
         </div>
       </div>
 
-      {/* La grille — machines en lignes, heures en colonnes : douze machines
-          se lisent d'un coup d'œil là où vingt-quatre heures empilées
-          obligeaient à faire défiler la page. */}
       {parc.length === 0 ? (
         <div className="panel px-6 py-14 text-center">
           <Tambour size={44} className="text-line-hi mx-auto mb-4" />
@@ -375,70 +337,57 @@ export function Planning({
                 gap: "3px",
               }}
             >
-              {/* Bandeau des heures */}
               <div className="sticky left-0 z-20 bg-surface" />
               {creneaux.map((c) => {
                 const nuit = estCreneauNuit(c.start, nuitDebut, nuitFin);
                 return (
                   <div key={`h-${c.key}`} className="pb-1 grid place-items-center" title={c.label}>
-                    {nuit ? (
-                      <IconeNuit />
-                    ) : (
-                      <span className="text-[10px] tabular text-dim">{c.label.slice(0, 2)}</span>
-                    )}
+                    {nuit ? <IconeNuit /> : <span className="text-[10px] tabular text-dim">{c.label.slice(0, 2)}</span>}
                   </div>
                 );
               })}
 
               {groupes.map((g) => (
                 <div key={g.kind} className="contents">
-                  <div
-                    style={{ gridColumn: "1 / -1" }}
-                    className="flex items-center gap-2 pt-3 pb-0.5"
-                  >
+                  <div style={{ gridColumn: "1 / -1" }} className="flex items-center gap-2 pt-3 pb-0.5">
                     <span className={g.kind === "washer" ? "text-cat-lavage" : "text-cat-sechage"}>
                       <IconeType kind={g.kind} />
                     </span>
                     <span className="eyebrow">{g.label}</span>
                   </div>
 
-                  {g.machines.map((m) => (
-                    <div key={m.id} className="contents">
+                  {g.machines.map((machine) => (
+                    <div key={machine.id} className="contents">
                       <div className="sticky left-0 z-10 bg-surface pr-2 flex items-center gap-2 min-w-0">
                         <span
                           className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                            m.status === "operational"
-                              ? m.kind === "washer" ? "bg-cat-lavage" : "bg-cat-sechage"
+                            machine.status === "operational"
+                              ? machine.kind === "washer" ? "bg-cat-lavage" : "bg-cat-sechage"
                               : "bg-ember"
                           }`}
                           aria-hidden
                         />
-                        <span className="text-[12px] text-chalk truncate">{m.name}</span>
-                        {m.status !== "operational" && (
-                          <span className="text-[9px] text-ember shrink-0 uppercase tracking-[0.08em]">
-                            hs
-                          </span>
+                        <span className="text-[12px] text-chalk truncate">{machine.name}</span>
+                        {machine.status !== "operational" && (
+                          <span className="text-[9px] text-ember shrink-0 uppercase tracking-[0.08em]">hs</span>
                         )}
                       </div>
 
                       {creneaux.map((c) => {
                         const nuit = estCreneauNuit(c.start, nuitDebut, nuitFin);
-                        const { etat, ligne } = etatCellule(m, c.start);
-                        const cle = `${m.id}|${c.key}`;
-                        const bloqueParDuree =
-                          etat === "libre" && dureeEffective > 1 && !secondeHeureLibre(m, c.start);
+                        const { etat, ligne } = etatCellule(machine, c.start);
+                        const cle = `${machine.id}|${c.key}`;
+                        const bloqueParDuree = etat === "libre" && dureeEffective > 1 && !suiteLibre(machine, c.start);
                         const precedent = new Date(c.start.getTime() - buanderie.slot_minutes * 60_000).toISOString();
-                        const apercu =
-                          dureeEffective > 1 &&
-                          (survol === `${m.id}|${precedent}` ||
-                            (selection !== null &&
-                              selection.machine.id === m.id &&
-                              selection.creneau.start.toISOString() === precedent));
+                        const apercu = dureeEffective > 1 && (
+                          survol === `${machine.id}|${precedent}` ||
+                          (selection !== null && selection.machine.id === machine.id && selection.creneau.start.toISOString() === precedent)
+                        );
 
                         return (
                           <Cellule
                             key={cle}
-                            machine={m}
+                            machine={machine}
                             creneau={c}
                             etat={etat}
                             ligne={ligne}
@@ -447,25 +396,19 @@ export function Planning({
                             pasMinutes={buanderie.slot_minutes}
                             bloqueParDuree={bloqueParDuree}
                             apercu={apercu}
-                            choisi={
-                              selection !== null &&
-                              selection.machine.id === m.id &&
-                              selection.creneau.key === c.key
-                            }
+                            choisi={selection !== null && selection.machine.id === machine.id && selection.creneau.key === c.key}
                             occupe={enVol === cle}
                             annulationEnCours={enVol}
-                            verrouille={quotaAtteint && !nuit}
-                            enFile={enAttente.has(`${buanderie.id}|${m.kind}|${c.start.toISOString()}`)}
+                            verrouille={quotaAtteint}
+                            enFile={enAttente.has(`${buanderie.id}|${machine.kind}|${c.start.toISOString()}`)}
                             onSurvol={(actif) => setSurvol(actif ? cle : null)}
-                            onChoisir={() =>
-                              setSelection((s) =>
-                                s && s.machine.id === m.id && s.creneau.key === c.key
-                                  ? null
-                                  : { machine: m, creneau: c },
-                              )
-                            }
-                            onAnnuler={(l) => annuler(l)}
-                            onFile={() => rejoindreFile(c, m.kind)}
+                            onChoisir={() => setSelection((s) =>
+                              s && s.machine.id === machine.id && s.creneau.key === c.key
+                                ? null
+                                : { machine, creneau: c }
+                            )}
+                            onAnnuler={annuler}
+                            onFile={() => rejoindreFile(c, machine.kind)}
                           />
                         );
                       })}
@@ -478,43 +421,22 @@ export function Planning({
         </div>
       )}
 
-      {/* Légende */}
-      <div className="space-y-3">
-        <div className="flex flex-wrap gap-3 items-center text-[11px] text-dim">
-          <span className="flex items-center gap-1.5">
-            <span className="w-3.5 h-3.5 border border-menthe/20 bg-menthe-fond rounded-[4px]" /> libre
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-3.5 h-3.5 border border-klein bg-klein rounded-[4px]" /> votre choix
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-3.5 h-3.5 border border-acid/25 bg-acid-fond rounded-[4px]" /> à vous
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-3.5 h-3.5 border border-coral/25 bg-coral-fond rounded-[4px]" /> occupé
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-3.5 h-3.5 border border-klein/20 bg-klein-fond rounded-[4px]" /> nuit
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-3.5 h-3.5 border border-line maintenance-stripes rounded-[4px]" /> hors service
-          </span>
-          <span className="ml-auto flex items-center gap-1.5 text-menthe">
-            <span className="w-1.5 h-1.5 rounded-full bg-menthe pulse-live" /> en direct
-          </span>
-        </div>
-
-
+      <div className="flex flex-wrap gap-3 items-center text-[11px] text-dim">
+        <Legende classe="border-menthe/20 bg-menthe-fond" label="libre" />
+        <Legende classe="border-klein bg-klein" label="votre choix" />
+        <Legende classe="border-acid/25 bg-acid-fond" label="à vous" />
+        <Legende classe="border-coral/25 bg-coral-fond" label="occupé" />
+        <Legende classe="border-klein/20 bg-klein-fond" label="nuit" />
+        <Legende classe="border-line maintenance-stripes" label="hors service" />
+        <span className="ml-auto flex items-center gap-1.5 text-menthe">
+          <span className="w-1.5 h-1.5 rounded-full bg-menthe pulse-live" /> en direct
+        </span>
       </div>
 
-      {/* Barre de confirmation — un clic sur une case ne consomme rien tant que
-          rien n'est confirmé : sur quatre réservations par semaine, une erreur
-          de visée coûte cher. */}
       {selection && (
         <div className="fixed inset-x-0 bottom-0 z-40 px-4 pb-4 md:pl-[272px] md:pr-8 no-print">
-          <div className="panel-deep mx-auto max-w-[860px] px-4 py-3
-            flex flex-wrap items-center gap-x-5 gap-y-3 reveal">
-            <div className="min-w-0">
+          <div className="panel-deep mx-auto max-w-[760px] px-4 py-3 flex flex-wrap items-center gap-x-5 gap-y-3 reveal">
+            <div className="min-w-0 flex-1">
               <p className="eyebrow">Créneau sélectionné</p>
               <p className="text-[14px] text-chalk mt-0.5">
                 <span className="font-semibold">{selection.machine.name}</span>
@@ -528,28 +450,14 @@ export function Planning({
                 </span>
               </p>
               <p className="text-[11px] text-dim mt-0.5">
-                {estCreneauNuit(selection.creneau.start, nuitDebut, nuitFin)
-                  ? "Créneau de nuit — hors quota hebdomadaire."
-                  : `Quota après réservation : ${Math.min(statut.used + 1, statut.quota)}/${statut.quota}`}
+                {estCreneauNuit(selection.creneau.start, nuitDebut, nuitFin) && (
+                  <span className="text-klein-2">Créneau de nuit · </span>
+                )}
+                Quota après réservation : {Math.min(statut.used + 1, statut.quota)}/{statut.quota}
               </p>
             </div>
 
-            <label className="flex items-center gap-2 ml-auto">
-              <span className="eyebrow">Motif</span>
-              <select
-                value={motif}
-                onChange={(e) => setMotif(e.target.value as BookingPurpose | "")}
-                className="bg-ink-2 border border-line rounded-[6px] px-3 py-2 text-[12px]
-                  text-mist outline-none focus:border-klein transition-colors"
-              >
-                <option value="">non précisé</option>
-                {(Object.keys(MOTIFS) as BookingPurpose[]).map((m) => (
-                  <option key={m} value={m}>{MOTIFS[m]}</option>
-                ))}
-              </select>
-            </label>
-
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 ml-auto">
               <button
                 onClick={() => setSelection(null)}
                 className="px-3.5 py-2 text-[12.5px] text-dim hover:text-chalk transition-colors"
@@ -558,10 +466,9 @@ export function Planning({
               </button>
               <button
                 onClick={reserver}
-                disabled={enVol !== null}
-                className="px-5 py-2.5 rounded-[8px] bg-encre text-ink
-                  text-[13px] font-semibold hover:opacity-88 transition-opacity
-                  disabled:opacity-60 flex items-center gap-2"
+                disabled={enVol !== null || quotaAtteint}
+                className="px-5 py-2.5 rounded-[8px] bg-encre text-ink text-[13px] font-semibold
+                  hover:opacity-88 transition-opacity disabled:opacity-60 flex items-center gap-2"
               >
                 {enVol !== null ? <Tambour size={14} spinning className="text-ink" /> : null}
                 Confirmer
@@ -571,6 +478,14 @@ export function Planning({
         </div>
       )}
     </div>
+  );
+}
+
+function Legende({ classe, label }: { classe: string; label: string }) {
+  return (
+    <span className="flex items-center gap-1.5">
+      <span className={`w-3.5 h-3.5 border rounded-[4px] ${classe}`} /> {label}
+    </span>
   );
 }
 
@@ -597,7 +512,6 @@ function IconeType({ kind }: { kind: "washer" | "dryer" }) {
   );
 }
 
-/* ── Une case de la grille ────────────────────────────────────────────────── */
 function Cellule({
   machine, creneau, etat, ligne, nuit, duree, pasMinutes, bloqueParDuree, apercu, choisi,
   occupe, annulationEnCours, verrouille, enFile, onSurvol, onChoisir, onAnnuler, onFile,
@@ -621,53 +535,34 @@ function Cellule({
   onAnnuler: (l: BoardRow) => void;
   onFile: () => void;
 }) {
-  const base =
-    "h-[34px] rounded-[6px] border grid place-items-center text-center transition-all duration-150";
+  const base = "h-[34px] rounded-[6px] border grid place-items-center text-center transition-all duration-150";
 
   if (etat === "indispo") {
-    return (
-      <div
-        className={`${base} maintenance-stripes border-line bg-ink-2/40`}
-        title={`${machine.name} hors service`}
-        aria-label={`${machine.name} hors service`}
-      />
-    );
+    return <div className={`${base} maintenance-stripes border-line bg-ink-2/40`} title={`${machine.name} hors service`} />;
   }
-
   if (etat === "passe") {
     return <div className={`${base} border-line/40 bg-ink-2/40 opacity-50`} aria-hidden />;
   }
-
   if (etat === "mien" && ligne) {
     return (
       <button
         onClick={() => onAnnuler(ligne)}
         disabled={annulationEnCours === ligne.id}
         title={`Votre réservation ${fmtTime(ligne.starts_at)} → ${fmtTime(ligne.ends_at)}. Cliquer pour annuler.`}
-        className={`${base} bg-acid-fond border-acid/25 hover:bg-coral-fond hover:border-coral/30
-          group disabled:opacity-50`}
+        className={`${base} bg-acid-fond border-acid/25 hover:bg-coral-fond hover:border-coral/30 group disabled:opacity-50`}
       >
-        <span className="text-[9px] font-semibold uppercase tracking-[0.04em] text-acid group-hover:hidden">
-          vous
-        </span>
-        <span className="hidden group-hover:inline text-[9px] font-semibold uppercase text-coral">
-          ✕
-        </span>
+        <span className="text-[9px] font-semibold uppercase tracking-[0.04em] text-acid group-hover:hidden">vous</span>
+        <span className="hidden group-hover:inline text-[9px] font-semibold uppercase text-coral">✕</span>
       </button>
     );
   }
-
   if (etat === "pris" && ligne) {
     const initiales = ligne.owner_first_name.slice(0, 2).toUpperCase();
     return (
       <button
         onClick={onFile}
         disabled={enFile}
-        title={
-          enFile
-            ? "Vous êtes déjà en file d'attente sur ce créneau"
-            : `Pris par ${ligne.owner_first_name}. Cliquer pour rejoindre la file d'attente.`
-        }
+        title={enFile ? "Vous êtes déjà en file d'attente sur ce créneau" : `Pris par ${ligne.owner_first_name}. Cliquer pour rejoindre la file d'attente.`}
         className={`${base} bg-coral-fond border-coral/25 hover:border-coral/45`}
       >
         <span className={`text-[9px] font-semibold ${enFile ? "text-ember" : "text-coral"}`}>
@@ -676,7 +571,6 @@ function Cellule({
       </button>
     );
   }
-
   if (etat === "horizon") {
     return (
       <div
@@ -686,7 +580,6 @@ function Cellule({
     );
   }
 
-  // Libre
   const indisponible = verrouille || bloqueParDuree;
   const finPrevue = new Date(creneau.start.getTime() + duree * pasMinutes * 60_000);
 
@@ -701,9 +594,9 @@ function Cellule({
       aria-pressed={choisi}
       title={
         verrouille
-          ? "Quota hebdomadaire atteint — les créneaux de nuit restent ouverts"
+          ? "Quota hebdomadaire atteint"
           : bloqueParDuree
-            ? "L'heure suivante est déjà prise : ce créneau de 2 h ne tient pas"
+            ? "Le créneau complet n'est pas disponible"
             : `${machine.name}, ${creneau.label} → ${fmtTime(finPrevue)}`
       }
       className={`${base}
