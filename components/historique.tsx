@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Etiquette, Champ, Selecteur, Vide } from "@/components/ui";
 import { fmtDay, fmtTime } from "@/lib/time";
 import {
-  LIBELLES_STATUT, MOTIFS,
+  LIBELLES_STATUT,
   type BookingStatus, type HistoryRow, type Room,
 } from "@/lib/types";
 
@@ -19,12 +19,6 @@ const TONS: Record<BookingStatus, "libre" | "occupe" | "panne" | "neutre" | "inf
 type Tri = "date" | "machine" | "statut";
 const PAR_PAGE = 15;
 
-/**
- * L'historique du modèle d'origine était le même tableau répété sur deux pages,
- * sans autre filtre qu'une recherche plein texte. Ici : filtres par statut et
- * par buanderie, tri, et une ligne de synthèse — puisqu'un historique sert
- * surtout à répondre à « combien » et « à quelle heure d'habitude ».
- */
 export function TableauHistorique({
   lignes, buanderies,
 }: {
@@ -48,8 +42,7 @@ export function TableauHistorique({
       return (
         l.reference.toLowerCase().includes(q) ||
         l.machine_name.toLowerCase().includes(q) ||
-        l.room_name.toLowerCase().includes(q) ||
-        (l.purpose ? MOTIFS[l.purpose].toLowerCase().includes(q) : false)
+        l.room_name.toLowerCase().includes(q)
       );
     });
 
@@ -65,7 +58,6 @@ export function TableauHistorique({
   const pageSure = Math.min(page, pages - 1);
   const visibles = filtrees.slice(pageSure * PAR_PAGE, (pageSure + 1) * PAR_PAGE);
 
-  // Synthèse sur l'ensemble filtré, pas seulement la page affichée.
   const synthese = useMemo(() => {
     const heures = filtrees
       .filter((l) => l.status === "completed")
@@ -83,14 +75,13 @@ export function TableauHistorique({
 
   return (
     <div className="space-y-5">
-      {/* Filtres — sur une seule ligne, au-dessus du tableau */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Champ
           name="q"
           etiquette="Rechercher"
           value={recherche}
           onChange={(e) => changer(setRecherche)(e.target.value)}
-          placeholder="TB-1042, Lave-linge 2, draps…"
+          placeholder="TB-1042, Lave-linge 2…"
         />
         <Selecteur
           etiquette="Statut"
@@ -118,7 +109,6 @@ export function TableauHistorique({
         </Selecteur>
       </div>
 
-      {/* Synthèse — trois tuiles plutôt qu'une ligne de chiffres serrés */}
       <div className="grid gap-3 sm:grid-cols-2">
         <Tuile
           icone={<IconeRegistre />}
@@ -131,7 +121,7 @@ export function TableauHistorique({
           etiquette="Temps de machine"
           valeur={String(synthese.heures)}
           unite="h"
-          legende={synthese.nuit > 0 ? `dont ${synthese.nuit} de nuit, hors quota` : "toutes dans le quota"}
+          legende={synthese.nuit > 0 ? `dont ${synthese.nuit} de nuit` : "créneaux de jour"}
         />
       </div>
 
@@ -148,11 +138,11 @@ export function TableauHistorique({
         <>
           <div className="panel overflow-hidden">
             <div className="scroll-x">
-              <table className="w-full min-w-[760px] text-sm">
+              <table className="w-full min-w-[680px] text-sm">
                 <caption className="sr-only">Historique de vos réservations</caption>
                 <thead>
                   <tr className="border-b border-line bg-surface-hi/60">
-                    {["Référence", "Machine", "Créneau", "Durée", "Motif", "Statut"].map((h) => (
+                    {["Référence", "Machine", "Créneau", "Durée", "Statut"].map((h) => (
                       <th key={h} scope="col"
                           className="text-left px-4 py-3 eyebrow font-normal whitespace-nowrap">
                         {h}
@@ -185,9 +175,6 @@ export function TableauHistorique({
                       <td className="px-4 py-3 text-mist whitespace-nowrap">
                         <span className="tabular">{l.duration_minutes / 60}</span>
                         <span className="text-dim ml-1">h</span>
-                      </td>
-                      <td className="px-4 py-3 text-[12px] text-dim">
-                        {l.purpose ? MOTIFS[l.purpose] : "—"}
                       </td>
                       <td className="px-4 py-3">
                         <Etiquette ton={TONS[l.status]}>{LIBELLES_STATUT[l.status]}</Etiquette>
@@ -235,7 +222,6 @@ export function TableauHistorique({
   );
 }
 
-/* ── Tuile de synthèse ────────────────────────────────────────────────────── */
 function Tuile({
   icone, etiquette, valeur, unite, legende, alerte = false,
 }: {
