@@ -63,7 +63,7 @@ export function GestionAnnonces({ annonces }: { annonces: Announcement[] }) {
 
   return (
     <div className="space-y-6">
-      <form onSubmit={publier} className="panel corners p-6">
+      <form onSubmit={publier} className="panel p-6">
         <p className="eyebrow mb-4">Nouvelle annonce</p>
         <div className="space-y-4">
           <Champ
@@ -95,7 +95,7 @@ export function GestionAnnonces({ annonces }: { annonces: Announcement[] }) {
 
       <ul className="grid gap-2.5">
         {annonces.map((a) => (
-          <li key={a.id} className={`panel corners p-5 ${a.is_active ? "" : "opacity-55"}`}>
+          <li key={a.id} className={`panel p-5 ${a.is_active ? "" : "opacity-55"}`}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2.5 flex-wrap">
@@ -120,7 +120,7 @@ export function GestionAnnonces({ annonces }: { annonces: Announcement[] }) {
       </ul>
 
       {annonces.length === 0 && (
-        <div className="panel corners px-6 py-12 text-center text-mist">Aucune annonce.</div>
+        <div className="panel px-6 py-12 text-center text-mist">Aucune annonce.</div>
       )}
     </div>
   );

@@ -101,7 +101,7 @@ export function TableauParc({
       ))}
 
       {visibles.length === 0 && (
-        <div className="panel corners px-6 py-14 text-center">
+        <div className="panel px-6 py-14 text-center">
           <p className="text-mist">Aucune machine ne correspond à ce filtre.</p>
         </div>
       )}
@@ -139,7 +139,7 @@ function CarteMachine({
 
   return (
     <article
-      className={`panel corners p-5 transition-colors ${
+      className={`panel p-5 transition-colors ${
         libre ? "border-acid/25" : occupee ? "border-ember/25" : "border-coral/25"
       }`}
     >
@@ -244,7 +244,7 @@ function DialogueSignalement({
       role="dialog" aria-modal="true" aria-label={`Signaler ${machine.name}`}
       onClick={(e) => { if (e.target === e.currentTarget) onFermer(); }}
     >
-      <form onSubmit={envoyer} className="panel corners p-6 w-full max-w-md reveal">
+      <form onSubmit={envoyer} className="panel p-6 w-full max-w-md reveal">
         <p className="eyebrow">Signalement</p>
         <h2 className="display text-xl mt-2 text-chalk">{machine.name}</h2>
         <p className="text-xs text-dim font-mono mt-1">{machine.room_name}</p>

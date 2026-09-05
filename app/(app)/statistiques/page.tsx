@@ -60,7 +60,7 @@ export default async function PageStatistiques() {
       </section>
 
       {/* Empreinte */}
-      <section className="panel corners p-6 sm:p-7">
+      <section className="panel p-6 sm:p-7">
         <p className="eyebrow">Empreinte</p>
         <h2 className="display text-2xl mt-2 text-chalk">Ce que vos cycles ont consommé</h2>
         <div className="grid sm:grid-cols-2 gap-6 mt-6">
@@ -105,7 +105,7 @@ export default async function PageStatistiques() {
 
       {/* Habitudes */}
       {(s?.favourite_hour != null || s?.favourite_dow != null) && (
-        <section className="panel corners p-6">
+        <section className="panel p-6">
           <p className="eyebrow">Vos habitudes</p>
           <p className="text-lg text-chalk mt-3 leading-relaxed">
             Vous lavez surtout{" "}
@@ -140,7 +140,7 @@ function Tuile({
   const couleur =
     ton === "acid" ? "text-acid" : ton === "coral" ? "text-coral" : ton === "ember" ? "text-ember" : "text-chalk";
   return (
-    <div className="panel corners p-5">
+    <div className="panel p-5">
       <p className={`display text-4xl sm:text-5xl tabular ${couleur}`}>
         {valeur.toLocaleString("fr-FR")}
         {suffixe && <span className="text-lg text-dim ml-1">{suffixe}</span>}

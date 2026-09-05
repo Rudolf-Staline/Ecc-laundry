@@ -272,8 +272,8 @@ export function Planning({
       </div>
 
       {suspendu && (
-        <div className="panel corners border-coral/40 px-4 py-3 flex items-start gap-3" role="alert">
-          <span className="text-coral mt-0.5" aria-hidden>▸</span>
+        <div className="panel border-coral/40 px-4 py-3 flex items-start gap-3" role="alert">
+          <span className="point bg-coral mt-[7px] shrink-0" aria-hidden />
           <p className="text-sm text-mist">
             <span className="text-chalk">Votre compte est suspendu.</span>{" "}
             Vous pourrez réserver de nouveau {fmtRelative(profil.suspended_until!)}. En
@@ -283,8 +283,8 @@ export function Planning({
       )}
 
       {quotaAtteint && !suspendu && (
-        <div className="panel corners border-ember/35 px-4 py-3 flex items-start gap-3">
-          <span className="text-ember mt-0.5" aria-hidden>▸</span>
+        <div className="panel border-ember/35 px-4 py-3 flex items-start gap-3">
+          <span className="point bg-acid mt-[7px] shrink-0" aria-hidden />
           <p className="text-sm text-mist">
             <span className="text-chalk">Quota atteint pour cette semaine.</span>{" "}
             Les créneaux de {nuitDebut} h à {nuitFin} h restent ouverts : ils ne se décomptent
@@ -377,12 +377,12 @@ export function Planning({
           se lisent d'un coup d'œil là où vingt-quatre heures empilées
           obligeaient à faire défiler la page. */}
       {parc.length === 0 ? (
-        <div className="panel corners px-6 py-14 text-center">
+        <div className="panel px-6 py-14 text-center">
           <Tambour size={44} className="text-line-hi mx-auto mb-4" />
           <p className="text-mist">Aucune machine dans cette buanderie.</p>
         </div>
       ) : (
-        <div className="panel corners p-3 sm:p-4">
+        <div className="panel p-3 sm:p-4">
           <div ref={grille} className="scroll-x nice-scroll">
             <div
               className="min-w-max"
@@ -536,7 +536,7 @@ export function Planning({
           de visée coûte cher. */}
       {selection && (
         <div className="fixed inset-x-0 bottom-0 z-40 px-4 pb-4 md:pl-[272px] md:pr-8 no-print">
-          <div className="panel-deep corners mx-auto max-w-[860px] px-4 py-3
+          <div className="panel-deep mx-auto max-w-[860px] px-4 py-3
             flex flex-wrap items-center gap-x-5 gap-y-3 reveal">
             <div className="min-w-0">
               <p className="eyebrow">Créneau sélectionné</p>

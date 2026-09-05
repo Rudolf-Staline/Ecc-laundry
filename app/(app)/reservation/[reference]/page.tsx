@@ -86,7 +86,7 @@ export default async function PageReservation({
         ← Historique
       </Link>
 
-      <header className="panel corners p-6 sm:p-7">
+      <header className="panel p-6 sm:p-7">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div className="flex items-start gap-4 min-w-0">
             <Tambour
@@ -126,7 +126,7 @@ export default async function PageReservation({
         </p>
       </header>
 
-      <section className="panel corners p-6">
+      <section className="panel p-6">
         <p className="eyebrow mb-4">Le créneau</p>
         <dl className="grid sm:grid-cols-2 gap-5 text-sm">
           <div>
@@ -160,7 +160,7 @@ export default async function PageReservation({
       </section>
 
       {/* Déroulé — ce que le modèle d'origine ne montrait pas du tout */}
-      <section className="panel corners p-6">
+      <section className="panel p-6">
         <p className="eyebrow mb-5">Déroulé</p>
         <ol className="space-y-4">
           {etapes.map((e, i) => (

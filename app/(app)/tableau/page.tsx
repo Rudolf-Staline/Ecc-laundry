@@ -91,8 +91,8 @@ export default async function PageTableau() {
       </section>
 
       {suspendu && (
-        <div className="panel corners border-coral/40 px-4 py-3.5 flex items-start gap-3" role="alert">
-          <span className="text-coral mt-0.5" aria-hidden>▸</span>
+        <div className="panel border-coral/35 bg-coral-fond/40 px-4 py-3.5 flex items-start gap-3" role="alert">
+          <span className="point bg-coral mt-[7px] shrink-0" aria-hidden />
           <div>
             <p className="text-sm text-chalk">Compte suspendu</p>
             <p className="text-sm text-mist mt-1">
@@ -107,17 +107,17 @@ export default async function PageTableau() {
       {enCours.length > 0 && (
         <section className="grid gap-3 sm:grid-cols-2">
           {enCours.map((r) => (
-            <article key={r.id} className="panel corners p-5 border-ember/35 flex items-center gap-5">
-              <Tambour size={54} spinning="cycle" className="text-ember shrink-0" />
+            <article key={r.id} className="panel p-5 flex items-center gap-5">
+              <Tambour size={54} spinning="cycle" className="text-klein shrink-0" />
               <div className="min-w-0 flex-1">
                 <Etiquette ton="occupe" point pulse>
                   {r.status === "checked_in" ? "cycle en cours" : "créneau ouvert"}
                 </Etiquette>
                 <p className="display text-lg text-chalk mt-2 truncate">{r.machine_name}</p>
-                <p className="text-xs text-dim font-mono mt-0.5">
+                <p className="text-xs text-dim tabular mt-0.5">
                   {fmtTime(r.starts_at)} → {fmtTime(r.ends_at)}
                 </p>
-                <p className="display text-2xl text-ember mt-2">
+                <p className="display text-2xl text-klein mt-2 tabular">
                   <CompteARebours vers={r.ends_at} depuis={r.starts_at} />
                 </p>
                 {r.status === "booked" && (
@@ -167,7 +167,7 @@ export default async function PageTableau() {
         ) : (
           <ul className="grid gap-2.5 reveal-stagger">
             {aVenir.map((r) => (
-              <li key={r.id} className="panel corners p-4 flex items-center gap-4 flex-wrap">
+              <li key={r.id} className="panel p-4 flex items-center gap-4 flex-wrap">
                 <Tambour
                   size={34}
                   className={r.kind === "washer" ? "text-cat-lavage" : "text-cat-sechage"}
@@ -238,7 +238,7 @@ export default async function PageTableau() {
             { v: n.occupees, l: "en cycle", c: "text-ember" },
             { v: n.indisponibles, l: "indisponibles", c: "text-coral" },
           ].map((s) => (
-            <div key={s.l} className="panel corners p-4 sm:p-5">
+            <div key={s.l} className="panel p-4 sm:p-5">
               <p className={`display text-4xl sm:text-5xl tabular ${s.c}`}>{s.v}</p>
               <p className="eyebrow mt-2">{s.l}</p>
             </div>

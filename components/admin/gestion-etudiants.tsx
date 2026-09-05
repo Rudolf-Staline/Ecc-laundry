@@ -77,7 +77,7 @@ export function GestionEtudiants({
         {profils.map((p) => {
           const suspendu = p.suspended_until && new Date(p.suspended_until) > new Date();
           return (
-            <li key={p.id} className="panel corners p-4 flex flex-wrap items-center gap-3">
+            <li key={p.id} className="panel p-4 flex flex-wrap items-center gap-3">
               <span className="w-8 h-8 rounded-full bg-klein/15 border border-klein/35 grid place-items-center
                 text-[10px] font-mono text-klein-2 shrink-0">
                 {p.first_name[0]}{p.last_name[0]}
@@ -128,7 +128,7 @@ export function GestionEtudiants({
       </ul>
 
       {profils.length === 0 && (
-        <div className="panel corners px-6 py-12 text-center text-mist">
+        <div className="panel px-6 py-12 text-center text-mist">
           Aucun compte ne correspond.
         </div>
       )}

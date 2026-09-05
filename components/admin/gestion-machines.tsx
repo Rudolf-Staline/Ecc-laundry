@@ -161,7 +161,7 @@ export function GestionMachines({
           ) : (
             <ul className="grid gap-2">
               {machines.map((m) => (
-                <li key={m.id} className="panel corners p-4 flex flex-wrap items-center gap-3">
+                <li key={m.id} className="panel p-4 flex flex-wrap items-center gap-3">
                   <Tambour
                     size={30}
                     className={m.status === "operational"
@@ -252,7 +252,7 @@ function FormulaireMachine({
     >
       <form
         onSubmit={(e) => { e.preventDefault(); onEnregistrer(); }}
-        className="panel corners p-6 w-full max-w-lg reveal my-8"
+        className="panel p-6 w-full max-w-lg reveal my-8"
       >
         <p className="eyebrow">{brouillon.id ? "Modification" : "Nouvelle machine"}</p>
         <h2 className="display text-xl mt-2 mb-5 text-chalk">

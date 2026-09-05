@@ -39,7 +39,7 @@ export function EditeurReglages({ reglages }: { reglages: Setting[] }) {
   return (
     <div className="grid gap-2.5">
       {reglages.map((r) => (
-        <div key={r.key} className="panel corners p-5">
+        <div key={r.key} className="panel p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
               <label htmlFor={`set-${r.key}`} className="text-sm text-chalk font-medium block">

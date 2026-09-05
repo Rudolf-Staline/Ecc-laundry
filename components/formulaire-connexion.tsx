@@ -104,7 +104,7 @@ export function FormulaireConnexion({
 
   if (!configure) {
     return (
-      <div className="panel corners p-6 border-ember/30">
+      <div className="panel p-6 border-ember/30">
         <Etiquette ton="occupe" point>Configuration requise</Etiquette>
         <h2 className="display text-xl mt-4 text-chalk">Supabase n&apos;est pas branché</h2>
         <p className="text-sm text-mist mt-3 leading-relaxed">
@@ -117,7 +117,7 @@ export function FormulaireConnexion({
 
   if (etape === "code") {
     return (
-      <form onSubmit={verifierCode} className="panel corners p-7">
+      <form onSubmit={verifierCode} className="panel p-7">
         <div className="flex items-center gap-3 mb-6">
           <Tambour size={30} spinning className="text-klein" />
           <div>
@@ -175,7 +175,7 @@ export function FormulaireConnexion({
   }
 
   return (
-    <form onSubmit={envoyerCode} className="panel corners p-7">
+    <form onSubmit={envoyerCode} className="panel p-7">
       <p className="eyebrow">Étape 1 sur 2</p>
       <h2 className="display text-2xl text-chalk mt-2 mb-1">Votre adresse centralienne</h2>
       <p className="text-sm text-mist mb-6 leading-relaxed">

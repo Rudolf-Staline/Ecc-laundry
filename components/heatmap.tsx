@@ -42,7 +42,7 @@ export function Heatmap({
 
   if (total === 0) {
     return (
-      <div className="panel corners px-6 py-12 text-center">
+      <div className="panel px-6 py-12 text-center">
         <p className="text-mist">Pas encore assez d&apos;historique.</p>
         <p className="text-sm text-dim mt-2">
           La carte d&apos;affluence se construit sur les huit dernières semaines.
@@ -54,7 +54,7 @@ export function Heatmap({
   const actif = survol ? index.get(`${survol.dow}|${survol.hour}`) : null;
 
   return (
-    <div className="panel corners p-5 sm:p-6">
+    <div className="panel p-5 sm:p-6">
       {/* Bandeau de lecture — la valeur survolée, en texte, jamais en couleur seule */}
       <div className="h-11 mb-3 flex items-center">
         {survol ? (

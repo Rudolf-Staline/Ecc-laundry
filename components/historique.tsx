@@ -156,7 +156,7 @@ export function TableauHistorique({
         />
       ) : (
         <>
-          <div className="panel corners overflow-hidden">
+          <div className="panel overflow-hidden">
             <div className="scroll-x">
               <table className="w-full min-w-[760px] text-sm">
                 <caption className="sr-only">Historique de vos réservations</caption>

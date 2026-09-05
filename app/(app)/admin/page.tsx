@@ -91,7 +91,7 @@ export default async function PageAdmin() {
         {lignes.length === 0 ? (
           <div className="panel p-5 text-sm text-dim">Aucune action enregistrée.</div>
         ) : (
-          <ul className="panel corners divide-y divide-line">
+          <ul className="panel divide-y divide-line">
             {lignes.map((l) => (
               <li key={l.id} className="px-4 py-3 flex items-center gap-3 flex-wrap text-sm">
                 <code className="text-[11px] font-mono text-klein-2">{l.action}</code>
@@ -113,7 +113,7 @@ function Indicateur({
 }: { v: number | string; l: string; ton?: "acid" | "coral" | "ember" }) {
   const c = ton === "acid" ? "text-acid" : ton === "coral" ? "text-coral" : ton === "ember" ? "text-ember" : "text-chalk";
   return (
-    <div className="panel corners p-5">
+    <div className="panel p-5">
       <p className={`display text-4xl sm:text-5xl tabular ${c}`}>{v}</p>
       <p className="eyebrow mt-2.5">{l}</p>
     </div>
@@ -126,7 +126,7 @@ function Raccourci({
   return (
     <Link
       href={href}
-      className={`panel corners p-5 flex items-center justify-between gap-3 group transition-colors
+      className={`panel p-5 flex items-center justify-between gap-3 group transition-colors
         ${urgent ? "border-coral/35 hover:border-coral/60" : "hover:border-line-hi"}`}
     >
       <div>

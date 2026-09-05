@@ -16,16 +16,16 @@ export default async function Accueil() {
   return (
     <div className="relative z-10 min-h-dvh flex flex-col">
       {/* ── Barre ───────────────────────────────────────────────────────── */}
-      <header className="border-b border-line/70 backdrop-blur-sm sticky top-0 z-40 bg-ink/70">
+      <header className="border-b border-line sticky top-0 z-40 bg-surface/85 backdrop-blur-md">
         <div className="mx-auto max-w-[1180px] px-5 sm:px-8 h-16 flex items-center justify-between">
           <Logotype />
           <div className="flex items-center gap-2.5">
             <BasculeTheme />
             <Link
               href="/connexion"
-              className="inline-flex items-center border border-klein bg-klein text-white
-                rounded-[8px] px-4 py-2 text-[11px] font-medium
-                hover:bg-klein-2 transition-colors"
+              className="inline-flex items-center bg-encre text-ink
+                rounded-[8px] px-4 py-2 text-[13px] font-semibold
+                hover:opacity-88 transition-opacity"
             >
               Entrer
             </Link>
@@ -43,7 +43,7 @@ export default async function Accueil() {
               <h1 className="display text-[clamp(3.2rem,11vw,7rem)] mt-5 text-chalk">
                 Le linge
                 <br />
-                <span className="text-klein">n&apos;attend</span> pas.
+                n&apos;attend pas.
               </h1>
 
               <p className="text-mist text-base sm:text-lg leading-relaxed mt-7 max-w-lg">
@@ -83,7 +83,7 @@ export default async function Accueil() {
             <div className="relative flex items-center justify-center lg:justify-end order-first lg:order-last">
               <div className="relative">
                 <div
-                  className="absolute inset-0 blur-[70px] opacity-40 rounded-full bg-klein"
+                  className="absolute inset-6 rounded-full bg-klein-fond"
                   aria-hidden
                 />
                 <Tambour
@@ -156,7 +156,7 @@ export default async function Accueil() {
           {!supabaseConfigure ? (
             <ConfigManquante />
           ) : parc.length === 0 ? (
-            <div className="panel corners px-6 py-14 text-center">
+            <div className="panel px-6 py-14 text-center">
               <Tambour size={48} spinning className="text-line-hi mx-auto mb-4" />
               <p className="text-mist">Aucune machine enregistrée pour l&apos;instant.</p>
               <p className="text-sm text-dim mt-2">
@@ -210,7 +210,7 @@ export default async function Accueil() {
                 d: "Le compte à rebours du cycle tourne sur votre tableau de bord. À la fin, vous videz la machine — le suivant vous en sera reconnaissant.",
               },
             ].map((e) => (
-              <article key={e.n} className="panel corners p-6 sweep group">
+              <article key={e.n} className="panel p-6 sweep group">
                 <p className="display text-5xl text-line-hi group-hover:text-klein transition-colors duration-500">
                   {e.n}
                 </p>
@@ -251,7 +251,7 @@ export default async function Accueil() {
                 { k: "24 h", v: "d'horizon glissant" },
                 { k: "0–6 h", v: "la nuit, hors quota" },
               ].map((s) => (
-                <div key={s.v} className="panel corners p-5">
+                <div key={s.v} className="panel p-5">
                   <dt className="display text-4xl text-klein tabular">{s.k}</dt>
                   <dd className="text-xs text-mist mt-2 leading-snug">{s.v}</dd>
                 </div>
@@ -280,7 +280,7 @@ function CarteApercu({ m }: { m: Awaited<ReturnType<typeof lireParcPublic>>[numb
 
   return (
     <div
-      className={`panel corners p-4 flex items-center gap-4 transition-colors
+      className={`panel p-4 flex items-center gap-4 transition-colors
         ${libre ? "border-acid/25" : occupee ? "border-ember/25" : "border-coral/25"}`}
     >
       <Tambour
@@ -309,7 +309,7 @@ function CarteApercu({ m }: { m: Awaited<ReturnType<typeof lireParcPublic>>[numb
 /* ── Message d'amorçage ──────────────────────────────────────────────────── */
 function ConfigManquante() {
   return (
-    <div className="panel corners p-7 border-ember/30">
+    <div className="panel p-7 border-ember/30">
       <Etiquette ton="occupe" point>Configuration requise</Etiquette>
       <h3 className="display text-xl mt-4 text-chalk">Supabase n&apos;est pas encore branché</h3>
       <p className="text-sm text-mist mt-3 leading-relaxed max-w-2xl">

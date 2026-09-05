@@ -39,7 +39,7 @@ export function FournisseurToasts({ children }: { children: React.ReactNode }) {
         {liste.map((t) => (
           <div
             key={t.id}
-            className={`panel corners reveal pointer-events-auto max-w-sm w-full sm:w-auto px-4 py-3 border-l-2 ${COULEURS[t.ton]}`}
+            className={`panel reveal pointer-events-auto max-w-sm w-full sm:w-auto px-4 py-3 border-l-2 ${COULEURS[t.ton]}`}
           >
             <p className="text-sm font-medium text-chalk">{t.titre}</p>
             {t.detail && <p className="text-xs text-mist mt-1 leading-relaxed">{t.detail}</p>}

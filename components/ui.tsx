@@ -112,7 +112,7 @@ export const Champ = forwardRef<
       />
       {erreur && (
         <p id={`${uid}-err`} className="text-xs text-coral mt-2 flex items-start gap-1.5">
-          <span aria-hidden>▸</span>
+          <span className="point bg-current shrink-0" aria-hidden />
           {erreur}
         </p>
       )}
@@ -172,7 +172,7 @@ export function TitreSection({
 /* ── État vide ───────────────────────────────────────────────────────────── */
 export function Vide({ titre, detail, action }: { titre: string; detail?: string; action?: React.ReactNode }) {
   return (
-    <div className="panel corners px-6 py-14 text-center">
+    <div className="panel px-6 py-14 text-center">
       <p className="display text-lg text-mist">{titre}</p>
       {detail && <p className="text-sm text-dim mt-2 max-w-sm mx-auto leading-relaxed">{detail}</p>}
       {action && <div className="mt-6 flex justify-center">{action}</div>}
