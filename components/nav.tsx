@@ -11,10 +11,10 @@ import type { Profile } from "@/lib/types";
 const LIENS = [
   { href: "/tableau", label: "Tableau de bord", icone: Grille },
   { href: "/reserver", label: "Réserver", icone: Calendrier },
+  { href: "/calendrier", label: "Calendrier", icone: Agenda },
   { href: "/machines", label: "Machines", icone: Machine },
   { href: "/historique", label: "Historique", icone: Registre },
   { href: "/reclamations", label: "Réclamations", icone: Bulle },
-  { href: "/statistiques", label: "Statistiques", icone: Courbe },
 ];
 
 /* ══ Barre latérale ══════════════════════════════════════════════════════ */
@@ -97,7 +97,6 @@ export function BarreLaterale({ profil }: { profil: Profile }) {
 
   return (
     <>
-      {/* Rail permanent */}
       <aside
         className="hidden md:flex fixed inset-y-0 left-0 w-[256px] flex-col
           bg-surface/70 backdrop-blur-sm border-r border-line z-40 no-print"
@@ -105,7 +104,6 @@ export function BarreLaterale({ profil }: { profil: Profile }) {
         {contenu}
       </aside>
 
-      {/* Barre étroite */}
       <header className="md:hidden sticky top-0 z-40 flex items-center gap-3 px-4 h-14
         bg-surface/85 backdrop-blur-md border-b border-line no-print">
         <button
@@ -155,8 +153,6 @@ export function EnteteApp({ profil }: { profil: Profile }) {
   );
 }
 
-/** L'heure de Casablanca, servie par l'horloge du navigateur mais dans le
- *  fuseau du campus : un étudiant en déplacement voit l'heure de la buanderie. */
 function Horloge() {
   const souscrire = useCallback((onChange: () => void) => {
     const id = setInterval(onChange, 1000);
@@ -174,10 +170,6 @@ function Horloge() {
     </span>
   );
 }
-
-/* ══ Ornements ═══════════════════════════════════════════════════════════ */
-
-
 
 /* ══ Icônes ══════════════════════════════════════════════════════════════ */
 
@@ -209,6 +201,16 @@ function Calendrier({ actif }: PropsIcone) {
   );
 }
 
+function Agenda({ actif }: PropsIcone) {
+  return (
+    <svg {...traits(actif)}>
+      <rect x="3" y="5" width="18" height="16" rx="2.5" />
+      <path d="M3 10h18M8 3v4M16 3v4" />
+      <path d="M7 14h3M14 14h3M7 18h3" />
+    </svg>
+  );
+}
+
 function Machine({ actif }: PropsIcone) {
   return (
     <svg {...traits(actif)}>
@@ -232,15 +234,6 @@ function Bulle({ actif }: PropsIcone) {
   return (
     <svg {...traits(actif)}>
       <path d="M20 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z" />
-    </svg>
-  );
-}
-
-function Courbe({ actif }: PropsIcone) {
-  return (
-    <svg {...traits(actif)}>
-      <path d="M3 20h18" />
-      <path d="M6 16v-4M11 16V7M16 16v-7M21 16v-3" />
     </svg>
   );
 }
@@ -270,4 +263,3 @@ function Horlogette() {
     </svg>
   );
 }
-
