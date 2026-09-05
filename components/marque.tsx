@@ -66,18 +66,6 @@ export function Tambour({
   );
 }
 
-export function LogoECC({ compact = false, className = "" }: { compact?: boolean; className?: string }) {
-  return (
-    <img
-      src="/ecc-logo.svg"
-      alt="École Centrale Casablanca"
-      width={compact ? 132 : 178}
-      height={compact ? 31 : 42}
-      className={`h-auto object-contain ${className}`}
-    />
-  );
-}
-
 export function Logotype({ compact = false }: { compact?: boolean }) {
   return (
     <span className="inline-flex items-center gap-2.5 select-none">
