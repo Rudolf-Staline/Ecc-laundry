@@ -30,7 +30,8 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const chemin = request.nextUrl.pathname;
-  const privee = ["/tableau", "/reserver", "/machines", "/statistiques", "/pointage", "/admin"]
+  const privee = ["/tableau", "/reserver", "/machines", "/statistiques", "/pointage",
+                  "/historique", "/reclamations", "/reservation", "/compte", "/admin"]
     .some((p) => chemin === p || chemin.startsWith(`${p}/`));
 
   if (!user && privee) {

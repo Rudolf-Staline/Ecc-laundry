@@ -9,6 +9,7 @@ const ONGLETS = [
   { href: "/admin/salles", label: "Buanderies" },
   { href: "/admin/etudiants", label: "Étudiants" },
   { href: "/admin/pannes", label: "Pannes" },
+  { href: "/admin/reclamations", label: "Réclamations" },
   { href: "/admin/annonces", label: "Annonces" },
   { href: "/admin/reglages", label: "Réglages" },
 ];

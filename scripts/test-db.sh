@@ -44,6 +44,14 @@ echo ""
 reussites=$(echo "$rapport" | grep -c "✓")
 echecs=$(echo "$rapport" | grep -c "✗")
 
+# Une erreur SQL hors assertion ne fait bouger aucun compteur : sans ce garde-fou,
+# une section entière peut ne rien exécuter et la suite rester au vert.
+if echo "$rapport" | grep -q "^psql:.*ERROR"; then
+  echo "  ✗ erreurs SQL hors assertion — une vérification n'a pas été jouée :"
+  echo "$rapport" | grep "^psql:.*ERROR" | sed 's/^/    /'
+  exit 1
+fi
+
 if [ "$echecs" -ne 0 ]; then
   echo "  $echecs vérification(s) en échec sur $((reussites + echecs))."
   exit 1

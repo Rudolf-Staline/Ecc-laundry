@@ -61,9 +61,10 @@ export default async function PageAdmin() {
           urgent={(o?.suspended ?? 0) > 0}
         />
         <Raccourci
-          href="/admin/machines"
-          titre="Réservations aujourd'hui"
-          valeur={o?.bookings_today ?? 0}
+          href="/admin/reclamations"
+          titre="Réclamations en cours"
+          valeur={o?.open_claims ?? 0}
+          urgent={(o?.open_claims ?? 0) > 0}
         />
       </section>
 

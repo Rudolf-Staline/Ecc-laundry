@@ -11,6 +11,8 @@ const LIENS = [
   { href: "/tableau", label: "Tableau" },
   { href: "/reserver", label: "Réserver" },
   { href: "/machines", label: "Machines" },
+  { href: "/historique", label: "Historique" },
+  { href: "/reclamations", label: "Réclamations" },
   { href: "/statistiques", label: "Stats" },
 ];
 

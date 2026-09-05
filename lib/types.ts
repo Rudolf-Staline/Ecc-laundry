@@ -179,6 +179,7 @@ export type AdminOverview = {
   bookings_week: number;
   no_show_rate: number;
   open_reports: number;
+  open_claims: number;
   suspended: number;
 };
 
@@ -202,4 +203,111 @@ export const CATEGORIES_PANNE: Record<string, string> = {
   drainage: "Vidange",
   heating: "Chauffe mal",
   other: "Autre",
+};
+
+/* ── Réclamations ─────────────────────────────────────────────────────────── */
+
+export type ClaimCategory =
+  | "linge_sorti" | "linge_abime" | "creneau_occupe"
+  | "pointage" | "quota" | "proprete" | "autre";
+
+export const CATEGORIES_RECLAMATION: Record<ClaimCategory, string> = {
+  linge_sorti: "Mon linge a été sorti de la machine",
+  linge_abime: "Linge abîmé ou disparu",
+  creneau_occupe: "Machine occupée hors réservation",
+  pointage: "Problème de pointage",
+  quota: "Problème de quota",
+  proprete: "Propreté du local",
+  autre: "Autre",
+};
+
+/** Libellé court, pour les étiquettes de liste. */
+export const CATEGORIES_RECLAMATION_COURT: Record<ClaimCategory, string> = {
+  linge_sorti: "linge sorti",
+  linge_abime: "linge abîmé",
+  creneau_occupe: "créneau occupé",
+  pointage: "pointage",
+  quota: "quota",
+  proprete: "propreté",
+  autre: "autre",
+};
+
+export type BookingPurpose =
+  | "courant" | "draps" | "sport" | "delicat" | "volumineux" | "autre";
+
+export const MOTIFS: Record<BookingPurpose, string> = {
+  courant: "Lessive courante",
+  draps: "Draps et serviettes",
+  sport: "Tenue de sport",
+  delicat: "Linge délicat",
+  volumineux: "Gros volume",
+  autre: "Autre",
+};
+
+export type ClaimRow = {
+  id: string;
+  reference: string;
+  user_id: string;
+  booking_id: string | null;
+  machine_id: string | null;
+  category: ClaimCategory;
+  subject: string;
+  status: ReportStatus;
+  created_at: string;
+  updated_at: string;
+  resolved_at: string | null;
+  auteur: string;
+  auteur_email: string;
+  booking_reference: string | null;
+  booking_starts_at: string | null;
+  machine_name: string | null;
+  room_name: string | null;
+  message_count: number;
+  last_message_at: string | null;
+};
+
+export type ClaimMessage = {
+  id: string;
+  claim_id: string;
+  author_id: string | null;
+  body: string;
+  from_staff: boolean;
+  created_at: string;
+};
+
+/** Ligne de `v_historique` — toutes mes réservations, annulations comprises. */
+export type HistoryRow = {
+  id: string;
+  reference: string;
+  machine_id: string;
+  user_id: string;
+  starts_at: string;
+  ends_at: string;
+  status: BookingStatus;
+  purpose: BookingPurpose | null;
+  checked_in_at: string | null;
+  cancelled_at: string | null;
+  created_at: string;
+  duration_minutes: number;
+  is_night: boolean;
+  machine_name: string;
+  kind: MachineKind;
+  room_id: string;
+  room_name: string;
+};
+
+export const LIBELLES_STATUT: Record<BookingStatus, string> = {
+  booked: "réservée",
+  checked_in: "en cours",
+  completed: "terminée",
+  cancelled: "annulée",
+  cancelled_late: "annulée tardivement",
+  no_show: "absent",
+};
+
+export const LIBELLES_STATUT_RECLAMATION: Record<ReportStatus, string> = {
+  open: "ouverte",
+  acknowledged: "en traitement",
+  resolved: "résolue",
+  rejected: "écartée",
 };
