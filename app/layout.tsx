@@ -1,20 +1,27 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Familjen_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Fraunces, Outfit, Caveat, JetBrains_Mono } from "next/font/google";
 import { NOM_APP, NOM_ECOLE, urlSite } from "@/lib/config";
 import { FournisseurToasts } from "@/components/toast";
 import "./globals.css";
 
-const display = Bricolage_Grotesque({
+const display = Fraunces({
   subsets: ["latin"],
   variable: "--f-display",
   display: "swap",
-  axes: ["opsz", "wdth"],
+  axes: ["SOFT", "WONK", "opsz"],
 });
 
-const corps = Familjen_Grotesk({
+const corps = Outfit({
   subsets: ["latin"],
   variable: "--f-body",
   display: "swap",
+});
+
+const main = Caveat({
+  subsets: ["latin"],
+  variable: "--f-hand",
+  display: "swap",
+  weight: ["400", "600"],
 });
 
 const mono = JetBrains_Mono({
@@ -46,8 +53,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#08090b" },
-    { media: "(prefers-color-scheme: light)", color: "#f2f0ea" },
+    { media: "(prefers-color-scheme: dark)", color: "#101a15" },
+    { media: "(prefers-color-scheme: light)", color: "#f4edde" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -59,21 +66,21 @@ const SCRIPT_THEME = `
 (function () {
   try {
     var t = localStorage.getItem("tambour-theme");
-    if (!t) t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    if (!t) t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     document.documentElement.setAttribute("data-theme", t);
   } catch (e) {
-    document.documentElement.setAttribute("data-theme", "dark");
+    document.documentElement.setAttribute("data-theme", "light");
   }
 })();
 `;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" data-theme="dark" suppressHydrationWarning>
+    <html lang="fr" data-theme="light" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: SCRIPT_THEME }} />
       </head>
-      <body className={`${display.variable} ${corps.variable} ${mono.variable} grain antialiased`}>
+      <body className={`${display.variable} ${corps.variable} ${main.variable} ${mono.variable} grain antialiased`}>
         <FournisseurToasts>{children}</FournisseurToasts>
       </body>
     </html>

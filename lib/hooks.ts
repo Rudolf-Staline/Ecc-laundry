@@ -27,7 +27,7 @@ function souscrireTheme(cb: () => void) {
 }
 
 function lireTheme(): "dark" | "light" {
-  return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+  return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
 }
 
 export function appliquerTheme(theme: "dark" | "light") {
@@ -41,7 +41,7 @@ export function appliquerTheme(theme: "dark" | "light") {
 }
 
 export function useTheme(): "dark" | "light" {
-  return useSyncExternalStore(souscrireTheme, lireTheme, () => "dark" as const);
+  return useSyncExternalStore(souscrireTheme, lireTheme, () => "light" as const);
 }
 
 /* ── localStorage ─────────────────────────────────────────────────────────── */
