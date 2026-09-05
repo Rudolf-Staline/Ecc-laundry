@@ -25,12 +25,10 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  // Ne jamais insérer de logique entre createServerClient et getUser :
-  // c'est cet appel qui renouvelle la session.
   const { data: { user } } = await supabase.auth.getUser();
 
   const chemin = request.nextUrl.pathname;
-  const privee = ["/tableau", "/reserver", "/machines", "/statistiques",
+  const privee = ["/tableau", "/reserver", "/calendrier", "/machines",
                   "/historique", "/reclamations", "/reservation", "/compte", "/admin"]
     .some((p) => chemin === p || chemin.startsWith(`${p}/`));
 
@@ -43,10 +41,6 @@ export async function middleware(request: NextRequest) {
 
   if (user && (chemin === "/connexion" || chemin === "/")) {
     if (chemin === "/connexion") {
-      // Un utilisateur authentifié mais sans ligne `profiles` (compte de test
-      // créé hors du flux d'inscription, trigger jamais passé…) ne doit pas
-      // être renvoyé vers /tableau : exigerProfil l'en ferait aussitôt
-      // ressortir, et le rebond /connexion ⇄ /tableau tournerait à l'infini.
       const { data: profil } = await supabase
         .from("profiles")
         .select("id")
@@ -67,7 +61,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Tout sauf les fichiers statiques et les images.
     "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icone|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };
