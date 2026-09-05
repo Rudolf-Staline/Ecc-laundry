@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useState, useSyncExternalStore } from "react";
-import { Logotype, Tambour } from "@/components/marque";
+import { LogoECC, Logotype, Tambour } from "@/components/marque";
 import { BasculeTheme } from "@/components/theme-bascule";
 import { fmtDay, fmtTime } from "@/lib/time";
 import type { Profile } from "@/lib/types";
@@ -17,8 +17,6 @@ const LIENS = [
   { href: "/reclamations", label: "Réclamations", icone: Bulle },
 ];
 
-/* ══ Barre latérale ══════════════════════════════════════════════════════ */
-
 export function BarreLaterale({ profil }: { profil: Profile }) {
   const chemin = usePathname();
   const [ouvert, setOuvert] = useState(false);
@@ -28,13 +26,16 @@ export function BarreLaterale({ profil }: { profil: Profile }) {
 
   const contenu = (
     <>
-      <div className="px-5 pt-5 pb-4">
-        <Link href="/tableau" aria-label="Tableau de bord" onClick={() => setOuvert(false)}>
+      <div className="px-5 pt-6 pb-5">
+        <Link href="/tableau" aria-label="Tableau de bord" onClick={() => setOuvert(false)} className="inline-flex">
           <Logotype />
         </Link>
+        <div className="mt-5 pt-4 border-t border-line/70">
+          <LogoECC compact className="w-[134px] opacity-75 dark:brightness-[1.7] dark:saturate-0" />
+        </div>
       </div>
 
-      <nav className="px-3 pb-4 flex flex-col gap-0.5 flex-1" aria-label="Principale">
+      <nav className="px-3 pb-4 flex flex-col gap-1 flex-1" aria-label="Principale">
         <p className="eyebrow px-3.5 pb-2">Navigation</p>
         {liens.map((l) => {
           const Icone = l.icone;
@@ -45,29 +46,28 @@ export function BarreLaterale({ profil }: { profil: Profile }) {
               href={l.href}
               onClick={() => setOuvert(false)}
               aria-current={ici ? "page" : undefined}
-              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-[var(--radius-tambour)]
-                text-[13.5px] transition-colors
+              className={`nav-link flex items-center gap-3 px-3.5 py-2.5 rounded-[12px]
+                text-[13.5px] transition-all duration-200
                 ${ici
-                  ? "bg-klein-fond text-klein font-semibold"
-                  : "text-mist hover:bg-ink-2 hover:text-chalk"}`}
+                  ? "nav-link-active bg-klein-fond text-klein font-semibold"
+                  : "text-mist hover:bg-surface-hi hover:text-chalk"}`}
             >
-              <Icone actif={ici} />
+              <span className={`nav-icon ${ici ? "nav-icon-active" : ""}`}><Icone actif={ici} /></span>
               {l.label}
             </Link>
           );
         })}
       </nav>
 
-      <div className="p-3 border-t border-line">
-        <div className="flex items-center gap-2.5 rounded-[10px] px-2 py-2 hover:bg-ink-2 transition-colors">
+      <div className="p-3 border-t border-line/70">
+        <div className="profile-card flex items-center gap-2.5 rounded-[14px] px-2.5 py-2.5 transition-colors">
           <Link
             href="/compte"
             title={profil.display_name}
             onClick={() => setOuvert(false)}
             className="flex items-center gap-2.5 min-w-0 flex-1 group"
           >
-            <span className="w-8 h-8 rounded-full bg-klein text-white grid place-items-center
-              text-[11px] font-semibold shrink-0">
+            <span className="avatar-chip w-9 h-9 rounded-full grid place-items-center text-[11px] font-semibold shrink-0">
               {profil.first_name[0]}{profil.last_name[0]}
             </span>
             <span className="min-w-0">
@@ -84,8 +84,7 @@ export function BarreLaterale({ profil }: { profil: Profile }) {
               type="submit"
               title="Se déconnecter"
               aria-label="Se déconnecter"
-              className="w-8 h-8 grid place-items-center rounded-[6px] text-dim
-                hover:text-coral hover:bg-ink-2 transition-colors"
+              className="w-8 h-8 grid place-items-center rounded-[8px] text-dim hover:text-coral hover:bg-coral-fond transition-colors"
             >
               <Sortie />
             </button>
@@ -98,20 +97,18 @@ export function BarreLaterale({ profil }: { profil: Profile }) {
   return (
     <>
       <aside
-        className="hidden md:flex fixed inset-y-0 left-0 w-[256px] flex-col
-          bg-surface/70 backdrop-blur-sm border-r border-line z-40 no-print"
+        className="glass-sidebar hidden md:flex fixed inset-y-0 left-0 w-[272px] flex-col border-r border-line/70 z-40 no-print"
       >
         {contenu}
       </aside>
 
-      <header className="md:hidden sticky top-0 z-40 flex items-center gap-3 px-4 h-14
-        bg-surface/85 backdrop-blur-md border-b border-line no-print">
+      <header className="mobile-bar md:hidden sticky top-0 z-40 flex items-center gap-3 px-4 h-16 border-b border-line/70 no-print">
         <button
           onClick={() => setOuvert((o) => !o)}
-          className="w-9 h-9 grid place-items-center rounded-[8px] border border-line text-mist"
+          className="w-10 h-10 grid place-items-center rounded-[12px] border border-line text-mist bg-surface/70"
           aria-label="Menu" aria-expanded={ouvert}
         >
-          <Tambour size={17} spinning={ouvert} />
+          <Tambour size={18} spinning={ouvert} />
         </button>
         <Link href="/tableau" aria-label="Tableau de bord">
           <Logotype compact />
@@ -122,11 +119,11 @@ export function BarreLaterale({ profil }: { profil: Profile }) {
       {ouvert && (
         <div className="md:hidden fixed inset-0 z-50 flex no-print">
           <div
-            className="absolute inset-0 bg-chalk/25 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-[#071a24]/35 backdrop-blur-[3px]"
             onClick={() => setOuvert(false)}
             aria-hidden
           />
-          <aside className="relative w-[272px] max-w-[82vw] flex flex-col bg-surface border-r border-line-hi">
+          <aside className="glass-sidebar relative w-[286px] max-w-[84vw] flex flex-col border-r border-line-hi">
             {contenu}
           </aside>
         </div>
@@ -135,16 +132,15 @@ export function BarreLaterale({ profil }: { profil: Profile }) {
   );
 }
 
-/* ══ En-tête de page ═════════════════════════════════════════════════════ */
-
 export function EnteteApp({ profil }: { profil: Profile }) {
   return (
-    <header className="hidden md:flex items-center gap-4 h-16 px-6 border-b border-line
-      bg-surface/50 backdrop-blur-sm no-print">
-      <p className="text-[13.5px] text-mist">
-        Bonjour <span className="text-chalk font-semibold">{profil.first_name}</span>
-        <span className="text-dim"> · {fmtDay(new Date())}</span>
-      </p>
+    <header className="app-topbar hidden md:flex items-center gap-4 h-[72px] px-7 border-b border-line/70 no-print">
+      <div>
+        <p className="text-[13.5px] text-mist">
+          Bonjour <span className="text-chalk font-semibold">{profil.first_name}</span>
+        </p>
+        <p className="text-[11px] text-dim mt-0.5">{fmtDay(new Date())}</p>
+      </div>
       <div className="ml-auto flex items-center gap-2">
         <Horloge />
         <BasculeTheme compact />
@@ -165,13 +161,11 @@ function Horloge() {
   );
 
   return (
-    <span className="chip bg-klein-fond text-klein tabular" suppressHydrationWarning>
+    <span className="chip bg-klein-fond text-klein tabular border border-klein/10" suppressHydrationWarning>
       <Horlogette /> {heure || "--:--"} Casablanca
     </span>
   );
 }
-
-/* ══ Icônes ══════════════════════════════════════════════════════════════ */
 
 type PropsIcone = { actif?: boolean };
 const traits = (actif?: boolean) => ({
