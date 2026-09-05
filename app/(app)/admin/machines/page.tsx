@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export default async function PageAdminMachines() {
   const supabase = await creerClientServeur();
   const [{ data: machines }, { data: salles }] = await Promise.all([
-    supabase.from("machines").select("*").order("room_id").order("position"),
+    supabase.from("machines").select("id, room_id, name, kind, status, capacity_kg, brand, model, cycle_minutes, position, note").order("room_id").order("position"),
     supabase.from("rooms").select("*").order("position"),
   ]);
 

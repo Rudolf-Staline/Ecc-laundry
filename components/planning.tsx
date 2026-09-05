@@ -10,8 +10,10 @@ import {
   buildSlots, dayKey, daySpan, estCreneauNuit, fmtDay, fmtRelative, fmtTime,
   isoDayOfWeek, JOURS_COURTS, startOfDay, type Slot,
 } from "@/lib/time";
-import type {
-  BoardRow, Machine, Profile, Room, WaitlistEntry, WeekStatus,
+import {
+  MOTIFS,
+  type BoardRow, type BookingPurpose, type Machine, type Profile,
+  type Room, type WaitlistEntry, type WeekStatus,
 } from "@/lib/types";
 
 type Etat = "libre" | "mien" | "pris" | "passe" | "indispo" | "horizon";
@@ -43,6 +45,7 @@ export function Planning({
   const [buanderieId, setBuanderieId] = useState(buanderies[0].id);
   const [jourActif, setJourActif] = useState(() => dayKey(new Date()));
   const [duree, setDuree] = useState(1);
+  const [motif, setMotif] = useState<BookingPurpose | "">("");
   const [planning, setPlanning] = useState(planningInitial);
   const [statut, setStatut] = useState(statutInitial);
   const [attente, setAttente] = useState(attenteInitiale);
@@ -168,6 +171,7 @@ export function Planning({
       p_machine_id: machine.id,
       p_starts_at: creneau.start.toISOString(),
       p_blocs: dureeEffective,
+      p_motif: motif || null,
     });
     setEnVol(null);
 
@@ -294,6 +298,22 @@ export function Planning({
           </div>
         ) : <span />}
 
+        <div className="flex items-end gap-4 flex-wrap">
+          <label className="flex items-center gap-2">
+            <span className="eyebrow">Motif</span>
+            <select
+              value={motif}
+              onChange={(e) => setMotif(e.target.value as BookingPurpose | "")}
+              className="bg-ink-2 border border-line rounded-[3px] px-3 py-2 text-[12px]
+                text-mist outline-none focus:border-klein transition-colors"
+            >
+              <option value="">non précisé</option>
+              {(Object.keys(MOTIFS) as BookingPurpose[]).map((m) => (
+                <option key={m} value={m}>{MOTIFS[m]}</option>
+              ))}
+            </select>
+          </label>
+
         {dureesPossibles.length > 1 && (
           <fieldset className="flex items-center gap-2">
             <legend className="sr-only">Durée du créneau</legend>
@@ -316,6 +336,7 @@ export function Planning({
             </div>
           </fieldset>
         )}
+        </div>
       </div>
 
       {/* Bandeau des jours */}

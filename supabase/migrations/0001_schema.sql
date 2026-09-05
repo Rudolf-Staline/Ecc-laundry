@@ -13,6 +13,9 @@
 create extension if not exists "btree_gist";
 set search_path = public, extensions;
 
+-- Note : `gen_random_uuid()` est une fonction du noyau depuis PostgreSQL 13 —
+-- pgcrypto n'est donc pas requis, ni ici ni pour les tests locaux.
+
 -- ── Types ───────────────────────────────────────────────────────────────────
 do $$ begin create type public.user_role      as enum ('student', 'admin');                          exception when duplicate_object then null; end $$;
 do $$ begin create type public.machine_kind   as enum ('washer', 'dryer');                           exception when duplicate_object then null; end $$;

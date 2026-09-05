@@ -24,7 +24,15 @@ alter table public.admin_allowlist enable row level security;
 grant usage on schema public to anon, authenticated;
 
 -- Tableau public (« y a-t-il une machine libre ? »), sans donnée personnelle.
-grant select on public.rooms, public.machines, public.announcements to anon, authenticated;
+grant select on public.rooms, public.announcements to anon, authenticated;
+
+-- `machines` : tout est public sauf le code QR. Celui-ci est la preuve de
+-- présence devant la machine ; le lire par l'API permettrait de pointer depuis
+-- son lit. Il ne sort que par admin_machine_codes(), qui vérifie le rôle.
+revoke select on public.machines from anon, authenticated;
+grant select (id, room_id, name, kind, status, capacity_kg, brand, model,
+              cycle_minutes, position, note, created_at, updated_at)
+  on public.machines to anon, authenticated;
 grant select on public.settings to anon, authenticated;
 
 grant select on public.profiles, public.bookings, public.waitlist,
@@ -154,6 +162,27 @@ revoke execute on function public.enforce_booking_rules()             from publi
 revoke execute on function public.handle_booking_transition()         from public, anon, authenticated;
 revoke execute on function public.touch_updated_at()                  from public, anon, authenticated;
 
+-- Même raisonnement pour les RPC réservées aux administrateurs : elles
+-- vérifient bien le rôle en interne, mais laisser PUBLIC les appeler pour
+-- récolter un 42501 ouvre une surface inutile — et, le jour où l'une d'elles
+-- perdrait sa garde, le droit d'exécution serait déjà là.
+revoke execute on function public.admin_machine_codes()                               from public, anon;
+revoke execute on function public.admin_overview()                                    from public, anon;
+revoke execute on function public.admin_set_role(uuid, public.user_role)              from public, anon;
+revoke execute on function public.admin_set_suspension(uuid, int)                     from public, anon;
+revoke execute on function public.admin_resolve_report(uuid, public.report_status, text) from public, anon;
+revoke execute on function public.set_setting(text, text)                             from public, anon;
+
+-- Et pour les RPC étudiantes : sans session, elles ne peuvent rien faire,
+-- autant qu'elles ne soient pas appelables du tout.
+revoke execute on function public.book_slot(uuid, timestamptz, int)                    from public, anon;
+revoke execute on function public.cancel_booking(uuid)                                 from public, anon;
+revoke execute on function public.check_in(text)                                       from public, anon;
+revoke execute on function public.join_waitlist(uuid, public.machine_kind, timestamptz) from public, anon;
+revoke execute on function public.leave_waitlist(uuid)                                 from public, anon;
+revoke execute on function public.my_week_status(timestamptz)                          from public, anon;
+revoke execute on function public.report_machine(uuid, text, text)                     from public, anon;
+
 -- Amorçage et tâches planifiées : côté serveur uniquement.
 grant execute on function public.sweep_maintenance() to service_role;
 grant execute on function public.promote_admin(text) to service_role;
@@ -167,8 +196,9 @@ grant execute on function public.my_week_status(timestamptz)                    
 grant execute on function public.report_machine(uuid, text, text)                   to authenticated;
 grant execute on function public.affluence(uuid, int)                               to anon, authenticated;
 grant execute on function public.admin_overview()                                   to authenticated;
+grant execute on function public.admin_machine_codes()                              to authenticated;
 grant execute on function public.set_setting(text, text)                            to authenticated;
-grant execute on function public.is_admin()                                         to authenticated;
+grant execute on function public.is_admin()                                         to anon, authenticated;
 grant execute on function public.week_bounds(timestamptz)                           to anon, authenticated;
 grant execute on function public.est_creneau_nuit(timestamptz)                      to anon, authenticated;
 grant execute on function public.nuit_reservable(timestamptz, timestamptz)          to anon, authenticated;

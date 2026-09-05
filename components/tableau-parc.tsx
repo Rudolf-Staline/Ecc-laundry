@@ -187,7 +187,9 @@ function CarteMachine({
         )}
         {hs && (
           <p className="text-[11px] font-mono text-coral">
-            retirée du planning · {m.open_reports} signalement{m.open_reports > 1 ? "s" : ""}
+            retirée du planning
+            {m.open_reports > 0 &&
+              ` · ${m.open_reports} signalement${m.open_reports > 1 ? "s" : ""}`}
           </p>
         )}
       </div>

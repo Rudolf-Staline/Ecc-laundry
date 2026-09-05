@@ -244,6 +244,39 @@ select pg_temp.expect_fail(
 select pg_temp.expect_fail(
   $q$select public.promote_admin('rudolf.staline@centrale-casablanca.ma')$q$,
   'ni s''auto-nommer administrateur');
+select pg_temp.expect_fail(
+  $q$select qr_code from public.machines limit 1$q$,
+  'ni lire les codes QR — sinon on pointe sans venir');
+select pg_temp.expect_fail(
+  $q$select public.admin_machine_codes()$q$,
+  'ni les obtenir par la fonction d''administration');
+select pg_temp.expect_ok(
+  $q$select name, status from public.machines limit 1$q$,
+  'mais le reste du parc lui reste lisible');
+
+\echo ''
+\echo '━━━ 7 bis. Ce qu''un visiteur non connecté peut atteindre ━━━'
+reset role;
+set role anon;
+select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.expect_fail($q$select public.admin_machine_codes()$q$,
+  'anon ne peut pas appeler la fonction des codes QR');
+select pg_temp.expect_fail($q$select public.admin_overview()$q$,
+  'ni le tableau de bord d''administration');
+select pg_temp.expect_fail($q$select public.set_setting('max_bookings_per_week','99')$q$,
+  'ni toucher aux réglages');
+select pg_temp.expect_fail(
+  $q$select public.book_slot((select id from m where n = 0), now() + interval '3 hours', 1)$q$,
+  'ni réserver');
+select pg_temp.expect_fail($q$select qr_code from public.machines limit 1$q$,
+  'ni lire un code QR');
+select pg_temp.expect_ok($q$select name, live_status from public.v_machine_live limit 1$q$,
+  'mais le tableau public du parc reste lisible');
+select pg_temp.expect_ok($q$select name from public.rooms limit 1$q$,
+  'et les buanderies aussi — la politique évalue is_admin() sans erreur');
+reset role;
+set role authenticated;
+select set_config('request.jwt.claim.sub','22222222-2222-2222-2222-222222222222', false);
 
 \echo ''
 \echo '━━━ 8. Annulation et file d''attente ━━━'
@@ -268,15 +301,35 @@ select p.first_name, b.status,
 
 \echo ''
 \echo '━━━ 9. Absence : balayage automatique ━━━'
+-- Relevé avant balayage : les vérifications portent sur l'écart, pas sur une
+-- valeur absolue qui dépendrait de ce qu'ont fait les sections précédentes.
+create temp table avant as
+  select karma, no_show_count from public.profiles
+   where id = '22222222-2222-2222-2222-222222222222';
+
 insert into public.bookings (machine_id, user_id, starts_at, ends_at, status)
 select (select id from m where n = 7), '22222222-2222-2222-2222-222222222222',
-       (select h0 + interval '14 hours' from t), (select h0 + interval '15 hours' from t), 'booked';
+       date_trunc('hour', now()) + interval '2 hours',
+       date_trunc('hour', now()) + interval '3 hours', 'booked';
 update public.bookings
    set starts_at = now() - interval '40 minutes', ends_at = now() + interval '20 minutes'
  where machine_id = (select id from m where n = 7);
 select public.sweep_maintenance();
-select display_name, karma, no_show_count from public.profiles
- where id = '22222222-2222-2222-2222-222222222222';
+
+select pg_temp.expect_eq(
+  (select bool_and(status = 'no_show') from public.bookings
+    where machine_id = (select id from m where n = 7)),
+  true, 'le créneau jamais pointé bascule en absence');
+select pg_temp.expect_eq(
+  (select p.no_show_count = a.no_show_count + 1
+     from public.profiles p, avant a
+    where p.id = '22222222-2222-2222-2222-222222222222'),
+  true, 'l''absence est portée au dossier de l''étudiant');
+select pg_temp.expect_eq(
+  (select p.karma = greatest(0, a.karma - public.setting_int('no_show_penalty', 20))
+     from public.profiles p, avant a
+    where p.id = '22222222-2222-2222-2222-222222222222'),
+  true, 'et le karma amputé de la pénalité');
 
 \echo ''
 \echo '━━━ 10. Réglages par l''admin ━━━'
@@ -290,6 +343,75 @@ select pg_temp.expect_fail($q$select public.set_setting('max_bookings_per_week',
 select pg_temp.expect_ok($q$select public.set_setting('booking_horizon_hours','48')$q$,
   'et peut élargir l''horizon');
 select quota from public.my_week_status();
+
+\echo ''
+\echo '━━━ 11 bis. Référence, motif et réclamations ━━━'
+reset role;
+set role authenticated;
+select set_config('request.jwt.claim.sub','33333333-3333-3333-3333-333333333333', false);
+
+\echo '   → toute réservation porte une référence lisible :'
+select count(*) filter (where reference like 'TB-%') as avec_reference,
+       count(*) as total
+  from public.bookings;
+
+select pg_temp.expect_ok(format(
+  $q$select public.book_slot((select id from m where n = 3), %L, 1, 'draps')$q$,
+  (select h0 + interval '18 hours' from t)), 'réservation avec un motif');
+select pg_temp.expect_fail(format(
+  $q$select public.book_slot((select id from m where n = 3), %L, 1, 'nimportequoi')$q$,
+  (select h0 + interval '19 hours' from t)), 'motif hors liste refusé');
+
+select pg_temp.expect_ok(
+  $q$select public.file_claim('linge_sorti', 'Mon linge a été sorti',
+        'Je suis arrivé à la fin de mon créneau, la machine était vide et mon linge posé par terre.',
+        (select id from public.bookings where user_id = auth.uid() order by created_at limit 1))$q$,
+  'dépôt d''une réclamation liée à sa réservation');
+
+select pg_temp.expect_fail(
+  $q$select public.file_claim('autre', 'Test', 'Corps du message',
+        (select id from public.bookings where user_id <> auth.uid() limit 1))$q$,
+  'impossible de la rattacher à la réservation d''un autre');
+
+select pg_temp.expect_ok(
+  $q$select public.reply_claim((select id from public.claims where user_id = auth.uid() limit 1),
+        'J''ai retrouvé une chaussette, pas le reste.')$q$,
+  'réponse dans son propre fil');
+
+\echo '   → le fil, tel que l''auteur le voit :'
+select c.reference, c.category, c.status, cm.from_staff, left(cm.body, 46) as message
+  from public.claims c join public.claim_messages cm on cm.claim_id = c.id
+ where c.user_id = auth.uid() order by cm.created_at;
+
+\echo '   → un autre étudiant n''y a pas accès :'
+select set_config('request.jwt.claim.sub','22222222-2222-2222-2222-222222222222', false);
+select count(*) as reclamations_visibles from public.claims;
+select pg_temp.expect_fail(
+  $q$select public.reply_claim((select id from public.claims limit 1), 'Je m''incruste')$q$,
+  'ni ne peut répondre dans le fil d''autrui');
+
+\echo '   → l''équipe, elle, voit tout et peut traiter :'
+reset role;
+set role authenticated;
+select set_config('request.jwt.claim.sub','11111111-1111-1111-1111-111111111111', false);
+select count(*) as reclamations_visibles_admin from public.claims;
+select pg_temp.expect_ok(
+  $q$select public.reply_claim((select id from public.claims limit 1),
+        'Nous avons interrogé les étudiants du créneau suivant.')$q$,
+  'un admin peut répondre');
+select pg_temp.expect_ok(
+  $q$select public.admin_set_claim_status((select id from public.claims limit 1), 'resolved')$q$,
+  'et clore le dossier');
+
+\echo '   → et un visiteur non connecté n''atteint rien de tout ça :'
+reset role;
+set role anon;
+select set_config('request.jwt.claim.sub', '', false);
+select pg_temp.expect_fail($q$select public.file_claim('autre','Anonyme','Corps')$q$,
+  'anon ne peut pas déposer de réclamation');
+select pg_temp.expect_fail($q$select public.reply_claim(gen_random_uuid(), 'Corps')$q$,
+  'ni répondre dans un fil');
+reset role;
 
 \echo ''
 \echo '━━━ 11. Vues de lecture ━━━'

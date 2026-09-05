@@ -17,7 +17,7 @@ export default async function PageReserver() {
 
   const [{ data: rooms }, { data: machines }, { data: reglages }] = await Promise.all([
     supabase.from("rooms").select("*").eq("is_active", true).order("position"),
-    supabase.from("machines").select("*").order("position"),
+    supabase.from("machines").select("id, room_id, name, kind, status, capacity_kg, brand, model, cycle_minutes, position, note").order("position"),
     supabase.from("settings").select("key, value").in("key", [...REGLAGES]),
   ]);
 
