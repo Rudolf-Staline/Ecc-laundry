@@ -1,232 +1,230 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
-import { Bouton, Vide } from "@/components/ui";
-import {
-  addDays, dayKey, fmtDayShort, fmtTime, isoDayOfWeek, JOURS_COURTS, localParts, startOfWeek,
-} from "@/lib/time";
-import { LIBELLES_STATUT, type BookingStatus, type HistoryRow } from "@/lib/types";
+import { useEffect, useMemo, useState } from "react";
+import { creerClientNavigateur } from "@/lib/supabase/client";
+import { Vide } from "@/components/ui";
+import { addDays, dayKey, fmtDay, fmtTime, localParts, startOfDay } from "@/lib/time";
+import type { BoardRow, Machine, Room } from "@/lib/types";
 
 const HAUTEUR_HEURE = 48;
 const HEURES = Array.from({ length: 24 }, (_, i) => i);
 
-const BLOC: Record<BookingStatus, string> = {
-  booked: "bg-klein-fond border-klein/45 text-klein-2 hover:border-klein",
-  completed: "bg-menthe-fond border-menthe/45 text-menthe hover:border-menthe",
-  cancelled: "bg-ink-2 border-line-hi text-dim hover:border-dim",
-  cancelled_late: "bg-ember-fond border-ember/45 text-ember hover:border-ember",
+const AUCUNE_LIGNE: BoardRow[] = [];
+
+const PALETTE = ["klein", "menthe", "coral", "ember", "violet", "acid"] as const;
+type Couleur = (typeof PALETTE)[number];
+
+/** Classes littérales (pas de gabarit dynamique) pour que Tailwind les détecte. */
+const STYLES: Record<Couleur, { bloc: string; legende: string; anneau: string }> = {
+  klein: { bloc: "bg-klein border-klein", legende: "bg-klein text-on-bright", anneau: "ring-klein" },
+  menthe: { bloc: "bg-menthe border-menthe", legende: "bg-menthe text-on-bright", anneau: "ring-menthe" },
+  coral: { bloc: "bg-coral border-coral", legende: "bg-coral text-on-bright", anneau: "ring-coral" },
+  ember: { bloc: "bg-ember border-ember", legende: "bg-ember text-on-bright", anneau: "ring-ember" },
+  violet: { bloc: "bg-violet border-violet", legende: "bg-violet text-on-bright", anneau: "ring-violet" },
+  acid: { bloc: "bg-acid border-acid", legende: "bg-acid text-on-bright", anneau: "ring-acid" },
 };
 
-const POINT: Record<BookingStatus, string> = {
-  booked: "bg-klein",
-  completed: "bg-menthe",
-  cancelled: "bg-dim",
-  cancelled_late: "bg-ember",
-};
+export function CalendrierReservations({
+  buanderies,
+  machines,
+}: {
+  buanderies: Room[];
+  machines: Machine[];
+}) {
+  const [buanderieId, setBuanderieId] = useState(buanderies[0].id);
+  const [jour, setJour] = useState(() => startOfDay(new Date()));
+  const [focus, setFocus] = useState<string | null>(null);
+  // La clé du dernier chargement reçu : tant qu'elle ne correspond pas à la
+  // sélection courante, on sait qu'un chargement est en cours, sans avoir à
+  // le déclarer avec un setState synchrone dans l'effet.
+  const [recu, setRecu] = useState<{ cle: string; lignes: BoardRow[] } | null>(null);
 
-type Pose = HistoryRow & { lane: number; lanes: number; top: number; hauteur: number };
+  const cle = `${buanderieId}|${dayKey(jour)}`;
+  const chargement = recu?.cle !== cle;
+  const lignes = recu?.cle === cle ? recu.lignes : AUCUNE_LIGNE;
 
-/**
- * Place les réservations d'un jour côte à côte lorsqu'elles se chevauchent.
- * Le nombre de lanes est calculé par groupe connexe de chevauchement, pour
- * qu'une réservation isolée reste en pleine largeur même si, ailleurs dans
- * la journée, d'autres réservations se chevauchent entre elles.
- */
-function disposerJour(lignes: HistoryRow[]): Pose[] {
-  const triees = [...lignes].sort(
-    (a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime(),
+  const parc = useMemo(
+    () => machines.filter((m) => m.room_id === buanderieId).sort((a, b) => a.position - b.position),
+    [machines, buanderieId],
   );
-  const actives: Array<{ fin: number; lane: number; groupe: number }> = [];
-  const posees: Array<HistoryRow & { lane: number; groupe: number }> = [];
-  let prochainGroupe = 0;
 
-  for (const r of triees) {
-    const debut = new Date(r.starts_at).getTime();
-    for (let i = actives.length - 1; i >= 0; i -= 1) {
-      if (actives[i].fin <= debut) actives.splice(i, 1);
-    }
-    const prises = new Set(actives.map((a) => a.lane));
-    let lane = 0;
-    while (prises.has(lane)) lane += 1;
-    const groupe = actives.length > 0 ? actives[0].groupe : prochainGroupe++;
-    actives.push({ fin: new Date(r.ends_at).getTime(), lane, groupe });
-    posees.push({ ...r, lane, groupe });
+  function changerJour(prochain: Date) {
+    setJour(prochain);
+    setFocus(null);
   }
 
-  const lanesParGroupe = new Map<number, number>();
-  for (const p of posees) {
-    lanesParGroupe.set(p.groupe, Math.max(lanesParGroupe.get(p.groupe) ?? 1, p.lane + 1));
-  }
+  useEffect(() => {
+    let annule = false;
+    const supabase = creerClientNavigateur();
+    const cleCapturee = cle;
+    const fin = addDays(jour, 1);
 
-  return posees.map((p) => {
-    const debut = localParts(new Date(p.starts_at));
-    const minutesDebut = debut.hour * 60 + debut.minute;
-    const dureeMin = Math.max(
-      24,
-      (new Date(p.ends_at).getTime() - new Date(p.starts_at).getTime()) / 60_000,
-    );
-    return {
-      ...p,
-      lanes: lanesParGroupe.get(p.groupe) ?? 1,
-      top: (minutesDebut / 60) * HAUTEUR_HEURE,
-      hauteur: (dureeMin / 60) * HAUTEUR_HEURE,
+    supabase
+      .from("v_board")
+      .select("*")
+      .eq("room_id", buanderieId)
+      .eq("status", "booked")
+      .gte("starts_at", jour.toISOString())
+      .lt("starts_at", fin.toISOString())
+      .order("starts_at")
+      .then(({ data }) => {
+        if (!annule) setRecu({ cle: cleCapturee, lignes: (data as BoardRow[]) ?? [] });
+      });
+
+    return () => {
+      annule = true;
     };
-  });
-}
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `cle` dérive déjà de buanderieId/jour
+  }, [buanderieId, jour]);
 
-export function CalendrierReservations({ lignes }: { lignes: HistoryRow[] }) {
-  const [debutSemaine, setDebutSemaine] = useState(() => startOfWeek(new Date()));
-
-  const parJour = useMemo(() => {
-    const map = new Map<string, HistoryRow[]>();
-    for (const ligne of lignes) {
-      const cle = dayKey(new Date(ligne.starts_at));
-      const groupe = map.get(cle) ?? [];
-      groupe.push(ligne);
-      map.set(cle, groupe);
+  const parMachine = useMemo(() => {
+    const map = new Map<string, BoardRow[]>();
+    for (const l of lignes) {
+      const groupe = map.get(l.machine_id) ?? [];
+      groupe.push(l);
+      map.set(l.machine_id, groupe);
     }
     return map;
   }, [lignes]);
 
-  const jours = useMemo(
-    () => Array.from({ length: 7 }, (_, i) => addDays(debutSemaine, i)),
-    [debutSemaine],
-  );
-
-  const aujourdHui = dayKey(new Date());
-  const semaineCourante = dayKey(debutSemaine) === dayKey(startOfWeek(new Date()));
-
-  if (lignes.length === 0) {
-    return (
-      <Vide
-        titre="Aucune réservation"
-        detail="Vos créneaux apparaîtront ici, positionnés sur leur horaire, une fois réservés."
-        action={
-          <Link href="/reserver">
-            <Bouton variante="secondaire" taille="sm">Réserver un créneau</Bouton>
-          </Link>
-        }
-      />
-    );
-  }
+  const aujourdHui = dayKey(jour) === dayKey(new Date());
 
   return (
     <div className="panel p-4 sm:p-5">
       <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
         <div>
-          <p className="eyebrow">Vue hebdomadaire</p>
-          <h2 className="display text-2xl text-chalk mt-1 tabular">
-            {fmtDayShort(jours[0])} → {fmtDayShort(jours[6])}{" "}
-            <span className="text-dim text-base font-normal">{localParts(jours[6]).year}</span>
-          </h2>
+          <p className="eyebrow">Vue journalière</p>
+          <h2 className="display text-2xl text-chalk mt-1 capitalize">{fmtDay(jour)}</h2>
         </div>
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setDebutSemaine((d) => addDays(d, -7))}
-            className="px-3 h-9 rounded-[8px] border border-line text-[11px] font-medium text-dim hover:text-chalk hover:bg-ink-2 transition-colors"
-          >
-            ← Précédent
-          </button>
-          {!semaineCourante && (
+
+        <div className="flex items-center gap-2 flex-wrap">
+          {buanderies.length > 1 && (
+            <select
+              value={buanderieId}
+              onChange={(e) => { setBuanderieId(e.target.value); setFocus(null); }}
+              className="bg-surface-hi/85 border border-line rounded-[8px] px-3 h-9 text-[12px]
+                text-chalk outline-none focus:border-klein/60 transition-all"
+            >
+              {buanderies.map((b) => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+          )}
+
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
-              onClick={() => setDebutSemaine(startOfWeek(new Date()))}
-              className="px-3 h-9 rounded-[8px] border border-line text-[11px] font-medium text-dim hover:text-chalk hover:bg-ink-2 transition-colors"
+              onClick={() => changerJour(addDays(jour, -1))}
+              aria-label="Jour précédent"
+              className="w-9 h-9 grid place-items-center rounded-[8px] border border-line text-mist hover:text-chalk hover:bg-ink-2 transition-colors"
             >
-              Aujourd&apos;hui
+              ←
             </button>
-          )}
-          <button
-            type="button"
-            onClick={() => setDebutSemaine((d) => addDays(d, 7))}
-            className="px-3 h-9 rounded-[8px] border border-line text-[11px] font-medium text-dim hover:text-chalk hover:bg-ink-2 transition-colors"
-          >
-            Suivant →
-          </button>
-        </div>
-      </div>
-
-      <div className="scroll-x -mx-4 sm:-mx-5 px-4 sm:px-5">
-        <div className="grid" style={{ gridTemplateColumns: "44px repeat(7, minmax(112px, 1fr))", minWidth: 820 }}>
-          <div />
-          {jours.map((j) => {
-            const cle = dayKey(j);
-            const estAujourdhui = cle === aujourdHui;
-            return (
-              <div key={cle} className="text-center pb-2.5">
-                <p className="text-[10px] font-mono tracking-[0.1em] text-dim">
-                  {JOURS_COURTS[isoDayOfWeek(j) - 1]}
-                </p>
-                <p className={`display text-lg mt-0.5 tabular ${estAujourdhui ? "text-klein" : "text-chalk"}`}>
-                  {localParts(j).day}
-                </p>
-              </div>
-            );
-          })}
-
-          <div className="relative" style={{ height: HEURES.length * HAUTEUR_HEURE }}>
-            {HEURES.map((h) => (
-              <div
-                key={h}
-                className="absolute right-1.5 -translate-y-1/2 text-[9px] font-mono text-dim tabular"
-                style={{ top: h * HAUTEUR_HEURE }}
+            {!aujourdHui && (
+              <button
+                type="button"
+                onClick={() => changerJour(startOfDay(new Date()))}
+                className="px-3 h-9 rounded-[8px] border border-line text-[11px] font-medium text-dim hover:text-chalk hover:bg-ink-2 transition-colors"
               >
-                {String(h).padStart(2, "0")}h
-              </div>
-            ))}
+                Aujourd&apos;hui
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => changerJour(addDays(jour, 1))}
+              aria-label="Jour suivant"
+              className="w-9 h-9 grid place-items-center rounded-[8px] border border-line text-mist hover:text-chalk hover:bg-ink-2 transition-colors"
+            >
+              →
+            </button>
           </div>
-
-          {jours.map((j) => {
-            const cle = dayKey(j);
-            const poses = disposerJour(parJour.get(cle) ?? []);
-            const estAujourdhui = cle === aujourdHui;
-            return (
-              <div
-                key={cle}
-                className={`relative border-l border-line ${estAujourdhui ? "bg-klein-fond/40" : ""}`}
-                style={{ height: HEURES.length * HAUTEUR_HEURE }}
-              >
-                {HEURES.map((h) => (
-                  <div
-                    key={h}
-                    className="absolute inset-x-0 border-t border-line/70"
-                    style={{ top: h * HAUTEUR_HEURE }}
-                    aria-hidden
-                  />
-                ))}
-                {poses.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={`/reservation/${p.reference}`}
-                    title={`${p.machine_name} · ${fmtTime(p.starts_at)} → ${fmtTime(p.ends_at)}`}
-                    className={`absolute rounded-[6px] border px-1.5 py-1 overflow-hidden transition-colors ${BLOC[p.status]}`}
-                    style={{
-                      top: p.top + 1,
-                      height: Math.max(p.hauteur - 2, 20),
-                      left: `calc(${(p.lane / p.lanes) * 100}% + 2px)`,
-                      width: `calc(${100 / p.lanes}% - 4px)`,
-                    }}
-                  >
-                    <p className="text-[9.5px] font-mono tabular leading-tight">{fmtTime(p.starts_at)}</p>
-                    <p className="text-[10.5px] font-medium truncate leading-tight">{p.machine_name}</p>
-                  </Link>
-                ))}
-              </div>
-            );
-          })}
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-5 pt-4 border-t border-line">
-        {(Object.keys(LIBELLES_STATUT) as BookingStatus[]).map((statut) => (
-          <span key={statut} className="inline-flex items-center gap-1.5 text-[11px] text-dim">
-            <span className={`w-2 h-2 rounded-full ${POINT[statut]}`} aria-hidden />
-            {LIBELLES_STATUT[statut]}
-          </span>
-        ))}
-      </div>
+      {parc.length === 0 ? (
+        <Vide titre="Aucune machine" detail="Cette buanderie n'a pas de machine active." />
+      ) : (
+        <div className="scroll-x -mx-4 sm:-mx-5 px-4 sm:px-5">
+          <div
+            className="grid"
+            style={{
+              gridTemplateColumns: `44px repeat(${parc.length}, minmax(92px, 1fr))`,
+              minWidth: 80 + parc.length * 96,
+            }}
+          >
+            <div />
+            {parc.map((m, i) => {
+              const couleur = PALETTE[i % PALETTE.length];
+              const actif = focus === m.id;
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => setFocus((f) => (f === m.id ? null : m.id))}
+                  aria-pressed={actif}
+                  title={m.name}
+                  className={`mx-0.5 mb-2.5 h-9 rounded-[8px] px-2 text-[11px] font-semibold truncate
+                    transition-all ${STYLES[couleur].legende}
+                    ${actif ? `ring-2 ring-offset-2 ring-offset-surface ${STYLES[couleur].anneau}` : "opacity-90 hover:opacity-100"}`}
+                >
+                  {m.name}
+                </button>
+              );
+            })}
+
+            <div className="relative" style={{ height: HEURES.length * HAUTEUR_HEURE }}>
+              {HEURES.map((h) => (
+                <div
+                  key={h}
+                  className="absolute right-1.5 -translate-y-1/2 text-[9px] font-mono text-dim tabular"
+                  style={{ top: h * HAUTEUR_HEURE }}
+                >
+                  {String(h).padStart(2, "0")}h
+                </div>
+              ))}
+            </div>
+
+            {parc.map((m, i) => {
+              const couleur = PALETTE[i % PALETTE.length];
+              const estVisible = focus === null || focus === m.id;
+              const blocs = parMachine.get(m.id) ?? [];
+              return (
+                <div
+                  key={m.id}
+                  className="relative border-l border-line"
+                  style={{ height: HEURES.length * HAUTEUR_HEURE }}
+                >
+                  {HEURES.map((h) => (
+                    <div
+                      key={h}
+                      className="absolute inset-x-0 border-t border-line/70"
+                      style={{ top: h * HAUTEUR_HEURE }}
+                      aria-hidden
+                    />
+                  ))}
+                  {blocs.map((b) => {
+                    const debut = localParts(new Date(b.starts_at));
+                    const top = ((debut.hour * 60 + debut.minute) / 60) * HAUTEUR_HEURE;
+                    const hauteur = (b.duration_minutes / 60) * HAUTEUR_HEURE;
+                    const qui = b.is_mine ? "Vous" : `${b.owner_first_name} ${b.owner_last_initial}`;
+                    return (
+                      <div
+                        key={b.id}
+                        title={`${qui} · ${fmtTime(b.starts_at)} → ${fmtTime(b.ends_at)}`}
+                        className={`absolute inset-x-1 rounded-[6px] border transition-opacity
+                          ${STYLES[couleur].bloc} ${estVisible ? "" : "opacity-15"}`}
+                        style={{ top: top + 1, height: Math.max(hauteur - 2, 10) }}
+                      />
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {chargement && <p className="text-[11px] text-dim mt-3">Chargement…</p>}
     </div>
   );
 }

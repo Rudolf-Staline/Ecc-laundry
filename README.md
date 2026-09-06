@@ -223,7 +223,7 @@ app/
     machines/               parc en direct, signalement de panne
     historique/             réservations passées, filtres et totaux
     reservation/[reference] fiche d'une réservation, déroulé, actions
-    calendrier/             vue hebdomadaire de ses réservations, en grille horaire
+    calendrier/             planning du jour par machine, en grille horaire
     compte/                 préférences, lien iCal
     admin/                  console d'administration
   api/
