@@ -1,6 +1,8 @@
 /**
- * Traduction des codes SQLSTATE applicatifs (cf. supabase/migrations/0002)
- * en messages lisibles. La base reste la seule autorité : l'interface se
+ * Traduction en messages lisibles des codes SQLSTATE applicatifs
+ * (cf. supabase/migrations/0002) et des codes d'erreur Supabase Auth
+ * (`signUp`, `signInWithPassword`, `resetPasswordForEmail`, `updateUser`).
+ * La base — ou Supabase Auth — reste seule autorité : l'interface se
  * contente de rendre son verdict intelligible.
  */
 
@@ -22,17 +24,33 @@ const GENERIQUES: Record<string, string> = {
   "23503": "Élément lié introuvable.",
   "42501": "Vous n'avez pas les droits nécessaires.",
   P0001: "Opération refusée.",
+
+  // Supabase Auth
+  invalid_credentials: "Adresse e-mail ou mot de passe incorrect.",
+  user_already_exists: "Un compte existe déjà avec cette adresse. Connectez-vous plutôt.",
+  email_not_confirmed: "Confirmez votre adresse e-mail avant de vous connecter (lien envoyé à l'inscription).",
+  weak_password: "Ce mot de passe est trop simple. Choisissez-en un autre.",
+  same_password: "Le nouveau mot de passe doit être différent de l'ancien.",
+  over_request_rate_limit: "Trop de tentatives. Réessayez dans quelques minutes.",
+  over_email_send_rate_limit: "Trop d'e-mails envoyés récemment. Réessayez dans quelques minutes.",
+  signup_disabled: "Les inscriptions sont momentanément désactivées.",
 };
 
 /**
  * Les messages levés par les triggers sont déjà rédigés en français et
  * portent le détail utile (quota exact, horaires de la buanderie…) : on les
- * préfère au libellé générique dès qu'ils sont exploitables.
+ * préfère au libellé générique dès qu'ils sont exploitables. Les codes
+ * Supabase Auth (`invalid_credentials`…) suivent la logique inverse : leur
+ * `.message` n'est jamais traduit, donc le libellé générique prime toujours
+ * sur lui — reconnaissables à leur forme minuscule_avec_tirets_bas, à
+ * l'inverse des SQLSTATE et codes TBxxx qui sont eux en majuscules.
  */
 export function messageErreur(error: PgLike, repli = "Une erreur est survenue."): string {
   if (!error) return repli;
 
   const code = error.code ?? "";
+  if (/^[a-z][a-z_]*$/.test(code) && GENERIQUES[code]) return GENERIQUES[code];
+
   const brut = (error.message ?? "").trim();
 
   const technique =

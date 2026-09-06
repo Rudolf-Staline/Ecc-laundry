@@ -16,7 +16,7 @@ par la base de données, pas par le navigateur.
 
 | | |
 |---|---|
-| **Accès centralien** | Seules les adresses `prenom.nom@centrale-casablanca.ma` créent un compte. Contrôle appliqué par un trigger sur `auth.users` : impossible à contourner depuis le client. Connexion par code à six chiffres, sans mot de passe. |
+| **Accès centralien** | Seules les adresses `prenom.nom@centrale-casablanca.ma` créent un compte. Contrôle appliqué par un trigger sur `auth.users` : impossible à contourner depuis le client. Inscription et connexion par e-mail et mot de passe, avec réinitialisation par lien. |
 | **Créneaux d'1 h ou 2 h** | L'étudiant choisit la longueur de son créneau ; une réservation compte pour une, quelle que soit sa durée. La grille est ouverte 24 h/24. |
 | **Quota de 4 par semaine** | Compté sur la semaine ISO en heure de Casablanca. Modifiable par l'admin depuis l'interface, sans redéploiement. Une annulation anticipée ne consomme rien ; une absence, si. |
 | **Horizon de 24 h glissantes** | Un créneau devient réservable 24 h avant son début. Personne ne bloque la semaine entière le lundi matin. |
@@ -99,41 +99,34 @@ Authentication → **URL Configuration** :
 - *Redirect URLs* : ajoutez `https://votre-domaine/auth/callback` et
   `http://localhost:3000/auth/callback`
 
-Authentication → **Email Templates** → modifiez **les deux** gabarits
-suivants pour qu'ils contiennent `{{ .Token }}` — pas un seul :
+L'authentification se fait par e-mail et mot de passe (`signUp` /
+`signInWithPassword`) — les gabarits par défaut de Supabase conviennent tel
+quels, aucun `{{ .Token }}` à y ajouter :
 
-- ***Magic Link*** : utilisé quand un compte existant se reconnecte.
-- ***Confirm signup*** : utilisé au tout premier passage. Comme le compte se
-  crée au premier login (pas d'inscription séparée), **c'est ce gabarit que
-  reçoit chaque étudiant la toute première fois** — l'oublier revient à ne
-  couvrir qu'une reconnexion sur deux.
+- Authentication → **Settings** → *Enable email confirmations* : à activer si
+  vous voulez qu'un lien de confirmation soit exigé avant le premier login.
+  Le domaine `@centrale-casablanca.ma` est de toute façon imposé côté base
+  (trigger sur `auth.users`, non contournable depuis le client) : ce
+  réglage n'ajoute qu'une vérification que la boîte mail existe bien, pas un
+  filtre supplémentaire. Le laisser désactivé rend l'inscription immédiate.
+- Le gabarit ***Reset Password*** sert au lien de « mot de passe oublié » —
+  par défaut il pointe déjà vers `{{ .ConfirmationURL }}`, rien à modifier.
 
-Le même contenu convient aux deux :
+> Les deux gabarits redirigent vers `/auth/callback`, qui échange le code
+> contre une session puis renvoie vers `/tableau` (confirmation) ou
+> `/reinitialiser-mot-de-passe` (mot de passe oublié) — d'où l'importance des
+> *Redirect URLs* déclarées ci-dessus.
 
-```html
-<h2>Votre code Tambour</h2>
-<p>Entrez ce code sur le site :</p>
-<p style="font-size:32px;letter-spacing:8px;font-family:monospace">{{ .Token }}</p>
-<p>Ou cliquez simplement <a href="{{ .ConfirmationURL }}">ici</a>. Le code expire dans 10 minutes.</p>
-```
-
-> Le gabarit *Confirm signup* de Supabase, par défaut, ne contient que le
-> lien — jamais `{{ .Token }}`. Sans cette modification, le premier passage
-> de chaque étudiant reçoit un mail sans code, et cliquer sur le lien échoue
-> si l'URL de redirection n'est pas dans la liste ci-dessus.
-
-> Le domaine `@centrale-casablanca.ma` est aussi imposé côté base : même si
-> quelqu'un appelle l'API directement, le trigger refuse la création du compte.
-
-**Indispensable avant toute mise en service réelle** — Authentication →
+**Recommandé avant toute mise en service réelle** — Authentication →
 **Settings** → *SMTP Settings* → activez *Enable Custom SMTP*.
 
 Sans ça, Supabase envoie les e-mails via son propre relais, plafonné à
-**quelques envois par heure** : correct pour tester seul, bloquant dès que
-plusieurs étudiants se connectent la même heure. `email rate limit exceeded`
-est le message qui en résulte. Et comme l'authentification est un code à
-chaque connexion plutôt qu'un mot de passe une fois pour toutes, ce n'est
-pas un pic ponctuel à l'inscription : c'est le régime permanent de l'appli.
+**quelques envois par heure** — correct pour tester seul. Le mot de passe
+change la donne par rapport à un code à usage unique : un e-mail n'est plus
+envoyé à chaque connexion, seulement à l'inscription (si la confirmation est
+activée) et lors d'une réinitialisation. Le plafond reste malgré tout
+atteignable un jour de rentrée si plusieurs étudiants s'inscrivent à la même
+heure — `email rate limit exceeded` est le message qui en résulte.
 
 Un fournisseur externe suffit largement pour une résidence — [Resend](https://resend.com)
 a un palier gratuit confortable et se déclare en cinq champs (hôte, port,
@@ -204,7 +197,9 @@ le même verdict à 3 h du matin qu'à midi.
 ```
 app/
   page.tsx                  redirige vers /connexion
-  connexion/                authentification par code
+  connexion/                connexion par e-mail et mot de passe
+  inscription/              création de compte
+  reinitialiser-mot-de-passe/  nouveau mot de passe (lien reçu par e-mail)
   (app)/
     tableau/                tableau de bord, cycles en cours
     reserver/               la grille de réservation
@@ -212,7 +207,7 @@ app/
     historique/             réservations passées, filtres et totaux
     reservation/[reference] fiche d'une réservation, déroulé, actions
     reclamations/           dépôt et suivi des dossiers
-    statistiques/           chiffres personnels, affluence
+    calendrier/             vue mensuelle de ses réservations
     compte/                 préférences, lien iCal
     admin/                  console d'administration
   api/
@@ -245,6 +240,9 @@ proxy.ts                    rafraîchissement de session (ex-middleware)
 - **`/api/cron`** exige `Authorization: Bearer $CRON_SECRET`, et refuse tout
   net si le secret n'est pas configuré.
 - **Le flux iCal** est authentifié par un jeton aléatoire par étudiant.
+- **Les mots de passe** sont hachés et vérifiés entièrement côté Supabase Auth
+  (GoTrue) — rien ne transite ni ne se compare côté application. Le
+  rate-limiting sur les tentatives de connexion est géré au même endroit.
 
 ---
 

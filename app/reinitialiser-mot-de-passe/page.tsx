@@ -1,20 +1,14 @@
 import type { Metadata } from "next";
 import { Logotype, Tambour } from "@/components/marque";
 import { BasculeTheme } from "@/components/theme-bascule";
-import { FormulaireConnexion } from "@/components/formulaire-connexion";
+import { FormulaireNouveauMotDePasse } from "@/components/formulaire-nouveau-mot-de-passe";
 import { supabaseConfigure } from "@/lib/config";
 
-export const metadata: Metadata = { title: "Connexion" };
+export const metadata: Metadata = { title: "Nouveau mot de passe" };
 
 const BULLES = Array.from({ length: 14 }, (_, i) => i + 1);
 
-export default async function PageConnexion({
-  searchParams,
-}: {
-  searchParams: Promise<{ suite?: string; erreur?: string }>;
-}) {
-  const { suite, erreur } = await searchParams;
-
+export default function PageReinitialiserMotDePasse() {
   return (
     <div className="auth-shell relative min-h-dvh overflow-hidden">
       <div className="soap-field" aria-hidden>
@@ -58,12 +52,12 @@ export default async function PageConnexion({
           <div className="w-full max-w-[450px] reveal">
             <div className="mb-7">
               <p className="eyebrow text-klein">Accès étudiant</p>
-              <h2 className="display text-3xl sm:text-4xl mt-2 text-chalk">Bienvenue sur Laundry.</h2>
+              <h2 className="display text-3xl sm:text-4xl mt-2 text-chalk">Nouveau mot de passe.</h2>
               <p className="text-sm text-mist mt-3 leading-relaxed">
-                Avec votre adresse Centrale et votre mot de passe.
+                Choisissez un mot de passe pour votre compte Laundry.
               </p>
             </div>
-            <FormulaireConnexion suite={suite} erreurInitiale={erreur} configure={supabaseConfigure} />
+            <FormulaireNouveauMotDePasse configure={supabaseConfigure} />
           </div>
         </section>
       </main>
