@@ -31,6 +31,7 @@ export function FormulaireConnexion({
   const [erreur, setErreur] = useState<string | null>(erreurInitiale ?? null);
   const [enCours, setEnCours] = useState(false);
   const [renvoye, setRenvoye] = useState(false);
+  const [codeVerifie, setCodeVerifie] = useState(false);
   const champCode = useRef<HTMLInputElement>(null);
 
   async function seConnecter(e: React.FormEvent) {
@@ -110,7 +111,7 @@ export function FormulaireConnexion({
     setErreur(null);
 
     const jeton = code.replace(/\s/g, "");
-    if (!jeton) {
+    if (!codeVerifie && !jeton) {
       setErreur("Entrez le code reçu par e-mail.");
       return;
     }
@@ -126,12 +127,20 @@ export function FormulaireConnexion({
     setEnCours(true);
     try {
       const supabase = creerClientNavigateur();
-      const { error: erreurCode } = await supabase.auth.verifyOtp({
-        email,
-        token: jeton,
-        type: "recovery",
-      });
-      if (erreurCode) throw erreurCode;
+
+      // Le code est un jeton à usage unique : une fois vérifié avec succès,
+      // la session de récupération est déjà active. Si c'est updateUser qui
+      // échoue ensuite (mot de passe trop simple…), la nouvelle tentative ne
+      // doit pas rejouer verifyOtp avec ce même code désormais consommé.
+      if (!codeVerifie) {
+        const { error: erreurCode } = await supabase.auth.verifyOtp({
+          email,
+          token: jeton,
+          type: "recovery",
+        });
+        if (erreurCode) throw erreurCode;
+        setCodeVerifie(true);
+      }
 
       const { error: erreurMdp } = await supabase.auth.updateUser({ password: nouveauMotDePasse });
       if (erreurMdp) throw erreurMdp;
@@ -206,7 +215,14 @@ export function FormulaireConnexion({
         <div className="flex items-center justify-between gap-4 mt-5 text-xs">
           <button
             type="button"
-            onClick={() => { setEtape("connexion"); setCode(""); setErreur(null); }}
+            onClick={() => {
+              setEtape("connexion");
+              setCode("");
+              setNouveauMotDePasse("");
+              setConfirmation("");
+              setCodeVerifie(false);
+              setErreur(null);
+            }}
             className="text-dim hover:text-chalk transition-colors"
           >
             ← Retour à la connexion
