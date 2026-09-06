@@ -169,7 +169,6 @@ export type AdminOverview = {
   bookings_today: number;
   bookings_week: number;
   open_reports: number;
-  open_claims: number;
 };
 
 export type AffluenceCell = { dow: number; hour: number; bookings: number; intensity: number };
@@ -182,62 +181,6 @@ export const CATEGORIES_PANNE: Record<string, string> = {
   drainage: "Vidange",
   heating: "Chauffe mal",
   other: "Autre",
-};
-
-/* ── Réclamations ─────────────────────────────────────────────────────────── */
-
-export type ClaimCategory =
-  | "linge_sorti" | "linge_abime" | "creneau_occupe"
-  | "quota" | "proprete" | "autre";
-
-export const CATEGORIES_RECLAMATION: Record<ClaimCategory, string> = {
-  linge_sorti: "Mon linge a été sorti de la machine",
-  linge_abime: "Linge abîmé ou disparu",
-  creneau_occupe: "Machine occupée hors réservation",
-  quota: "Problème de quota",
-  proprete: "Propreté du local",
-  autre: "Autre",
-};
-
-/** Libellé court, pour les étiquettes de liste. */
-export const CATEGORIES_RECLAMATION_COURT: Record<ClaimCategory, string> = {
-  linge_sorti: "linge sorti",
-  linge_abime: "linge abîmé",
-  creneau_occupe: "créneau occupé",
-  quota: "quota",
-  proprete: "propreté",
-  autre: "autre",
-};
-
-export type ClaimRow = {
-  id: string;
-  reference: string;
-  user_id: string;
-  booking_id: string | null;
-  machine_id: string | null;
-  category: ClaimCategory;
-  subject: string;
-  status: ReportStatus;
-  created_at: string;
-  updated_at: string;
-  resolved_at: string | null;
-  auteur: string;
-  auteur_email: string;
-  booking_reference: string | null;
-  booking_starts_at: string | null;
-  machine_name: string | null;
-  room_name: string | null;
-  message_count: number;
-  last_message_at: string | null;
-};
-
-export type ClaimMessage = {
-  id: string;
-  claim_id: string;
-  author_id: string | null;
-  body: string;
-  from_staff: boolean;
-  created_at: string;
 };
 
 /** Ligne de `v_historique` — toutes mes réservations, annulations comprises. */
@@ -266,9 +209,3 @@ export const LIBELLES_STATUT: Record<BookingStatus, string> = {
   cancelled_late: "annulée tardivement",
 };
 
-export const LIBELLES_STATUT_RECLAMATION: Record<ReportStatus, string> = {
-  open: "ouverte",
-  acknowledged: "en traitement",
-  resolved: "résolue",
-  rejected: "écartée",
-};

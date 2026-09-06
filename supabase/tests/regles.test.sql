@@ -323,7 +323,7 @@ select pg_temp.expect_ok($q$select public.set_setting('booking_horizon_hours','4
 select quota from public.my_week_status();
 
 \echo ''
-\echo '━━━ 11 bis. Référence, motif et réclamations ━━━'
+\echo '━━━ 11 bis. Référence et motif ━━━'
 reset role;
 set role authenticated;
 select set_config('request.jwt.claim.sub','33333333-3333-3333-3333-333333333333', false);
@@ -340,55 +340,6 @@ select pg_temp.expect_fail(format(
   $q$select public.book_slot((select id from m where n = 3), %L, 1, 'nimportequoi')$q$,
   (select h0 + interval '19 hours' from t)), 'motif hors liste refusé');
 
-select pg_temp.expect_ok(
-  $q$select public.file_claim('linge_sorti', 'Mon linge a été sorti',
-        'Je suis arrivé à la fin de mon créneau, la machine était vide et mon linge posé par terre.',
-        (select id from public.bookings where user_id = auth.uid() order by created_at limit 1))$q$,
-  'dépôt d''une réclamation liée à sa réservation');
-
-select pg_temp.expect_fail(
-  $q$select public.file_claim('autre', 'Test', 'Corps du message',
-        (select id from public.bookings where user_id <> auth.uid() limit 1))$q$,
-  'impossible de la rattacher à la réservation d''un autre');
-
-select pg_temp.expect_ok(
-  $q$select public.reply_claim((select id from public.claims where user_id = auth.uid() limit 1),
-        'J''ai retrouvé une chaussette, pas le reste.')$q$,
-  'réponse dans son propre fil');
-
-\echo '   → le fil, tel que l''auteur le voit :'
-select c.reference, c.category, c.status, cm.from_staff, left(cm.body, 46) as message
-  from public.claims c join public.claim_messages cm on cm.claim_id = c.id
- where c.user_id = auth.uid() order by cm.created_at;
-
-\echo '   → un autre étudiant n''y a pas accès :'
-select set_config('request.jwt.claim.sub','22222222-2222-2222-2222-222222222222', false);
-select count(*) as reclamations_visibles from public.claims;
-select pg_temp.expect_fail(
-  $q$select public.reply_claim((select id from public.claims limit 1), 'Je m''incruste')$q$,
-  'ni ne peut répondre dans le fil d''autrui');
-
-\echo '   → l''équipe, elle, voit tout et peut traiter :'
-reset role;
-set role authenticated;
-select set_config('request.jwt.claim.sub','11111111-1111-1111-1111-111111111111', false);
-select count(*) as reclamations_visibles_admin from public.claims;
-select pg_temp.expect_ok(
-  $q$select public.reply_claim((select id from public.claims limit 1),
-        'Nous avons interrogé les étudiants du créneau suivant.')$q$,
-  'un admin peut répondre');
-select pg_temp.expect_ok(
-  $q$select public.admin_set_claim_status((select id from public.claims limit 1), 'resolved')$q$,
-  'et clore le dossier');
-
-\echo '   → et un visiteur non connecté n''atteint rien de tout ça :'
-reset role;
-set role anon;
-select set_config('request.jwt.claim.sub', '', false);
-select pg_temp.expect_fail($q$select public.file_claim('autre','Anonyme','Corps')$q$,
-  'anon ne peut pas déposer de réclamation');
-select pg_temp.expect_fail($q$select public.reply_claim(gen_random_uuid(), 'Corps')$q$,
-  'ni répondre dans un fil');
 reset role;
 
 \echo ''

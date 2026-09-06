@@ -27,9 +27,8 @@ par la base de données, pas par le navigateur.
 | **Signalement de panne** | Trois signalements par des étudiants distincts retirent la machine du planning d'elle-même. |
 | **Chaque réservation a une référence** | `TB-1042`, lisible et citable. Une fiche par réservation : détail du créneau, compte à rebours, déroulé de la réservée à la terminée, et les actions au bon moment. |
 | **Historique filtrable** | Toutes ses réservations passées, cherchables par machine ou référence, filtrables par état et par buanderie, avec le total d'heures. |
-| **Réclamations suivies** | Linge sorti d'une machine, créneau occupé : l'étudiant ouvre un dossier `REC-0001` rattaché à sa réservation et suit les réponses de l'équipe dans un fil, en direct. Côté admin, un triage par état. |
 | **Motif de réservation** | Courant, draps, sport, délicat, volumineux — renseigné à la réservation, utile pour l'entretien du parc. |
-| **Console admin** | Machines et buanderies (CRUD complet), comptes, signalements, réclamations, annonces, réglages. |
+| **Console admin** | Machines et buanderies (CRUD complet), comptes, signalements, annonces, réglages. |
 | **Le reste** | Affluence jour × heure sur 8 semaines, statistiques personnelles, empreinte eau/électricité, export iCal, PWA installable, thème clair et sombre. |
 
 ## Architecture
@@ -200,10 +199,10 @@ npm run db:test    # rejoue les migrations + la suite de tests métier
 ```
 
 `npm run db:test` a besoin d'un PostgreSQL local (≥ 14) avec `btree_gist`. Il
-crée une base jetable, applique les huit migrations et passe **59 vérifications** :
+crée une base jetable, applique les dix migrations et passe **54 vérifications** :
 domaine e-mail, longueur des créneaux, quota, horizon glissant, règle des
 créneaux de nuit, anti-collision, file d'attente, clôture automatique des
-cycles, références, motifs, cycle de vie des réclamations et cloisonnement des
+cycles, références, motifs et cloisonnement des
 droits — y compris les tentatives d'élévation de privilèges, par un étudiant
 comme par un visiteur anonyme. Une erreur SQL survenue hors assertion fait échouer la suite : sans
 ce garde-fou, une section entière pourrait ne rien exécuter sans faire rougir
@@ -224,8 +223,7 @@ app/
     machines/               parc en direct, signalement de panne
     historique/             réservations passées, filtres et totaux
     reservation/[reference] fiche d'une réservation, déroulé, actions
-    reclamations/           dépôt et suivi des dossiers
-    calendrier/             vue mensuelle de ses réservations
+    calendrier/             vue hebdomadaire de ses réservations, en grille horaire
     compte/                 préférences, lien iCal
     admin/                  console d'administration
   api/

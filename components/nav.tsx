@@ -14,7 +14,6 @@ const LIENS = [
   { href: "/calendrier", label: "Calendrier", icone: Agenda },
   { href: "/machines", label: "Machines", icone: Machine },
   { href: "/historique", label: "Historique", icone: Registre },
-  { href: "/reclamations", label: "Réclamations", icone: Bulle },
 ];
 
 export function BarreLaterale({ profil }: { profil: Profile }) {
@@ -217,14 +216,6 @@ function Registre({ actif }: PropsIcone) {
     <svg {...traits(actif)}>
       <path d="M5 3h11l4 4v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
       <path d="M8 11h8M8 15h5" />
-    </svg>
-  );
-}
-
-function Bulle({ actif }: PropsIcone) {
-  return (
-    <svg {...traits(actif)}>
-      <path d="M20 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z" />
     </svg>
   );
 }

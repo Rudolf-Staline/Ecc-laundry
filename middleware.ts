@@ -29,7 +29,7 @@ export async function middleware(request: NextRequest) {
 
   const chemin = request.nextUrl.pathname;
   const privee = ["/tableau", "/reserver", "/calendrier", "/machines",
-                  "/historique", "/reclamations", "/reservation", "/compte", "/admin"]
+                  "/historique", "/reservation", "/compte", "/admin"]
     .some((p) => chemin === p || chemin.startsWith(`${p}/`));
 
   if (!user && privee) {

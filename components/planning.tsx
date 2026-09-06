@@ -40,7 +40,7 @@ export function Planning({
 
   const [buanderieId, setBuanderieId] = useState(buanderies[0].id);
   const [jourActif, setJourActif] = useState(() => dayKey(new Date()));
-  const [duree, setDuree] = useState(1);
+  const [duree, setDuree] = useState(2);
   const [planning, setPlanning] = useState(planningInitial);
   const [statut, setStatut] = useState(statutInitial);
   const [attente, setAttente] = useState(attenteInitiale);
@@ -424,7 +424,7 @@ export function Planning({
       <div className="flex flex-wrap gap-3 items-center text-[11px] text-dim">
         <Legende classe="border-menthe/20 bg-menthe-fond" label="libre" />
         <Legende classe="border-klein bg-klein" label="votre choix" />
-        <Legende classe="border-acid/25 bg-acid-fond" label="à vous" />
+        <Legende classe="border-acid bg-acid" label="à vous" />
         <Legende classe="border-coral/25 bg-coral-fond" label="occupé" />
         <Legende classe="border-klein/20 bg-klein-fond" label="nuit" />
         <Legende classe="border-line maintenance-stripes" label="hors service" />
@@ -549,10 +549,10 @@ function Cellule({
         onClick={() => onAnnuler(ligne)}
         disabled={annulationEnCours === ligne.id}
         title={`Votre réservation ${fmtTime(ligne.starts_at)} → ${fmtTime(ligne.ends_at)}. Cliquer pour annuler.`}
-        className={`${base} bg-acid-fond border-acid/25 hover:bg-coral-fond hover:border-coral/30 group disabled:opacity-50`}
+        className={`${base} bg-acid border-acid hover:bg-coral hover:border-coral group disabled:opacity-50`}
       >
-        <span className="text-[9px] font-semibold uppercase tracking-[0.04em] text-acid group-hover:hidden">vous</span>
-        <span className="hidden group-hover:inline text-[9px] font-semibold uppercase text-coral">✕</span>
+        <span className="text-[9px] font-semibold uppercase tracking-[0.04em] text-on-bright group-hover:hidden">vous</span>
+        <span className="hidden group-hover:inline text-[9px] font-semibold uppercase text-on-bright">✕</span>
       </button>
     );
   }

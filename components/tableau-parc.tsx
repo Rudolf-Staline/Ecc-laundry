@@ -57,7 +57,7 @@ export function TableauParc({
     <div className="space-y-7">
       <TitreSection
         surtitre="Temps réel"
-        titre="Le parc"
+        titre="Buanderie"
         apres={
           <div className="flex gap-1.5 flex-wrap">
             {([
