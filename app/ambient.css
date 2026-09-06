@@ -1,6 +1,6 @@
 /*
  * Couche d'ambiance globale — Laundry
- * Mouvement lent, bulles discrètes, profondeur légère.
+ * Mouvement plus lisible, bulles assumées, halos plus présents.
  * Cette feuille reste séparée du design system principal pour pouvoir
  * ajuster l'intensité des animations sans toucher aux composants métier.
  */
@@ -23,101 +23,110 @@
 .laundry-flow {
   position: absolute;
   border-radius: 999px;
-  filter: blur(28px);
-  opacity: .55;
-  will-change: transform;
+  filter: blur(18px);
+  opacity: .82;
+  will-change: transform, opacity;
 }
 
 .laundry-flow-a {
-  width: min(68vw, 880px);
-  height: min(68vw, 880px);
-  right: -24vw;
-  top: -30vw;
+  width: min(76vw, 980px);
+  height: min(76vw, 980px);
+  right: -20vw;
+  top: -24vw;
   background: radial-gradient(
     circle at 38% 42%,
-    color-mix(in srgb, var(--c-klein) 18%, transparent),
-    color-mix(in srgb, var(--c-klein) 7%, transparent) 42%,
+    color-mix(in srgb, var(--c-klein) 28%, transparent),
+    color-mix(in srgb, var(--c-klein) 12%, transparent) 42%,
     transparent 72%
   );
-  animation: laundry-drift-a 28s ease-in-out infinite alternate;
+  animation: laundry-drift-a 22s ease-in-out infinite alternate;
 }
 
 .laundry-flow-b {
-  width: min(56vw, 720px);
-  height: min(56vw, 720px);
-  left: -22vw;
-  top: 30vh;
+  width: min(64vw, 820px);
+  height: min(64vw, 820px);
+  left: -18vw;
+  top: 24vh;
   background: radial-gradient(
     circle at 56% 50%,
-    color-mix(in srgb, var(--c-violet) 9%, transparent),
-    color-mix(in srgb, var(--c-klein) 6%, transparent) 45%,
+    color-mix(in srgb, var(--c-violet) 18%, transparent),
+    color-mix(in srgb, var(--c-klein) 10%, transparent) 45%,
     transparent 73%
   );
-  opacity: .42;
-  animation: laundry-drift-b 34s ease-in-out infinite alternate;
+  opacity: .68;
+  animation: laundry-drift-b 25s ease-in-out infinite alternate;
 }
 
 .laundry-flow-c {
-  width: min(48vw, 620px);
-  height: min(48vw, 620px);
-  right: 6vw;
-  bottom: -28vw;
+  width: min(58vw, 740px);
+  height: min(58vw, 740px);
+  right: 2vw;
+  bottom: -22vw;
   background: radial-gradient(
     circle at 50% 44%,
-    color-mix(in srgb, var(--c-menthe) 12%, transparent),
-    color-mix(in srgb, var(--c-klein) 5%, transparent) 48%,
+    color-mix(in srgb, var(--c-menthe) 22%, transparent),
+    color-mix(in srgb, var(--c-klein) 10%, transparent) 48%,
     transparent 74%
   );
-  opacity: .44;
-  animation: laundry-drift-c 31s ease-in-out infinite alternate;
+  opacity: .66;
+  animation: laundry-drift-c 24s ease-in-out infinite alternate;
 }
 
 .laundry-sheen {
   position: absolute;
-  width: 62vw;
-  height: 16vh;
-  min-width: 540px;
-  left: 5vw;
-  top: 14vh;
+  width: 76vw;
+  height: 22vh;
+  min-width: 620px;
+  left: -4vw;
+  top: 10vh;
   border-radius: 50%;
   background: linear-gradient(
     100deg,
     transparent,
-    color-mix(in srgb, var(--c-klein) 5%, transparent),
+    color-mix(in srgb, var(--c-klein) 12%, transparent),
+    color-mix(in srgb, var(--c-surface) 12%, transparent),
     transparent
   );
-  filter: blur(28px);
-  opacity: .65;
+  filter: blur(20px);
+  opacity: .9;
   transform: rotate(-12deg);
-  animation: laundry-sheen 22s ease-in-out infinite alternate;
+  animation: laundry-sheen 15s ease-in-out infinite alternate;
 }
 
 .global-soap-field {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  opacity: .34;
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 11%, #000 88%, transparent 100%);
+  opacity: .64;
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 5%, #000 94%, transparent 100%);
 }
 
 .global-soap-field .soap-bubble {
-  border-color: color-mix(in srgb, var(--c-klein) 23%, transparent);
+  width: calc(var(--size) * 1.38);
+  height: calc(var(--size) * 1.38);
+  border-width: 1.5px;
+  border-color: color-mix(in srgb, var(--c-klein) 44%, transparent);
   background:
-    radial-gradient(circle at 30% 26%, rgba(255,255,255,.72) 0 6%, transparent 7%),
-    radial-gradient(circle at 70% 76%, color-mix(in srgb, var(--c-klein) 15%, transparent), transparent 47%),
-    color-mix(in srgb, var(--c-surface) 5%, transparent);
+    radial-gradient(circle at 30% 26%, rgba(255,255,255,.94) 0 7%, transparent 8%),
+    radial-gradient(circle at 70% 76%, color-mix(in srgb, var(--c-klein) 27%, transparent), transparent 47%),
+    radial-gradient(circle at 48% 44%, color-mix(in srgb, var(--c-surface) 18%, transparent), transparent 66%),
+    color-mix(in srgb, var(--c-surface) 10%, transparent);
   box-shadow:
-    inset -8px -10px 18px color-mix(in srgb, var(--c-klein) 5%, transparent),
-    0 16px 38px -30px color-mix(in srgb, var(--c-encre) 32%, transparent);
+    inset -12px -14px 24px color-mix(in srgb, var(--c-klein) 12%, transparent),
+    0 0 18px -6px color-mix(in srgb, var(--c-klein) 24%, transparent),
+    0 18px 42px -28px color-mix(in srgb, var(--c-encre) 40%, transparent);
+  backdrop-filter: blur(1.5px);
+  animation-name: global-bubble-rise;
+  animation-duration: calc(var(--duration) * .78);
 }
 
-/* Les écrans d'authentification possèdent déjà leur propre champ de bulles. */
+/* Les écrans d'authentification gardent leurs bulles locales, mais la couche globale reste visible. */
 body:has(.auth-shell) .global-soap-field {
-  opacity: .13;
+  opacity: .30;
 }
 
 body:has(.auth-shell) .laundry-flow-b {
-  opacity: .22;
+  opacity: .42;
 }
 
 /* Profondeur et micro-interactions globales */
@@ -194,17 +203,21 @@ textarea:focus {
   transform: translateX(2px);
 }
 
-/* Les halos déjà présents dans l'espace connecté deviennent vivants. */
+/* Les halos déjà présents dans l'espace connecté deviennent nettement perceptibles. */
 .app-ambient {
+  filter: blur(4px);
+  opacity: 1;
   will-change: transform, opacity;
 }
 
 .app-ambient-a {
-  animation: app-ambient-a 25s ease-in-out infinite alternate;
+  background: radial-gradient(circle, rgba(35, 185, 181, .24), transparent 68%);
+  animation: app-ambient-a 18s ease-in-out infinite alternate;
 }
 
 .app-ambient-b {
-  animation: app-ambient-b 29s ease-in-out infinite alternate;
+  background: radial-gradient(circle, rgba(89, 128, 194, .17), transparent 68%);
+  animation: app-ambient-b 21s ease-in-out infinite alternate;
 }
 
 .auth-panel {
@@ -223,87 +236,119 @@ textarea:focus {
 .auth-visual::after {
   content: "";
   position: absolute;
-  width: 70%;
-  height: 34%;
-  right: -18%;
-  top: 8%;
+  width: 82%;
+  height: 42%;
+  right: -22%;
+  top: 4%;
   border-radius: 50%;
-  background: linear-gradient(105deg, transparent, rgba(255,255,255,.06), transparent);
-  filter: blur(18px);
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,.11), transparent);
+  filter: blur(14px);
   transform: rotate(-16deg);
-  animation: auth-light-pass 16s ease-in-out infinite alternate;
+  animation: auth-light-pass 11s ease-in-out infinite alternate;
   pointer-events: none;
 }
 
+@keyframes global-bubble-rise {
+  0% {
+    transform: translate3d(0, 0, 0) scale(.76);
+    opacity: 0;
+  }
+  8% {
+    opacity: .88;
+  }
+  34% {
+    transform: translate3d(calc(var(--drift) * -.65), -38vh, 0) scale(.94);
+    opacity: .82;
+  }
+  66% {
+    transform: translate3d(calc(var(--drift) * 1.65), -76vh, 0) scale(1.08);
+    opacity: .72;
+  }
+  100% {
+    transform: translate3d(calc(var(--drift) * -.9), -124vh, 0) scale(1.18);
+    opacity: 0;
+  }
+}
+
 @keyframes laundry-drift-a {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  55%  { transform: translate3d(-5vw, 7vh, 0) scale(1.07); }
-  100% { transform: translate3d(-1vw, 13vh, 0) scale(.96); }
+  0%   { transform: translate3d(0, 0, 0) scale(1); opacity: .72; }
+  52%  { transform: translate3d(-8vw, 9vh, 0) scale(1.11); opacity: 1; }
+  100% { transform: translate3d(-2vw, 17vh, 0) scale(.95); opacity: .78; }
 }
 
 @keyframes laundry-drift-b {
-  0%   { transform: translate3d(0, 0, 0) scale(.96); }
-  48%  { transform: translate3d(7vw, -8vh, 0) scale(1.05); }
-  100% { transform: translate3d(3vw, 7vh, 0) scale(1); }
+  0%   { transform: translate3d(0, 0, 0) scale(.94); opacity: .62; }
+  48%  { transform: translate3d(10vw, -10vh, 0) scale(1.10); opacity: .9; }
+  100% { transform: translate3d(4vw, 9vh, 0) scale(1.02); opacity: .68; }
 }
 
 @keyframes laundry-drift-c {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  50%  { transform: translate3d(-8vw, -8vh, 0) scale(1.08); }
-  100% { transform: translate3d(3vw, -13vh, 0) scale(.98); }
+  0%   { transform: translate3d(0, 0, 0) scale(1); opacity: .62; }
+  50%  { transform: translate3d(-11vw, -10vh, 0) scale(1.12); opacity: .92; }
+  100% { transform: translate3d(5vw, -17vh, 0) scale(.97); opacity: .7; }
 }
 
 @keyframes laundry-sheen {
-  from { transform: translate3d(-7vw, 0, 0) rotate(-12deg) scale(.92); opacity: .25; }
-  to   { transform: translate3d(22vw, 12vh, 0) rotate(-7deg) scale(1.08); opacity: .72; }
+  from { transform: translate3d(-10vw, 0, 0) rotate(-12deg) scale(.9); opacity: .34; }
+  to   { transform: translate3d(30vw, 16vh, 0) rotate(-6deg) scale(1.14); opacity: .95; }
 }
 
 @keyframes app-ambient-a {
-  from { transform: translate3d(0, 0, 0) scale(.96); opacity: .72; }
-  to   { transform: translate3d(-7vw, 8vh, 0) scale(1.08); opacity: 1; }
+  from { transform: translate3d(0, 0, 0) scale(.94); opacity: .78; }
+  to   { transform: translate3d(-10vw, 10vh, 0) scale(1.14); opacity: 1; }
 }
 
 @keyframes app-ambient-b {
-  from { transform: translate3d(0, 0, 0) scale(1); opacity: .65; }
-  to   { transform: translate3d(8vw, -6vh, 0) scale(1.1); opacity: .95; }
+  from { transform: translate3d(0, 0, 0) scale(.98); opacity: .70; }
+  to   { transform: translate3d(11vw, -9vh, 0) scale(1.16); opacity: 1; }
 }
 
 @keyframes auth-light-pass {
-  from { transform: translate3d(-12%, 0, 0) rotate(-16deg); opacity: .22; }
-  to   { transform: translate3d(-52%, 76%, 0) rotate(-10deg); opacity: .68; }
+  from { transform: translate3d(-6%, 0, 0) rotate(-16deg); opacity: .32; }
+  to   { transform: translate3d(-58%, 82%, 0) rotate(-9deg); opacity: .86; }
 }
 
 @media (max-width: 767px) {
   .global-soap-field {
-    opacity: .22;
+    opacity: .52;
+  }
+
+  body:has(.auth-shell) .global-soap-field {
+    opacity: .24;
+  }
+
+  .global-soap-field .soap-bubble {
+    width: calc(var(--size) * 1.18);
+    height: calc(var(--size) * 1.18);
   }
 
   .laundry-flow {
-    filter: blur(34px);
+    filter: blur(24px);
   }
 
   .laundry-flow-a {
-    width: 130vw;
-    height: 130vw;
-    right: -75vw;
-    top: -45vw;
+    width: 140vw;
+    height: 140vw;
+    right: -72vw;
+    top: -40vw;
   }
 
   .laundry-flow-b {
-    width: 112vw;
-    height: 112vw;
-    left: -70vw;
+    width: 120vw;
+    height: 120vw;
+    left: -65vw;
   }
 
   .laundry-flow-c {
-    width: 108vw;
-    height: 108vw;
-    right: -55vw;
-    bottom: -52vw;
+    width: 116vw;
+    height: 116vw;
+    right: -50vw;
+    bottom: -48vw;
   }
 
   .laundry-sheen {
-    opacity: .35;
+    min-width: 420px;
+    opacity: .68;
   }
 
   .panel:hover,
