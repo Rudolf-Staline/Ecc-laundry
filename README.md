@@ -1,272 +1,387 @@
 <div align="center">
 
-# TAMBOUR
+# Laundry
 
-**La buanderie de l'École Centrale Casablanca.**
+**Plateforme indépendante de réservation des machines de buanderie destinée aux étudiants de l'École Centrale Casablanca.**
 
-Réserver une machine pour une heure ou deux, pointer sur place, récupérer son
-linge à l'heure. Quatre réservations par semaine et par étudiant — vérifiées
-par la base de données, pas par le navigateur.
+Consulter les machines disponibles, réserver un créneau, suivre le planning de la buanderie et gérer ses réservations depuis une interface unique.
 
 </div>
 
 ---
 
-## Ce que ça fait
+> [!IMPORTANT]
+> **Laundry est un projet indépendant et non officiel.**
+>
+> Il n'est ni développé, ni édité, ni administré par l'École Centrale Casablanca et ne constitue pas un service institutionnel de l'École. L'utilisation du nom de l'établissement sert uniquement à identifier la communauté à laquelle l'application est destinée.
 
-| | |
-|---|---|
-| **Accès centralien** | Seules les adresses `prenom.nom@centrale-casablanca.ma` créent un compte. Contrôle appliqué par un trigger sur `auth.users` : impossible à contourner depuis le client. Inscription et connexion par e-mail et mot de passe, avec réinitialisation par lien. |
-| **Créneaux d'1 h ou 2 h** | L'étudiant choisit la longueur de son créneau ; une réservation compte pour une, quelle que soit sa durée. La grille est ouverte 24 h/24. |
-| **Quota de 4 par semaine** | Compté sur la semaine ISO en heure de Casablanca. Modifiable par l'admin depuis l'interface, sans redéploiement. Une annulation anticipée ne consomme rien ; une absence, si. |
-| **Horizon de 24 h glissantes** | Un créneau devient réservable 24 h avant son début. Personne ne bloque la semaine entière le lundi matin. |
-| **La nuit, hors quota** | Les créneaux de 00 h à 06 h ne se décomptent pas : c'est la soupape de ceux qui ont épuisé leurs quatre réservations. Ils restent réservables quota épuisé, dans le même horizon de 24 h que les autres. |
-| **Planning en direct** | Grille machines × créneaux, mise à jour par Supabase Realtime. Un créneau pris disparaît de l'écran des autres dans la seconde. |
-| **Zéro double réservation** | Contrainte d'exclusion GiST sur `(machine, intervalle)`. Deux clics simultanés sur le même créneau : un seul passe, garanti par le moteur, pas par une vérification applicative. |
-| **File d'attente** | S'inscrire sur un créneau complet ; à la première annulation, la machine est attribuée automatiquement au premier de la file. |
-| **Signalement de panne** | Trois signalements par des étudiants distincts retirent la machine du planning d'elle-même. |
-| **Chaque réservation a une référence** | `TB-1042`, lisible et citable. Une fiche par réservation : détail du créneau, compte à rebours, déroulé de la réservée à la terminée, et les actions au bon moment. |
-| **Historique filtrable** | Toutes ses réservations passées, cherchables par machine ou référence, filtrables par état et par buanderie, avec le total d'heures. |
-| **Motif de réservation** | Courant, draps, sport, délicat, volumineux — renseigné à la réservation, utile pour l'entretien du parc. |
-| **Console admin** | Machines et buanderies (CRUD complet), comptes, signalements, annonces, réglages. |
-| **Le reste** | Affluence jour × heure sur 8 semaines, statistiques personnelles, empreinte eau/électricité, export iCal, PWA installable, thème clair et sombre. |
+## Fonctionnalités
 
-## Architecture
+### Réservation
 
-```
-Navigateur ─┬─ Server Components ── Supabase (session utilisateur, RLS active)
-            └─ Client Components ── Supabase Realtime + RPC
+- réservation d'un lave-linge ou d'un sèche-linge ;
+- créneaux de **1 h ou 2 h** ;
+- réservation possible dans un horizon glissant de **24 heures** ;
+- quota hebdomadaire configurable ;
+- les créneaux de nuit sont soumis au **même quota** que les autres créneaux ;
+- contrôle des collisions directement en base de données ;
+- mise à jour du planning en temps réel avec Supabase Realtime.
 
-                         ┌──────────────────────────────────┐
-Vercel Cron ── /api/cron │  PostgreSQL                      │
-  toutes les 10 min      │  • triggers = règles métier      │
-                         │  • RLS + privilèges par colonne  │
-                         │  • contrainte GiST anti-collision│
-                         └──────────────────────────────────┘
-```
+Chaque réservation possède une référence unique permettant de la retrouver rapidement.
 
-**Le principe :** aucune règle métier ne vit dans le navigateur. Le quota, les
-horaires, le domaine e-mail, l'unicité des créneaux sont posés dans PostgreSQL.
-L'interface les affiche et traduit les refus — elle ne les décide pas.
+### Calendrier
 
-- **Next.js 16** (App Router, Turbopack) · React 19 · TypeScript strict
-- **Tailwind CSS v4**, jetons de couleur validés WCAG AA en clair et en sombre
-- **Supabase** — Postgres, Auth, Realtime, RLS
-- Aucune dépendance d'animation : tout est en CSS
+La page **Calendrier** donne une vue journalière de l'activité de la buanderie :
+
+- une colonne par machine ;
+- visualisation des créneaux actuellement réservés ;
+- navigation entre les journées ;
+- filtrage par machine ;
+- sélection de la buanderie lorsqu'il en existe plusieurs.
+
+Cette vue permet de comprendre rapidement l'occupation générale du parc sans afficher les informations privées des autres utilisateurs.
+
+### Machines
+
+Les étudiants peuvent consulter l'état des machines disponibles et signaler une panne.
+
+Plusieurs signalements indépendants peuvent entraîner automatiquement le retrait temporaire d'une machine du planning afin d'éviter de nouvelles réservations sur un équipement potentiellement défectueux.
+
+### File d'attente
+
+Lorsqu'un créneau n'est plus disponible, un étudiant peut rejoindre sa file d'attente.
+
+En cas d'annulation, le créneau peut être réattribué automatiquement selon l'ordre d'inscription.
+
+### Historique
+
+Chaque utilisateur dispose d'un historique de ses réservations avec notamment :
+
+- la machine utilisée ;
+- la buanderie ;
+- la date et l'heure ;
+- la durée ;
+- le statut ;
+- la référence de réservation.
+
+### Administration
+
+Une interface dédiée permet aux administrateurs de gérer :
+
+- les buanderies ;
+- les machines ;
+- les étudiants ;
+- les signalements de panne ;
+- les annonces ;
+- les paramètres généraux de réservation.
+
+Les règles sensibles ne dépendent pas de l'interface cliente : elles sont appliquées au niveau de PostgreSQL et des fonctions Supabase.
 
 ---
 
-## Mise en route
+## Authentification
 
-### 1. Créer le projet Supabase
+L'accès est réservé aux comptes utilisant une adresse institutionnelle autorisée.
 
-[database.new](https://database.new) → notez la région (Europe pour la latence
-depuis le Maroc) et le mot de passe de la base.
+La connexion repose sur :
 
-### 2. Appliquer les migrations
+- **e-mail + mot de passe** ;
+- validation de l'adresse lors de l'inscription ;
+- récupération du mot de passe par code à usage unique.
 
-**Option A — script automatique** (recommandé) :
+La restriction du domaine e-mail est également contrôlée côté base de données afin qu'elle ne puisse pas être contournée simplement depuis le navigateur.
 
-```bash
-cp .env.example .env.local     # renseignez les clés, voir étape 3
-npm install
-npm run db:setup               # applique 0001 → 0007 dans l'ordre
+---
+
+## Architecture
+
+```text
+┌──────────────────────────────┐
+│          Navigateur          │
+│ Next.js / React / TypeScript │
+└──────────────┬───────────────┘
+               │
+      ┌────────┴─────────┐
+      │                  │
+      ▼                  ▼
+Server Components   Client Components
+      │                  │
+      │            Supabase Realtime
+      │                  │
+      └────────┬─────────┘
+               ▼
+┌──────────────────────────────┐
+│           Supabase           │
+│                              │
+│  PostgreSQL                  │
+│  Auth                        │
+│  Realtime                    │
+│  Row Level Security          │
+│  Triggers / RPC              │
+└──────────────────────────────┘
+               ▲
+               │
+        entretien périodique
+               │
+        ┌──────┴──────┐
+        │ Vercel Cron │
+        └─────────────┘
 ```
 
-Le script demande la *connection string* de la base
-(Supabase → Project Settings → Database → Connection string → URI).
+Le principe général est simple : **les règles métier importantes sont garanties par la base de données, pas seulement par l'interface.**
 
-**Option B — à la main :** Supabase → SQL Editor → coller le contenu de chaque
-fichier de `supabase/migrations/` **dans l'ordre 0001 → 0007**, et exécuter.
+Cela concerne notamment :
 
-### 3. Variables d'environnement
+- les quotas ;
+- les droits d'accès ;
+- les horaires ;
+- les collisions entre réservations ;
+- les transitions d'état ;
+- les permissions administrateur.
 
-Dans `.env.local` (développement) puis dans Vercel → Settings → Environment Variables :
+---
 
-| Variable | Où la trouver |
+## Stack technique
+
+| Technologie | Utilisation |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → Data API |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | idem |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API Keys — **secret**, serveur uniquement |
-| `NEXT_PUBLIC_SITE_URL` | l'URL publique, ex. `https://tambour.vercel.app` |
-| `CRON_SECRET` | `openssl rand -hex 32` |
+| **Next.js 16** | Framework web, App Router et Server Components |
+| **React 19** | Interface utilisateur |
+| **TypeScript** | Typage statique |
+| **Tailwind CSS 4** | Styles et responsive design |
+| **Supabase Auth** | Authentification |
+| **PostgreSQL** | Stockage et règles métier |
+| **Supabase Realtime** | Synchronisation du planning |
+| **Row Level Security** | Isolation et contrôle d'accès |
+| **Vercel** | Hébergement et tâches planifiées |
 
-### 4. Régler l'authentification Supabase
+Les animations de l'interface sont principalement réalisées en CSS afin de conserver une application légère.
 
-Authentication → **URL Configuration** :
-- *Site URL* : votre domaine de production
-- *Redirect URLs* : ajoutez `https://votre-domaine/auth/callback` et
-  `http://localhost:3000/auth/callback`
+---
 
-L'authentification se fait par e-mail et mot de passe (`signUp` /
-`signInWithPassword`). Deux gabarits demandent une modification, pour la
-même raison :
+## Installation
 
-- Authentication → **Settings** → *Enable email confirmations* : à activer si
-  vous voulez qu'un lien de confirmation soit exigé avant le premier login.
-  Le domaine `@centrale-casablanca.ma` est de toute façon imposé côté base
-  (trigger sur `auth.users`, non contournable depuis le client) : ce
-  réglage n'ajoute qu'une vérification que la boîte mail existe bien, pas un
-  filtre supplémentaire. Le laisser désactivé rend l'inscription immédiate.
-- Les gabarits ***Confirm signup*** (inscription) et ***Reset Password***
-  (mot de passe oublié) ne contiennent par défaut qu'un lien cliquable
-  (`{{ .ConfirmationURL }}`) — **à modifier pour y ajouter `{{ .Token }}` et
-  retirer le lien** sur les deux. Sans ça, un scanner de liens côté
-  messagerie institutionnelle (type *Safe Links*) peut pré-visiter le lien
-  et consommer le jeton à usage unique avant que l'étudiant ne clique
-  dessus — l'appli gère ce cas depuis les écrans « inscription » et « mot
-  de passe oublié » en demandant un code plutôt qu'en misant sur le lien :
+### Prérequis
 
-  ```html
-  <h2>Confirmez votre inscription</h2>
-  <p>Entrez ce code sur le site :</p>
-  <p style="font-size:32px;letter-spacing:8px;font-family:monospace">{{ .Token }}</p>
-  <p>Le code expire dans 10 minutes.</p>
-  ```
+- Node.js récent ;
+- npm ;
+- un projet Supabase ;
+- PostgreSQL local si vous souhaitez lancer les tests de base de données.
 
-  ```html
-  <h2>Réinitialisation de votre mot de passe</h2>
-  <p>Entrez ce code sur le site :</p>
-  <p style="font-size:32px;letter-spacing:8px;font-family:monospace">{{ .Token }}</p>
-  <p>Le code expire dans 10 minutes. Si vous n'êtes pas à l'origine de cette
-  demande, ignorez cet e-mail.</p>
-  ```
-
-> `/auth/callback` échange un code d'URL contre une session puis renvoie
-> vers `/tableau` — il ne reste utile que si un lien de secours venait à
-> fonctionner malgré tout dans l'un des deux gabarits ci-dessus, d'où
-> l'importance de garder les *Redirect URLs* déclarées plus haut.
-> Inscription comme mot de passe oublié se règlent en temps normal
-> entièrement par code, sans quitter l'écran de départ.
-
-**Recommandé avant toute mise en service réelle** — Authentication →
-**Settings** → *SMTP Settings* → activez *Enable Custom SMTP*.
-
-Sans ça, Supabase envoie les e-mails via son propre relais, plafonné à
-**quelques envois par heure** — correct pour tester seul. Le mot de passe
-change la donne par rapport à un code à usage unique : un e-mail n'est plus
-envoyé à chaque connexion, seulement à l'inscription (si la confirmation est
-activée) et lors d'une réinitialisation. Le plafond reste malgré tout
-atteignable un jour de rentrée si plusieurs étudiants s'inscrivent à la même
-heure — `email rate limit exceeded` est le message qui en résulte.
-
-Un fournisseur externe suffit largement pour une résidence — [Resend](https://resend.com)
-a un palier gratuit confortable et se déclare en cinq champs (hôte, port,
-utilisateur, mot de passe, adresse d'expédition) ; Brevo, SendGrid et Postmark
-conviennent tout autant si l'École en utilise déjà un.
-
-### 5. Déployer sur Vercel
+### Cloner le dépôt
 
 ```bash
-npx vercel            # première fois : lie le projet
-npx vercel --prod
+git clone https://github.com/Rudolf-Staline/Ecc-laundry.git
+cd Ecc-laundry
+npm install
 ```
 
-Ou : *Add New → Project* depuis le dépôt GitHub. Le `vercel.json` déclare
-le cron d'entretien (toutes les 10 minutes) — il n'y a rien d'autre à configurer.
+### Variables d'environnement
 
-### 6. Se donner les droits d'administrateur
+Copiez le fichier d'exemple :
 
-Connectez-vous une première fois sur le site, puis dans le **SQL Editor** de
-Supabase :
-
-```sql
-select public.promote_admin('prenom.nom@centrale-casablanca.ma');
+```bash
+cp .env.example .env.local
 ```
 
-> Cette fonction n'est **pas** exposée au web : seul `service_role` ou l'éditeur
-> SQL peut l'appeler. C'est délibéré — sinon le premier étudiant à la découvrir
-> deviendrait administrateur. Une fois le premier admin en place, les suivants
-> se nomment depuis *Admin → Étudiants*.
+Puis renseignez :
 
-### 7. Renseigner le parc
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+CRON_SECRET=
+```
 
-*Admin → Buanderies* pour créer les salles (horaires, pas de la grille, créneau
-le plus long), puis *Admin → Machines*.
+`SUPABASE_SERVICE_ROLE_KEY` est une clé sensible et ne doit jamais être exposée côté client.
 
-Les buanderies sont ouvertes en continu par défaut (`00:00` → `24:00`), ce qui
-rend la tranche de nuit disponible. Vous pouvez les restreindre : la règle des
-horaires est alors appliquée comme les autres.
+---
 
-Les migrations installent deux buanderies de démonstration avec six machines
-chacune — supprimez-les ou renommez-les.
+## Base de données
+
+Les migrations SQL se trouvent dans :
+
+```text
+supabase/migrations/
+```
+
+Elles peuvent être appliquées automatiquement avec :
+
+```bash
+npm run db:setup
+```
+
+Le script demande la chaîne de connexion PostgreSQL du projet Supabase.
+
+Il est également possible d'exécuter les migrations manuellement depuis le **SQL Editor** de Supabase en respectant leur ordre.
+
+---
+
+## Configuration de Supabase Auth
+
+Dans :
+
+```text
+Authentication → URL Configuration
+```
+
+configurez l'URL publique du site et ajoutez notamment les redirections :
+
+```text
+http://localhost:3000/auth/callback
+https://votre-domaine.tld/auth/callback
+```
+
+### Confirmation d'inscription
+
+Laundry utilise un **code saisi par l'utilisateur** plutôt qu'un lien de confirmation comme mécanisme principal.
+
+Le template Supabase *Confirm signup* peut par exemple contenir :
+
+```html
+<h2>Confirmez votre inscription</h2>
+<p>Entrez ce code sur Laundry :</p>
+<p style="font-size:32px;letter-spacing:8px;font-family:monospace">
+  {{ .Token }}
+</p>
+<p>Ce code est temporaire.</p>
+```
+
+### Mot de passe oublié
+
+Le même principe est utilisé pour la récupération du compte :
+
+```html
+<h2>Réinitialisation de votre mot de passe</h2>
+<p>Entrez ce code sur Laundry :</p>
+<p style="font-size:32px;letter-spacing:8px;font-family:monospace">
+  {{ .Token }}
+</p>
+<p>Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail.</p>
+```
+
+Cette approche évite de dépendre exclusivement de liens à usage unique susceptibles d'être préouverts par certains systèmes de sécurité de messagerie.
+
+Pour un déploiement réel avec plusieurs utilisateurs, l'utilisation d'un **SMTP externe** est recommandée plutôt que le relais de test fourni par défaut par Supabase.
 
 ---
 
 ## Développement
 
+Lancer le serveur :
+
 ```bash
-npm run dev        # http://localhost:3000
-npm run build      # build de production
-npm run typecheck  # TypeScript
-npm run lint       # ESLint
-npm run db:test    # rejoue les migrations + la suite de tests métier
+npm run dev
 ```
 
-`npm run db:test` a besoin d'un PostgreSQL local (≥ 14) avec `btree_gist`. Il
-crée une base jetable, applique les dix migrations et passe **54 vérifications** :
-domaine e-mail, longueur des créneaux, quota, horizon glissant, règle des
-créneaux de nuit, anti-collision, file d'attente, clôture automatique des
-cycles, références, motifs et cloisonnement des
-droits — y compris les tentatives d'élévation de privilèges, par un étudiant
-comme par un visiteur anonyme. Une erreur SQL survenue hors assertion fait échouer la suite : sans
-ce garde-fou, une section entière pourrait ne rien exécuter sans faire rougir
-le total. Les créneaux visés sont calculés en décalage de `now()` : la suite rend
-le même verdict à 3 h du matin qu'à midi.
+L'application est ensuite disponible sur `http://localhost:3000`.
 
-### Structure
+### Vérifications
 
+```bash
+npm run typecheck
+npm run lint
+npm run build
 ```
+
+### Tests de la base de données
+
+```bash
+npm run db:test
+```
+
+Les tests vérifient notamment les règles métier et les restrictions de sécurité directement au niveau PostgreSQL.
+
+---
+
+## Déploiement
+
+Le projet est prévu pour être déployé sur **Vercel**.
+
+### Avec Vercel CLI
+
+```bash
+npx vercel
+npx vercel --prod
+```
+
+### Depuis GitHub
+
+Le dépôt peut également être importé directement depuis l'interface Vercel.
+
+Ajoutez ensuite dans les variables d'environnement du projet les mêmes valeurs que celles définies dans `.env.local`.
+
+---
+
+## Structure du projet
+
+```text
 app/
-  page.tsx                  redirige vers /connexion
-  connexion/                connexion par e-mail et mot de passe
-  inscription/              création de compte
-  reinitialiser-mot-de-passe/  nouveau mot de passe (lien reçu par e-mail)
-  (app)/
-    tableau/                tableau de bord, cycles en cours
-    reserver/               la grille de réservation
-    machines/               parc en direct, signalement de panne
-    historique/             réservations passées, filtres et totaux
-    reservation/[reference] fiche d'une réservation, déroulé, actions
-    calendrier/             planning du jour par machine, en grille horaire
-    compte/                 préférences, lien iCal
-    admin/                  console d'administration
-  api/
-    agenda/[token]/         flux iCal personnel
-    cron/                   entretien périodique
+├── connexion/
+├── inscription/
+├── reinitialiser-mot-de-passe/
+│
+├── (app)/
+│   ├── tableau/
+│   ├── reserver/
+│   ├── calendrier/
+│   ├── machines/
+│   ├── historique/
+│   ├── reservation/
+│   ├── compte/
+│   └── admin/
+│
+└── api/
+    ├── agenda/
+    └── cron/
+
+components/
 lib/
-  time.ts                   arithmétique horaire Africa/Casablanca
-  errors.ts                 SQLSTATE → message lisible
-  hooks.ts                  thème, localStorage, capacités navigateur
-supabase/migrations/        schéma, règles, RLS, vues, données initiales
-proxy.ts                    rafraîchissement de session (ex-middleware)
+
+supabase/
+└── migrations/
+
+scripts/
 ```
 
 ---
 
 ## Sécurité
 
-- **RLS active sur toutes les tables.** Un étudiant lit son profil, pas ceux des
-  autres.
-- **Privilèges par colonne.** `authenticated` n'a le droit `UPDATE` que sur
-  `locale`, `theme`, `notify_reminders` et `promo`. Le rôle n'est pas
-  modifiable — il n'y a pas de politique à contourner, le privilège n'existe
-  pas.
-- **Aucune politique `UPDATE` sur `bookings` pour les étudiants.** Les
-  transitions passent par des fonctions `SECURITY DEFINER` qui vérifient
-  elles-mêmes qui appelle.
-- **`EXECUTE` révoqué à `PUBLIC`** sur les fonctions d'entretien et d'amorçage —
-  PostgreSQL l'accorde par défaut, révoquer sur `authenticated` seul ne suffit
-  pas.
-- **`/api/cron`** exige `Authorization: Bearer $CRON_SECRET`, et refuse tout
-  net si le secret n'est pas configuré.
-- **Le flux iCal** est authentifié par un jeton aléatoire par étudiant.
-- **Les mots de passe** sont hachés et vérifiés entièrement côté Supabase Auth
-  (GoTrue) — rien ne transite ni ne se compare côté application. Le
-  rate-limiting sur les tentatives de connexion est géré au même endroit.
+Plusieurs protections sont appliquées directement côté serveur et base de données :
+
+- **Row Level Security** sur les données utilisateurs ;
+- séparation des privilèges étudiant / administrateur ;
+- validation du domaine e-mail ;
+- contrôle des quotas en base ;
+- prévention des doubles réservations ;
+- opérations sensibles réalisées via des fonctions contrôlées ;
+- protection de l'endpoint Cron par secret ;
+- gestion des mots de passe entièrement déléguée à Supabase Auth.
+
+Aucune clé `service_role` ne doit être exposée au navigateur.
 
 ---
 
-<div align="center">
-<sub>École Centrale Casablanca</sub>
-</div>
+## Statut du projet
+
+Laundry est actuellement un **projet indépendant destiné à faciliter l'organisation de la buanderie étudiante**.
+
+Il peut être adapté à d'autres résidences ou établissements en modifiant notamment :
+
+- le domaine e-mail autorisé ;
+- les buanderies ;
+- le parc de machines ;
+- les horaires ;
+- les quotas de réservation.
+
+---
+
+## Affiliation
+
+Ce dépôt est un projet indépendant.
+
+**Laundry n'est pas un produit officiel de l'École Centrale Casablanca et n'implique aucune approbation, certification ou responsabilité de sa part.**
+
+Les marques, noms ou références à des établissements tiers restent la propriété de leurs détenteurs respectifs.
