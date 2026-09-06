@@ -100,8 +100,9 @@ Authentication → **URL Configuration** :
   `http://localhost:3000/auth/callback`
 
 L'authentification se fait par e-mail et mot de passe (`signUp` /
-`signInWithPassword`) — les gabarits par défaut de Supabase conviennent tel
-quels, aucun `{{ .Token }}` à y ajouter :
+`signInWithPassword`) — le gabarit *Confirm signup* par défaut convient tel
+quel si vous activez la confirmation par e-mail, mais celui de
+réinitialisation demande une modification :
 
 - Authentication → **Settings** → *Enable email confirmations* : à activer si
   vous voulez qu'un lien de confirmation soit exigé avant le premier login.
@@ -109,13 +110,30 @@ quels, aucun `{{ .Token }}` à y ajouter :
   (trigger sur `auth.users`, non contournable depuis le client) : ce
   réglage n'ajoute qu'une vérification que la boîte mail existe bien, pas un
   filtre supplémentaire. Le laisser désactivé rend l'inscription immédiate.
-- Le gabarit ***Reset Password*** sert au lien de « mot de passe oublié » —
-  par défaut il pointe déjà vers `{{ .ConfirmationURL }}`, rien à modifier.
+- Le gabarit ***Reset Password*** sert au « mot de passe oublié ». Par défaut
+  il ne contient qu'un lien cliquable (`{{ .ConfirmationURL }}`) — **à
+  modifier pour y ajouter `{{ .Token }}` et retirer le lien**, exactement
+  comme pour *Magic Link*/*Confirm signup* à l'époque du code à six chiffres
+  (cf. historique du dépôt). Sans ça, un scanner de liens côté messagerie
+  institutionnelle (type *Safe Links*) peut pré-visiter le lien et consommer
+  le jeton à usage unique avant que l'étudiant ne clique dessus — l'appli
+  gère ce cas depuis l'écran « mot de passe oublié » en demandant un code
+  plutôt qu'en misant sur le lien :
 
-> Les deux gabarits redirigent vers `/auth/callback`, qui échange le code
-> contre une session puis renvoie vers `/tableau` (confirmation) ou
-> `/reinitialiser-mot-de-passe` (mot de passe oublié) — d'où l'importance des
-> *Redirect URLs* déclarées ci-dessus.
+  ```html
+  <h2>Réinitialisation de votre mot de passe</h2>
+  <p>Entrez ce code sur le site :</p>
+  <p style="font-size:32px;letter-spacing:8px;font-family:monospace">{{ .Token }}</p>
+  <p>Le code expire dans 10 minutes. Si vous n'êtes pas à l'origine de cette
+  demande, ignorez cet e-mail.</p>
+  ```
+
+> Le gabarit *Confirm signup* (si activé) redirige vers `/auth/callback`, qui
+> échange le code contre une session puis renvoie vers `/tableau` — d'où
+> l'importance des *Redirect URLs* déclarées ci-dessus. Le mot de passe
+> oublié, lui, se règle entièrement par code depuis l'écran de connexion :
+> `/reinitialiser-mot-de-passe` ne sert que si le lien de secours venait à
+> fonctionner malgré tout.
 
 **Recommandé avant toute mise en service réelle** — Authentication →
 **Settings** → *SMTP Settings* → activez *Enable Custom SMTP*.
