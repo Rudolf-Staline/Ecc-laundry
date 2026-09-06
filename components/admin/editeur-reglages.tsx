@@ -37,7 +37,7 @@ export function EditeurReglages({ reglages }: { reglages: Setting[] }) {
   }
 
   return (
-    <div className="grid gap-2.5">
+    <div className="grid gap-2.5 reveal-stagger">
       {reglages.map((r) => (
         <div key={r.key} className="panel p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">

@@ -93,7 +93,7 @@ export function GestionAnnonces({ annonces }: { annonces: Announcement[] }) {
         </Bouton>
       </form>
 
-      <ul className="grid gap-2.5">
+      <ul className="grid gap-2.5 reveal-stagger">
         {annonces.map((a) => (
           <li key={a.id} className={`panel p-5 ${a.is_active ? "" : "opacity-55"}`}>
             <div className="flex flex-wrap items-start justify-between gap-3">

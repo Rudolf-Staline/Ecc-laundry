@@ -90,7 +90,11 @@ export default async function PageTableau() {
         <section className="grid gap-3 sm:grid-cols-2">
           {enCours.map((r) => (
             <article key={r.id} className="panel p-5 flex items-center gap-5">
-              <Tambour size={54} spinning="cycle" className="text-klein shrink-0" />
+              <Tambour
+                size={54}
+                spinning="cycle"
+                className={`shrink-0 ${r.kind === "washer" ? "text-cat-lavage" : "text-cat-sechage"}`}
+              />
               <div className="min-w-0 flex-1">
                 <Etiquette ton="occupe" point pulse>cycle en cours</Etiquette>
                 <p className="display text-lg text-chalk mt-2 truncate">{r.machine_name}</p>

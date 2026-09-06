@@ -62,7 +62,7 @@ export function GestionEtudiants({
         {profils.length === 200 && " (200 premiers)"}
       </p>
 
-      <ul className="grid gap-2">
+      <ul className="grid gap-2 reveal-stagger">
         {profils.map((p) => (
           <li key={p.id} className="panel p-4 flex flex-wrap items-center gap-3">
             <span className="w-8 h-8 rounded-full bg-klein/15 border border-klein/35 grid place-items-center
