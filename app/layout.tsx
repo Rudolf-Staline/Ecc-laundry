@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Roboto, JetBrains_Mono } from "next/font/google";
 import { NOM_APP, NOM_ECOLE, urlSite } from "@/lib/config";
 import { FournisseurToasts } from "@/components/toast";
 import "./globals.css";
 
-const corps = Inter({
+const corps = Roboto({
   subsets: ["latin"],
   variable: "--f-body",
   display: "swap",
+  weight: ["400", "500", "700"],
 });
 
 const mono = JetBrains_Mono({

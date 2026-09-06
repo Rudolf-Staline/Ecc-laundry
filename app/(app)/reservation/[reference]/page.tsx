@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { exigerProfil } from "@/lib/supabase/session";
 import { creerClientServeur } from "@/lib/supabase/server";
-import { Etiquette, Bouton } from "@/components/ui";
+import { Etiquette } from "@/components/ui";
 import { BoutonAnnuler } from "@/components/bouton-annuler";
 import { CompteARebours } from "@/components/compte-a-rebours";
 import { Tambour } from "@/components/marque";
@@ -168,12 +168,11 @@ export default async function PageReservation({
         </ol>
       </section>
 
-      <div className="flex flex-wrap gap-2">
-        {annulable && <BoutonAnnuler idReservation={r.id} libelle={r.machine_name} />}
-        <Link href={`/reclamations/nouvelle?reservation=${r.reference}`}>
-          <Bouton variante="secondaire">Signaler un problème</Bouton>
-        </Link>
-      </div>
+      {annulable && (
+        <div className="flex flex-wrap gap-2">
+          <BoutonAnnuler idReservation={r.id} libelle={r.machine_name} />
+        </div>
+      )}
     </div>
   );
 }

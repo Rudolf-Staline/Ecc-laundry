@@ -2,37 +2,81 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Etiquette, Vide } from "@/components/ui";
+import { Bouton, Vide } from "@/components/ui";
 import {
-  dayKey, fmtDay, fmtTime, isoDayOfWeek, JOURS_COURTS, localParts, MOIS, zonedToUtc,
+  addDays, dayKey, fmtDayShort, fmtTime, isoDayOfWeek, JOURS_COURTS, localParts, startOfWeek,
 } from "@/lib/time";
 import { LIBELLES_STATUT, type BookingStatus, type HistoryRow } from "@/lib/types";
 
-const TONS: Record<BookingStatus, "libre" | "occupe" | "panne" | "neutre" | "info"> = {
-  booked: "info",
-  completed: "libre",
-  cancelled: "neutre",
-  cancelled_late: "neutre",
+const HAUTEUR_HEURE = 48;
+const HEURES = Array.from({ length: 24 }, (_, i) => i);
+
+const BLOC: Record<BookingStatus, string> = {
+  booked: "bg-klein-fond border-klein/45 text-klein-2 hover:border-klein",
+  completed: "bg-menthe-fond border-menthe/45 text-menthe hover:border-menthe",
+  cancelled: "bg-ink-2 border-line-hi text-dim hover:border-dim",
+  cancelled_late: "bg-ember-fond border-ember/45 text-ember hover:border-ember",
 };
 
-const POINTS: Record<BookingStatus, string> = {
+const POINT: Record<BookingStatus, string> = {
   booked: "bg-klein",
-  completed: "bg-acid",
+  completed: "bg-menthe",
   cancelled: "bg-dim",
   cancelled_late: "bg-ember",
 };
 
-type JourCalendrier = {
-  numero: number;
-  cle: string;
-  reservations: HistoryRow[];
-};
+type Pose = HistoryRow & { lane: number; lanes: number; top: number; hauteur: number };
+
+/**
+ * Place les réservations d'un jour côte à côte lorsqu'elles se chevauchent.
+ * Le nombre de lanes est calculé par groupe connexe de chevauchement, pour
+ * qu'une réservation isolée reste en pleine largeur même si, ailleurs dans
+ * la journée, d'autres réservations se chevauchent entre elles.
+ */
+function disposerJour(lignes: HistoryRow[]): Pose[] {
+  const triees = [...lignes].sort(
+    (a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime(),
+  );
+  const actives: Array<{ fin: number; lane: number; groupe: number }> = [];
+  const posees: Array<HistoryRow & { lane: number; groupe: number }> = [];
+  let prochainGroupe = 0;
+
+  for (const r of triees) {
+    const debut = new Date(r.starts_at).getTime();
+    for (let i = actives.length - 1; i >= 0; i -= 1) {
+      if (actives[i].fin <= debut) actives.splice(i, 1);
+    }
+    const prises = new Set(actives.map((a) => a.lane));
+    let lane = 0;
+    while (prises.has(lane)) lane += 1;
+    const groupe = actives.length > 0 ? actives[0].groupe : prochainGroupe++;
+    actives.push({ fin: new Date(r.ends_at).getTime(), lane, groupe });
+    posees.push({ ...r, lane, groupe });
+  }
+
+  const lanesParGroupe = new Map<number, number>();
+  for (const p of posees) {
+    lanesParGroupe.set(p.groupe, Math.max(lanesParGroupe.get(p.groupe) ?? 1, p.lane + 1));
+  }
+
+  return posees.map((p) => {
+    const debut = localParts(new Date(p.starts_at));
+    const minutesDebut = debut.hour * 60 + debut.minute;
+    const dureeMin = Math.max(
+      24,
+      (new Date(p.ends_at).getTime() - new Date(p.starts_at).getTime()) / 60_000,
+    );
+    return {
+      ...p,
+      lanes: lanesParGroupe.get(p.groupe) ?? 1,
+      top: (minutesDebut / 60) * HAUTEUR_HEURE,
+      hauteur: (dureeMin / 60) * HAUTEUR_HEURE,
+    };
+  });
+}
 
 export function CalendrierReservations({ lignes }: { lignes: HistoryRow[] }) {
-  const maintenant = localParts(new Date());
-  const [annee, setAnnee] = useState(maintenant.year);
-  const [mois, setMois] = useState(maintenant.month);
-  const [selection, setSelection] = useState(() => dayKey(new Date()));
+  const [debutSemaine, setDebutSemaine] = useState(() => startOfWeek(new Date()));
 
   const parJour = useMemo(() => {
     const map = new Map<string, HistoryRow[]>();
@@ -42,178 +86,147 @@ export function CalendrierReservations({ lignes }: { lignes: HistoryRow[] }) {
       groupe.push(ligne);
       map.set(cle, groupe);
     }
-    for (const groupe of map.values()) {
-      groupe.sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
-    }
     return map;
   }, [lignes]);
 
-  const jours = useMemo(() => {
-    const premier = zonedToUtc(annee, mois, 1);
-    const decalage = isoDayOfWeek(premier) - 1;
-    const nombre = new Date(Date.UTC(annee, mois, 0)).getUTCDate();
-    const cellules: Array<JourCalendrier | null> = Array.from({ length: decalage }, () => null);
+  const jours = useMemo(
+    () => Array.from({ length: 7 }, (_, i) => addDays(debutSemaine, i)),
+    [debutSemaine],
+  );
 
-    for (let numero = 1; numero <= nombre; numero += 1) {
-      const cle = `${annee}-${String(mois).padStart(2, "0")}-${String(numero).padStart(2, "0")}`;
-      cellules.push({ numero, cle, reservations: parJour.get(cle) ?? [] });
-    }
-
-    while (cellules.length % 7 !== 0) cellules.push(null);
-    return cellules;
-  }, [annee, mois, parJour]);
-
-  const reservationsSelection = parJour.get(selection) ?? [];
   const aujourdHui = dayKey(new Date());
+  const semaineCourante = dayKey(debutSemaine) === dayKey(startOfWeek(new Date()));
 
-  function changerMois(delta: number) {
-    const cible = new Date(Date.UTC(annee, mois - 1 + delta, 1));
-    const prochaineAnnee = cible.getUTCFullYear();
-    const prochainMois = cible.getUTCMonth() + 1;
-    setAnnee(prochaineAnnee);
-    setMois(prochainMois);
-
-    const prefixe = `${prochaineAnnee}-${String(prochainMois).padStart(2, "0")}-`;
-    const premiereReservation = [...parJour.keys()].sort().find((cle) => cle.startsWith(prefixe));
-    const aujourdhuiLocal = localParts(new Date());
-    const moisActuel = aujourdhuiLocal.year === prochaineAnnee && aujourdhuiLocal.month === prochainMois;
-    setSelection(
-      moisActuel
-        ? dayKey(new Date())
-        : premiereReservation ?? `${prefixe}01`,
+  if (lignes.length === 0) {
+    return (
+      <Vide
+        titre="Aucune réservation"
+        detail="Vos créneaux apparaîtront ici, positionnés sur leur horaire, une fois réservés."
+        action={
+          <Link href="/reserver">
+            <Bouton variante="secondaire" taille="sm">Réserver un créneau</Bouton>
+          </Link>
+        }
+      />
     );
   }
 
-  const moisCourant = maintenant.year === annee && maintenant.month === mois;
-
   return (
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.55fr)]">
-      <section className="panel p-4 sm:p-5">
-        <div className="flex items-center justify-between gap-4 mb-5">
-          <div>
-            <p className="eyebrow">Vue mensuelle</p>
-            <h2 className="display text-2xl text-chalk mt-1 capitalize">{MOIS[mois - 1]} {annee}</h2>
-          </div>
-          <div className="flex items-center gap-1.5">
+    <div className="panel p-4 sm:p-5">
+      <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
+        <div>
+          <p className="eyebrow">Vue hebdomadaire</p>
+          <h2 className="display text-2xl text-chalk mt-1 tabular">
+            {fmtDayShort(jours[0])} → {fmtDayShort(jours[6])}{" "}
+            <span className="text-dim text-base font-normal">{localParts(jours[6]).year}</span>
+          </h2>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setDebutSemaine((d) => addDays(d, -7))}
+            className="px-3 h-9 rounded-[8px] border border-line text-[11px] font-medium text-dim hover:text-chalk hover:bg-ink-2 transition-colors"
+          >
+            ← Précédent
+          </button>
+          {!semaineCourante && (
             <button
               type="button"
-              onClick={() => changerMois(-1)}
-              aria-label="Mois précédent"
-              className="w-9 h-9 grid place-items-center rounded-[8px] border border-line text-mist hover:text-chalk hover:bg-ink-2 transition-colors"
+              onClick={() => setDebutSemaine(startOfWeek(new Date()))}
+              className="px-3 h-9 rounded-[8px] border border-line text-[11px] font-medium text-dim hover:text-chalk hover:bg-ink-2 transition-colors"
             >
-              ←
+              Aujourd&apos;hui
             </button>
-            {!moisCourant && (
-              <button
-                type="button"
-                onClick={() => {
-                  setAnnee(maintenant.year);
-                  setMois(maintenant.month);
-                  setSelection(dayKey(new Date()));
-                }}
-                className="px-3 h-9 rounded-[8px] border border-line text-[11px] font-medium text-dim hover:text-chalk hover:bg-ink-2 transition-colors"
-              >
-                Aujourd&apos;hui
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => changerMois(1)}
-              aria-label="Mois suivant"
-              className="w-9 h-9 grid place-items-center rounded-[8px] border border-line text-mist hover:text-chalk hover:bg-ink-2 transition-colors"
-            >
-              →
-            </button>
-          </div>
+          )}
+          <button
+            type="button"
+            onClick={() => setDebutSemaine((d) => addDays(d, 7))}
+            className="px-3 h-9 rounded-[8px] border border-line text-[11px] font-medium text-dim hover:text-chalk hover:bg-ink-2 transition-colors"
+          >
+            Suivant →
+          </button>
         </div>
+      </div>
 
-        <div className="grid grid-cols-7 gap-1.5 mb-1.5">
-          {JOURS_COURTS.map((jour) => (
-            <div key={jour} className="text-center py-1.5 text-[10px] font-mono tracking-[0.1em] text-dim">
-              {jour}
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-7 gap-1.5">
-          {jours.map((jour, index) => {
-            if (!jour) return <div key={`vide-${index}`} className="min-h-[86px] sm:min-h-[104px]" aria-hidden />;
-
-            const actif = selection === jour.cle;
-            const aujourdhui = jour.cle === aujourdHui;
+      <div className="scroll-x -mx-4 sm:-mx-5 px-4 sm:px-5">
+        <div className="grid" style={{ gridTemplateColumns: "44px repeat(7, minmax(112px, 1fr))", minWidth: 820 }}>
+          <div />
+          {jours.map((j) => {
+            const cle = dayKey(j);
+            const estAujourdhui = cle === aujourdHui;
             return (
-              <button
-                key={jour.cle}
-                type="button"
-                onClick={() => setSelection(jour.cle)}
-                aria-pressed={actif}
-                className={`min-h-[86px] sm:min-h-[104px] rounded-[9px] border p-2 text-left flex flex-col transition-colors
-                  ${actif
-                    ? "border-klein bg-klein/12"
-                    : jour.reservations.length > 0
-                      ? "border-line-hi bg-surface-hi/35 hover:border-klein/50"
-                      : "border-line bg-ink-2/20 hover:border-line-hi"}`}
-              >
-                <span className={`w-7 h-7 grid place-items-center rounded-full text-[12px] font-mono tabular
-                  ${aujourdhui ? "bg-encre text-ink font-semibold" : actif ? "text-klein-2" : "text-mist"}`}>
-                  {jour.numero}
-                </span>
+              <div key={cle} className="text-center pb-2.5">
+                <p className="text-[10px] font-mono tracking-[0.1em] text-dim">
+                  {JOURS_COURTS[isoDayOfWeek(j) - 1]}
+                </p>
+                <p className={`display text-lg mt-0.5 tabular ${estAujourdhui ? "text-klein" : "text-chalk"}`}>
+                  {localParts(j).day}
+                </p>
+              </div>
+            );
+          })}
 
-                {jour.reservations.length > 0 && (
-                  <div className="mt-auto pt-2 space-y-1">
-                    {jour.reservations.slice(0, 2).map((r) => (
-                      <div key={r.id} className="flex items-center gap-1.5 min-w-0">
-                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${POINTS[r.status]}`} />
-                        <span className="text-[10px] text-mist truncate tabular">{fmtTime(r.starts_at)} {r.machine_name}</span>
-                      </div>
-                    ))}
-                    {jour.reservations.length > 2 && (
-                      <span className="text-[9px] font-mono text-dim">+{jour.reservations.length - 2}</span>
-                    )}
-                  </div>
-                )}
-              </button>
+          <div className="relative" style={{ height: HEURES.length * HAUTEUR_HEURE }}>
+            {HEURES.map((h) => (
+              <div
+                key={h}
+                className="absolute right-1.5 -translate-y-1/2 text-[9px] font-mono text-dim tabular"
+                style={{ top: h * HAUTEUR_HEURE }}
+              >
+                {String(h).padStart(2, "0")}h
+              </div>
+            ))}
+          </div>
+
+          {jours.map((j) => {
+            const cle = dayKey(j);
+            const poses = disposerJour(parJour.get(cle) ?? []);
+            const estAujourdhui = cle === aujourdHui;
+            return (
+              <div
+                key={cle}
+                className={`relative border-l border-line ${estAujourdhui ? "bg-klein-fond/40" : ""}`}
+                style={{ height: HEURES.length * HAUTEUR_HEURE }}
+              >
+                {HEURES.map((h) => (
+                  <div
+                    key={h}
+                    className="absolute inset-x-0 border-t border-line/70"
+                    style={{ top: h * HAUTEUR_HEURE }}
+                    aria-hidden
+                  />
+                ))}
+                {poses.map((p) => (
+                  <Link
+                    key={p.id}
+                    href={`/reservation/${p.reference}`}
+                    title={`${p.machine_name} · ${fmtTime(p.starts_at)} → ${fmtTime(p.ends_at)}`}
+                    className={`absolute rounded-[6px] border px-1.5 py-1 overflow-hidden transition-colors ${BLOC[p.status]}`}
+                    style={{
+                      top: p.top + 1,
+                      height: Math.max(p.hauteur - 2, 20),
+                      left: `calc(${(p.lane / p.lanes) * 100}% + 2px)`,
+                      width: `calc(${100 / p.lanes}% - 4px)`,
+                    }}
+                  >
+                    <p className="text-[9.5px] font-mono tabular leading-tight">{fmtTime(p.starts_at)}</p>
+                    <p className="text-[10.5px] font-medium truncate leading-tight">{p.machine_name}</p>
+                  </Link>
+                ))}
+              </div>
             );
           })}
         </div>
-      </section>
+      </div>
 
-      <aside className="panel p-4 sm:p-5 h-fit xl:sticky xl:top-20">
-        <p className="eyebrow">Jour sélectionné</p>
-        <h2 className="display text-xl text-chalk mt-1.5">
-          {fmtDay(zonedToUtc(Number(selection.slice(0, 4)), Number(selection.slice(5, 7)), Number(selection.slice(8, 10))))}
-        </h2>
-
-        {reservationsSelection.length === 0 ? (
-          <div className="mt-5">
-            <Vide titre="Aucune réservation" detail="Aucun créneau n'est enregistré pour cette journée." />
-          </div>
-        ) : (
-          <ul className="mt-5 space-y-2.5">
-            {reservationsSelection.map((r) => (
-              <li key={r.id}>
-                <Link
-                  href={`/reservation/${r.reference}`}
-                  className="block rounded-[9px] border border-line bg-ink-2/35 p-3.5 hover:border-klein/45 hover:bg-klein-fond transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-sm text-chalk font-medium truncate">{r.machine_name}</p>
-                      <p className="text-[11px] text-dim mt-0.5 truncate">{r.room_name}</p>
-                    </div>
-                    <Etiquette ton={TONS[r.status]}>{LIBELLES_STATUT[r.status]}</Etiquette>
-                  </div>
-                  <p className="text-[12px] text-mist font-mono tabular mt-3">
-                    {fmtTime(r.starts_at)} → {fmtTime(r.ends_at)}
-                    {r.is_night && <span className="text-klein-2"> · nuit</span>}
-                  </p>
-                  <p className="text-[10px] text-dim font-mono mt-1">{r.reference}</p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </aside>
+      <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-5 pt-4 border-t border-line">
+        {(Object.keys(LIBELLES_STATUT) as BookingStatus[]).map((statut) => (
+          <span key={statut} className="inline-flex items-center gap-1.5 text-[11px] text-dim">
+            <span className={`w-2 h-2 rounded-full ${POINT[statut]}`} aria-hidden />
+            {LIBELLES_STATUT[statut]}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }

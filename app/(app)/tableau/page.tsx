@@ -189,7 +189,7 @@ export default async function PageTableau() {
         <div className="flex items-end justify-between gap-4 mb-4">
           <div>
             <p className="eyebrow">En direct</p>
-            <h2 className="display text-2xl mt-1.5 text-chalk">Le parc</h2>
+            <h2 className="display text-2xl mt-1.5 text-chalk">Buanderie</h2>
           </div>
           <Link
             href="/machines"

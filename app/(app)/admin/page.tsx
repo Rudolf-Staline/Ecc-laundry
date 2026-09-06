@@ -42,18 +42,12 @@ export default async function PageAdmin() {
         />
       </section>
 
-      <section className="grid sm:grid-cols-2 gap-2.5">
+      <section>
         <Raccourci
           href="/admin/pannes"
           titre="Signalements ouverts"
           valeur={o?.open_reports ?? 0}
           urgent={(o?.open_reports ?? 0) > 0}
-        />
-        <Raccourci
-          href="/admin/reclamations"
-          titre="Réclamations en cours"
-          valeur={o?.open_claims ?? 0}
-          urgent={(o?.open_claims ?? 0) > 0}
         />
       </section>
 
