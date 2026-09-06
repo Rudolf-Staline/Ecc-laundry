@@ -3,6 +3,7 @@ import { Roboto, JetBrains_Mono } from "next/font/google";
 import { NOM_APP, NOM_ECOLE, urlSite } from "@/lib/config";
 import { FournisseurToasts } from "@/components/toast";
 import "./globals.css";
+import "./ambient.css";
 
 const corps = Roboto({
   subsets: ["latin"],
@@ -60,6 +61,25 @@ const SCRIPT_THEME = `
 })();
 `;
 
+const BULLES_GLOBALES = [1, 3, 5, 7, 9, 11, 13, 14];
+
+function AmbianceGlobale() {
+  return (
+    <div className="laundry-backdrop" aria-hidden="true">
+      <div className="laundry-flow laundry-flow-a" />
+      <div className="laundry-flow laundry-flow-b" />
+      <div className="laundry-flow laundry-flow-c" />
+      <div className="laundry-sheen" />
+
+      <div className="global-soap-field">
+        {BULLES_GLOBALES.map((n) => (
+          <span key={n} className={`soap-bubble soap-bubble-${n}`} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" data-theme="light" suppressHydrationWarning>
@@ -67,7 +87,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: SCRIPT_THEME }} />
       </head>
       <body className={`${corps.variable} ${mono.variable} antialiased`}>
-        <FournisseurToasts>{children}</FournisseurToasts>
+        <AmbianceGlobale />
+        <div className="laundry-content-layer">
+          <FournisseurToasts>{children}</FournisseurToasts>
+        </div>
       </body>
     </html>
   );
