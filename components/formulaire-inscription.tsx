@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { creerClientNavigateur } from "@/lib/supabase/client";
 import { verifierEmail, DOMAINE_CENTRALE } from "@/lib/email";
@@ -9,6 +9,8 @@ import { messageErreur } from "@/lib/errors";
 import { Bouton, Champ, ChampMotDePasse, Etiquette } from "@/components/ui";
 
 const LONGUEUR_MIN = 8;
+
+type Etape = "form" | "code";
 
 export function FormulaireInscription({
   suite,
@@ -18,12 +20,15 @@ export function FormulaireInscription({
   configure: boolean;
 }) {
   const router = useRouter();
+  const [etape, setEtape] = useState<Etape>("form");
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
   const [confirmation, setConfirmation] = useState("");
+  const [code, setCode] = useState("");
   const [erreur, setErreur] = useState<string | null>(null);
   const [enCours, setEnCours] = useState(false);
-  const [compteCree, setCompteCree] = useState(false);
+  const [renvoye, setRenvoye] = useState(false);
+  const champCode = useRef<HTMLInputElement>(null);
 
   async function creerCompte(e: React.FormEvent) {
     e.preventDefault();
@@ -50,6 +55,9 @@ export function FormulaireInscription({
         email: verdict.email,
         password: motDePasse,
         options: {
+          // Le gabarit n'affiche plus que le code ({{ .Token }}) : ce lien ne
+          // sert que si un lien de secours subsiste malgré tout dans le
+          // gabarit — voir README, section 4.
           emailRedirectTo: `${window.location.origin}/auth/callback${
             suite ? `?suite=${encodeURIComponent(suite)}` : ""
           }`,
@@ -64,9 +72,50 @@ export function FormulaireInscription({
       }
 
       setEmail(verdict.email);
-      setCompteCree(true);
+      setEtape("code");
+      setTimeout(() => champCode.current?.focus(), 60);
     } catch (err) {
       setErreur(messageErreur(err as never, "Impossible de créer le compte. Réessayez."));
+    } finally {
+      setEnCours(false);
+    }
+  }
+
+  async function confirmerCode(e: React.FormEvent) {
+    e.preventDefault();
+    setErreur(null);
+
+    const jeton = code.replace(/\s/g, "");
+    if (!jeton) {
+      setErreur("Entrez le code reçu par e-mail.");
+      return;
+    }
+
+    setEnCours(true);
+    try {
+      const supabase = creerClientNavigateur();
+      const { error } = await supabase.auth.verifyOtp({ email, token: jeton, type: "signup" });
+      if (error) throw error;
+
+      router.push(suite || "/tableau");
+      router.refresh();
+    } catch (err) {
+      setErreur(messageErreur(err as never, "Code incorrect ou expiré."));
+      setEnCours(false);
+    }
+  }
+
+  async function renvoyerCode() {
+    setEnCours(true);
+    setErreur(null);
+    try {
+      const supabase = creerClientNavigateur();
+      const { error } = await supabase.auth.resend({ type: "signup", email });
+      if (error) throw error;
+      setRenvoye(true);
+      setTimeout(() => setRenvoye(false), 5000);
+    } catch (err) {
+      setErreur(messageErreur(err as never));
     } finally {
       setEnCours(false);
     }
@@ -85,20 +134,51 @@ export function FormulaireInscription({
     );
   }
 
-  if (compteCree) {
+  if (etape === "code") {
     return (
-      <div className="auth-panel p-6 sm:p-8">
-        <p className="eyebrow">Compte créé</p>
-        <h2 className="display text-xl text-chalk mt-2 mb-4">Confirmez votre adresse</h2>
-        <p className="text-sm text-mist leading-relaxed">
-          Un e-mail de confirmation vient d&apos;être envoyé à{" "}
-          <span className="text-chalk break-all">{email}</span>. Cliquez sur le lien qu&apos;il
-          contient pour activer votre compte, puis connectez-vous.
+      <form onSubmit={confirmerCode} className="auth-panel p-6 sm:p-8">
+        <p className="eyebrow">Inscription</p>
+        <h2 className="display text-xl text-chalk mt-2 mb-1">Vérifiez votre e-mail</h2>
+        <p className="text-sm text-mist mb-6 leading-relaxed">
+          Un code a été envoyé à <span className="text-chalk break-all">{email}</span>.
+          Entrez-le ci-dessous pour activer votre compte.
         </p>
-        <Link href="/connexion" className="inline-block mt-6">
-          <Bouton type="button" variante="secondaire">← Retour à la connexion</Bouton>
-        </Link>
-      </div>
+
+        <Champ
+          ref={champCode}
+          name="code"
+          etiquette="Code reçu"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          placeholder="000000"
+          value={code}
+          onChange={(e) => { setCode(e.target.value.replace(/\D/g, "")); if (erreur) setErreur(null); }}
+          erreur={erreur ?? undefined}
+          className="text-center text-2xl tracking-[0.4em] font-mono py-4"
+        />
+
+        <Bouton type="submit" variante="primaire" taille="lg" enCours={enCours} className="w-full mt-5">
+          Valider
+        </Bouton>
+
+        <div className="flex items-center justify-between gap-4 mt-5 text-xs">
+          <button
+            type="button"
+            onClick={() => { setEtape("form"); setCode(""); setErreur(null); }}
+            className="text-dim hover:text-chalk transition-colors"
+          >
+            ← Retour à l&apos;inscription
+          </button>
+          <button
+            type="button"
+            onClick={renvoyerCode}
+            disabled={enCours || renvoye}
+            className="text-klein hover:text-klein-2 transition-colors disabled:opacity-50"
+          >
+            {renvoye ? "Code renvoyé ✓" : "Renvoyer le code"}
+          </button>
+        </div>
+      </form>
     );
   }
 

@@ -150,7 +150,7 @@ export function TableauHistorique({
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="reveal-stagger">
                   {visibles.map((l) => (
                     <tr key={l.id} className="border-b border-line last:border-0 hover:bg-ink-2/50 transition-colors">
                       <td className="px-4 py-3">

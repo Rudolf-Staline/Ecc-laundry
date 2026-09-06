@@ -66,11 +66,11 @@ export function Etiquette({
 }) {
   const tons = {
     neutre: "text-dim bg-ink-2",
-    libre: "text-menthe bg-menthe-fond",
-    occupe: "text-acid bg-acid-fond",
-    panne: "text-coral bg-coral-fond",
-    info: "text-klein bg-klein-fond",
-    mien: "text-violet bg-violet-fond",
+    libre: "text-on-bright bg-menthe",
+    occupe: "text-on-bright bg-acid",
+    panne: "text-on-bright bg-coral",
+    info: "text-on-bright bg-klein",
+    mien: "text-on-bright bg-violet",
   }[ton];
 
   return (

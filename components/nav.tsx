@@ -157,7 +157,7 @@ function Horloge() {
   );
 
   return (
-    <span className="chip bg-klein-fond text-klein tabular border border-klein/10" suppressHydrationWarning>
+    <span className="chip bg-klein text-on-bright tabular" suppressHydrationWarning>
       <Horlogette /> {heure || "--:--"} Casablanca
     </span>
   );

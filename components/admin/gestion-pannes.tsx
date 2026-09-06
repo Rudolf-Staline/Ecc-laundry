@@ -67,7 +67,7 @@ export function GestionPannes({ signalements }: { signalements: LignePanne[] }) 
           </p>
         </div>
       ) : (
-        <ul className="grid gap-2.5">
+        <ul className="grid gap-2.5 reveal-stagger">
           {visibles.map((s) => (
             <li key={s.id} className="panel p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">

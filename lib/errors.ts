@@ -34,6 +34,7 @@ const GENERIQUES: Record<string, string> = {
   over_request_rate_limit: "Trop de tentatives. Réessayez dans quelques minutes.",
   over_email_send_rate_limit: "Trop d'e-mails envoyés récemment. Réessayez dans quelques minutes.",
   signup_disabled: "Les inscriptions sont momentanément désactivées.",
+  otp_expired: "Ce code a expiré ou n'est plus valide. Demandez-en un nouveau.",
 };
 
 /**

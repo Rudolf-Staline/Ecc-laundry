@@ -147,7 +147,7 @@ function CarteMachine({
         <Tambour
           size={44}
           spinning={occupee ? "cycle" : false}
-          className={libre ? "text-acid" : occupee ? "text-ember" : "text-coral"}
+          className={`${m.kind === "washer" ? "text-cat-lavage" : "text-cat-sechage"} ${hs ? "opacity-40" : ""}`}
         />
         <div className="min-w-0 flex-1">
           <p className="text-sm text-chalk font-medium truncate">{m.name}</p>

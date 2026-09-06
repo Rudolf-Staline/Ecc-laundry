@@ -428,7 +428,7 @@ export function Planning({
         <Legende classe="border-menthe/20 bg-menthe-fond" label="libre" />
         <Legende classe="border-klein bg-klein" label="votre choix" />
         <Legende classe="border-acid bg-acid" label="à vous" />
-        <Legende classe="border-coral/25 bg-coral-fond" label="occupé" />
+        <Legende classe="border-coral bg-coral" label="occupé" />
         <Legende classe="border-klein/20 bg-klein-fond" label="nuit" />
         <Legende classe="border-line maintenance-stripes" label="hors service" />
         <span className="ml-auto flex items-center gap-1.5 text-menthe">
@@ -566,9 +566,9 @@ function Cellule({
         onClick={onFile}
         disabled={enFile}
         title={enFile ? "Vous êtes déjà en file d'attente sur ce créneau" : `Pris par ${ligne.owner_first_name}. Cliquer pour rejoindre la file d'attente.`}
-        className={`${base} bg-coral-fond border-coral/25 hover:border-coral/45`}
+        className={`${base} bg-coral border-coral hover:opacity-90`}
       >
-        <span className={`text-[9px] font-semibold ${enFile ? "text-ember" : "text-coral"}`}>
+        <span className="text-[9px] font-semibold text-on-bright">
           {enFile ? "file" : initiales}
         </span>
       </button>
@@ -604,7 +604,7 @@ function Cellule({
       }
       className={`${base}
         ${choisi
-          ? "bg-klein border-klein text-white shadow-[0_4px_12px_-4px_rgba(91,91,214,0.6)]"
+          ? "bg-klein border-klein text-on-bright shadow-[0_4px_12px_-4px_rgba(91,91,214,0.6)]"
           : apercu
             ? "bg-klein/25 border-klein/45"
             : nuit
