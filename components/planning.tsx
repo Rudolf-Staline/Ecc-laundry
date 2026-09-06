@@ -39,8 +39,12 @@ export function Planning({
   const supabase = useMemo(() => creerClientNavigateur(), []);
 
   const [buanderieId, setBuanderieId] = useState(buanderies[0].id);
+  const buanderie = buanderies.find((b) => b.id === buanderieId) ?? buanderies[0];
   const [jourActif, setJourActif] = useState(() => dayKey(new Date()));
-  const [duree, setDuree] = useState(2);
+  const [duree, setDuree] = useState(() => {
+    const blocsPourDeuxHeures = Math.round(120 / buanderie.slot_minutes);
+    return Math.min(Math.max(blocsPourDeuxHeures, 1), Math.max(1, buanderie.max_blocks));
+  });
   const [planning, setPlanning] = useState(planningInitial);
   const [statut, setStatut] = useState(statutInitial);
   const [attente, setAttente] = useState(attenteInitiale);
@@ -50,7 +54,6 @@ export function Planning({
   const [maintenant, setMaintenant] = useState(() => Date.now());
   const grille = useRef<HTMLDivElement>(null);
 
-  const buanderie = buanderies.find((b) => b.id === buanderieId) ?? buanderies[0];
   const parc = useMemo(
     () => machines.filter((m) => m.room_id === buanderie.id).sort((a, b) => a.position - b.position),
     [machines, buanderie.id],

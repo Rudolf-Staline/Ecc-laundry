@@ -27,13 +27,19 @@ const POINT: Record<BookingStatus, string> = {
 
 type Pose = HistoryRow & { lane: number; lanes: number; top: number; hauteur: number };
 
-/** Place les réservations d'un jour côte à côte lorsqu'elles se chevauchent. */
+/**
+ * Place les réservations d'un jour côte à côte lorsqu'elles se chevauchent.
+ * Le nombre de lanes est calculé par groupe connexe de chevauchement, pour
+ * qu'une réservation isolée reste en pleine largeur même si, ailleurs dans
+ * la journée, d'autres réservations se chevauchent entre elles.
+ */
 function disposerJour(lignes: HistoryRow[]): Pose[] {
   const triees = [...lignes].sort(
     (a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime(),
   );
-  const actives: Array<{ fin: number; lane: number }> = [];
-  const posees: Array<HistoryRow & { lane: number }> = [];
+  const actives: Array<{ fin: number; lane: number; groupe: number }> = [];
+  const posees: Array<HistoryRow & { lane: number; groupe: number }> = [];
+  let prochainGroupe = 0;
 
   for (const r of triees) {
     const debut = new Date(r.starts_at).getTime();
@@ -43,11 +49,15 @@ function disposerJour(lignes: HistoryRow[]): Pose[] {
     const prises = new Set(actives.map((a) => a.lane));
     let lane = 0;
     while (prises.has(lane)) lane += 1;
-    actives.push({ fin: new Date(r.ends_at).getTime(), lane });
-    posees.push({ ...r, lane });
+    const groupe = actives.length > 0 ? actives[0].groupe : prochainGroupe++;
+    actives.push({ fin: new Date(r.ends_at).getTime(), lane, groupe });
+    posees.push({ ...r, lane, groupe });
   }
 
-  const lanes = posees.reduce((max, p) => Math.max(max, p.lane + 1), 1);
+  const lanesParGroupe = new Map<number, number>();
+  for (const p of posees) {
+    lanesParGroupe.set(p.groupe, Math.max(lanesParGroupe.get(p.groupe) ?? 1, p.lane + 1));
+  }
 
   return posees.map((p) => {
     const debut = localParts(new Date(p.starts_at));
@@ -58,7 +68,7 @@ function disposerJour(lignes: HistoryRow[]): Pose[] {
     );
     return {
       ...p,
-      lanes,
+      lanes: lanesParGroupe.get(p.groupe) ?? 1,
       top: (minutesDebut / 60) * HAUTEUR_HEURE,
       hauteur: (dureeMin / 60) * HAUTEUR_HEURE,
     };
